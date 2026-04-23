@@ -2,9 +2,11 @@ export const dynamic = 'force-dynamic'
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import LogoutButton from './LogoutButton'
-import NewRoutineForm from './NewRoutineForm'
+import dynamic from 'next/dynamic'
 import RoutineList from './RoutineList'
+
+const LogoutButton = dynamic(() => import('./LogoutButton'), { ssr: false })
+const NewRoutineForm = dynamic(() => import('./NewRoutineForm'), { ssr: false })
 
 export default async function DashboardPage() {
   const supabase = await createClient()
