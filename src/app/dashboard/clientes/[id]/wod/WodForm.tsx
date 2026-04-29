@@ -158,7 +158,8 @@ export default function WodForm({
       router.push(`/dashboard/clientes/${clientId}`)
       router.refresh()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al guardar')
+      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message ?? JSON.stringify(err)
+      setError(msg)
     } finally {
       setLoading(false)
     }
