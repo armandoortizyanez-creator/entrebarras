@@ -1,9 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase-server'
-import dynamicImport from 'next/dynamic'
-
-const LogoutButton = dynamicImport(() => import('./LogoutButton'), { ssr: false })
+import LogoutButton from './LogoutButton'
 
 export default async function PerfilPage() {
   const supabase = await createClient()
@@ -27,7 +25,6 @@ export default async function PerfilPage() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
-        {/* User card */}
         <div className="bg-[#141414] rounded-2xl border border-[#2A2A2A] p-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-[#CC2B2B]/20 flex items-center justify-center text-[#CC2B2B] text-xl font-black">
@@ -40,7 +37,6 @@ export default async function PerfilPage() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-[#141414] rounded-2xl border border-[#2A2A2A] p-4 text-center">
             <p className="text-3xl font-black text-[#CC2B2B]">{clientCount ?? 0}</p>
@@ -52,11 +48,8 @@ export default async function PerfilPage() {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="bg-[#141414] rounded-2xl border border-[#2A2A2A] overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#2A2A2A]">
-            <LogoutButton />
-          </div>
+        <div className="bg-[#141414] rounded-2xl border border-[#2A2A2A] px-5 py-4">
+          <LogoutButton />
         </div>
       </main>
     </div>

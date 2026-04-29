@@ -1,10 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase-server'
-import dynamicImport from 'next/dynamic'
+import NewRoutineForm from './NewRoutineForm'
 import RoutineList from './RoutineList'
-
-const NewRoutineForm = dynamicImport(() => import('./NewRoutineForm'), { ssr: false })
 
 export default async function RutinasPage() {
   const supabase = await createClient()

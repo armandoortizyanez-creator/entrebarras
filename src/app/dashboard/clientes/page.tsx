@@ -1,10 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase-server'
-import dynamicImport from 'next/dynamic'
 import ClientList from './ClientList'
-
-const NewClientModal = dynamicImport(() => import('./NewClientModal'), { ssr: false })
+import NewClientModal from './NewClientModal'
 
 export default async function ClientesPage() {
   const supabase = await createClient()

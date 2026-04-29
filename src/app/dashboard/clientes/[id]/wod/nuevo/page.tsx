@@ -2,9 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import dynamicImport from 'next/dynamic'
-
-const WodForm = dynamicImport(() => import('../WodForm'), { ssr: false })
+import WodForm from '../WodForm'
 
 export default async function NuevoWodPage({
   params,

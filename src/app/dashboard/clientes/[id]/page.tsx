@@ -2,9 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import dynamicImport from 'next/dynamic'
-
-const ClientCalendar = dynamicImport(() => import('./ClientCalendar'), { ssr: false })
+import ClientCalendar from './ClientCalendar'
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -18,24 +16,25 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
   if (!client) notFound()
 
-  // Fetch WODs for the next 4 weeks (to show in calendar)
   const today = new Date()
   const startDate = new Date(today)
-  startDate.setDate(today.getDate() - today.getDay() + 1) // This Monday
+  startDate.setDate(today.getDate() - today.getDay() + 1)
   const endDate = new Date(startDate)
-  endDate.setDate(startDate.getDate() + 27) // 4 weeks
+  endDate.setDate(startDate.getDate() + 27)
+
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   const { data: wods } = await supabase
     .from('wods')
     .select('*, wod_exercises(*)')
     .eq('client_id', id)
-    .gte('scheduled_date', startDate.toISOString().split('T')[0])
-    .lte('scheduled_date', endDate.toISOString().split('T')[0])
+    .gte('scheduled_date', fmt(startDate))
+    .lte('scheduled_date', fmt(endDate))
     .order('scheduled_date', { ascending: true })
 
   return (
     <div>
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-[#0A0A0A] border-b border-[#2A2A2A] px-4 py-4">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
           <a href="/dashboard/clientes" className="w-9 h-9 flex items-center justify-center rounded-full bg-[#141414] text-[#AAA] hover:text-white transition-colors">
@@ -53,11 +52,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6">
-        <ClientCalendar
-          client={client}
-          initialWods={wods ?? []}
-          weekStart={startDate.toISOString().split('T')[0]}
-        />
+        <ClientCalendar client={client} initialWods={wods ?? []} />
       </main>
     </div>
   )
