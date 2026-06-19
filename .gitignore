@@ -1,42 +1,51 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules
+.pnp
+.pnp.js
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Build outputs
+.next
+dist
+build
+out
+coverage
 
-# testing
-/coverage
+# Env files
+.env
+.env.local
+.env.*.local
 
-# next.js
-/.next/
-/out/
+# Turbo
+.turbo
 
-# production
-/build
+# Expo / React Native
+.expo
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
 
-# misc
+# OS
 .DS_Store
+Thumbs.db
 *.pem
 
-# debug
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-.env.local
+# Supabase
+supabase/.branches
+supabase/.temp
