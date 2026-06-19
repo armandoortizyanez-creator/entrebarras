@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { ComingSoon } from '@/components/ComingSoon'
+import { RutinasView } from './RutinasView'
 export const metadata: Metadata = { title: 'Rutinas' }
 export default function RutinasPage() {
-  return <ComingSoon title="Rutinas" description="Crea y asigna planes de entrenamiento personalizados a tus atletas." icon="📋" />
+  return <RutinasView />
 }
