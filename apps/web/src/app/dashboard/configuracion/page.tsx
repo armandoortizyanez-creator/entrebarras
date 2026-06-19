@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { ComingSoon } from '@/components/ComingSoon'
+import { ConfiguracionView } from './ConfiguracionView'
 export const metadata: Metadata = { title: 'Configuración' }
 export default function ConfiguracionPage() {
-  return <ComingSoon title="Configuración" description="Personaliza tu organización, coaches, branding y plan de suscripción." icon="⚙️" />
+  return <ConfiguracionView />
 }

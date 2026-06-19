@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAthletes, createAthlete, deleteAthlete } from '@/lib/queries/athletes'
 import type { Athlete } from '@entrebarras/types'
+import Link from 'next/link'
 
 type FilterStatus = 'all' | 'active' | 'inactive' | 'prospect'
 
@@ -150,7 +151,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             borderBottom: i < athletes.length - 1 ? '1px solid var(--color-border)' : 'none',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link href={`/dashboard/atletas/${athlete.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
             <Avatar name={`${athlete.first_name} ${athlete.last_name}`} />
             <div>
               <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)' }}>
@@ -160,7 +161,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
                 <p style={{ fontSize: 12, color: 'var(--color-text-3)' }}>{athlete.email}</p>
               )}
             </div>
-          </div>
+          </Link>
 
           <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
             {athlete.primary_sport ?? 'No definido'}
