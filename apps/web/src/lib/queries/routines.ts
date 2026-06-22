@@ -92,12 +92,22 @@ export async function createRoutine(data: {
   is_template?: boolean
 }) {
   const supabase = createClient()
-  const { data: user } = await supabase.auth.getUser()
-  if (!user.user) throw new Error('No autenticado')
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) throw new Error('No autenticado')
+
+  const tenantId = userRes.user.app_metadata?.tenant_id
+  if (!tenantId) throw new Error('Sin organización asignada')
+
+  const { data: publicUser, error: uErr } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', userRes.user.id)
+    .single()
+  if (uErr) throw uErr
 
   const { data: routine, error } = await supabase
     .from('routines')
-    .insert({ ...data, created_by: user.user.id })
+    .insert({ ...data, created_by: publicUser.id, tenant_id: tenantId })
     .select()
     .single()
   if (error) throw error
@@ -142,6 +152,63 @@ export async function updateRoutineExercise(id: string, updates: {
 export async function removeExerciseFromBlock(id: string) {
   const supabase = createClient()
   const { error } = await supabase.from('routine_exercises').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlock(id: string) {
+  const supabase = createClient()
+  const { error } = await supabase.from('routine_blocks').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function updateBlock(id: string, data: { name?: string; type?: string; notes?: string }) {
+  const supabase = createClient()
+  const { error } = await supabase.from('routine_blocks').update(data).eq('id', id)
+  if (error) throw error
+}
+
+export async function assignRoutineToAthletes(routineId: string, athleteIds: string[]) {
+  const supabase = createClient()
+  const { data: userRes } = await supabase.auth.getUser()
+  const rows = athleteIds.map(aid => ({
+    athlete_id: aid,
+    routine_id: routineId,
+    assigned_by: userRes.user?.id,
+    is_active: true,
+  }))
+  const { error } = await supabase
+    .from('athlete_routines')
+    .upsert(rows, { onConflict: 'athlete_id,routine_id' })
+  if (error) throw error
+}
+
+export async function getRoutineAssignments(routineId: string): Promise<string[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('athlete_routines')
+    .select('athlete_id')
+    .eq('routine_id', routineId)
+    .eq('is_active', true)
+  if (error) throw error
+  return (data ?? []).map(r => r.athlete_id as string)
+}
+
+export async function removeRoutineAssignment(athleteId: string, routineId: string) {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('athlete_routines')
+    .delete()
+    .eq('athlete_id', athleteId)
+    .eq('routine_id', routineId)
+  if (error) throw error
+}
+
+export async function updateRoutine(id: string, data: { name?: string; description?: string; type?: string; is_template?: boolean }) {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('routines')
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .eq('id', id)
   if (error) throw error
 }
 

@@ -136,10 +136,226 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .animate-skeleton {
   animation: pulse-skeleton 1.6s ease-in-out infinite;
 }
 
 .animate-fade-in {
   animation: fade-in 0.2s var(--ease-out) both;
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT — Sidebar + Main
+   ============================================ */
+
+/* Sidebar */
+.eb-sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Main wrapper fills remaining space on desktop */
+.eb-main-wrapper {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.eb-main-content {
+  flex: 1;
+}
+
+/* Overlay (mobile) */
+.eb-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 39;
+  backdrop-filter: blur(2px);
+  animation: fade-in 0.2s ease both;
+}
+
+/* Close button — hidden on desktop */
+.eb-sidebar-close {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sidebar-text);
+  padding: 4px;
+  border-radius: 6px;
+  margin-top: 2px;
+  transition: color 0.12s;
+}
+.eb-sidebar-close:hover { color: #fff; }
+
+/* Mobile header — hidden on desktop */
+.eb-mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 52px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.eb-mobile-hamburger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: background 0.12s;
+}
+.eb-mobile-hamburger:hover { background: var(--color-surface-2); }
+
+/* Bottom nav — hidden on desktop */
+.eb-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  z-index: 38;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.eb-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 3px;
+  padding: 6px 4px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-3);
+  transition: color 0.12s;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.eb-bottom-nav-item.active {
+  color: var(--color-red);
+}
+.eb-bottom-nav-item:active {
+  opacity: 0.7;
+}
+
+/* ============================================
+   MOBILE BREAKPOINT (< 768px)
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Sidebar oculto por defecto, desliza al abrir */
+  .eb-sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+  .eb-sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.25);
+  }
+  .eb-sidebar-overlay {
+    display: block;
+  }
+  .eb-sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Main ocupa todo el ancho */
+  .eb-main-wrapper {
+    margin-left: 0;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  /* Mobile header visible */
+  .eb-mobile-header {
+    display: flex;
+  }
+
+  /* Bottom nav visible */
+  .eb-bottom-nav {
+    display: flex;
+  }
+
+  /* Dashboard KPIs: 2 columnas en mobile */
+  .eb-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Padding reducido en mobile */
+  .eb-page-padding {
+    padding: 16px 16px 0 16px !important;
+  }
+
+  /* Asegura que el contenido no quede bajo el bottom nav */
+  .eb-main-content {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   ATLETAS TABLE — RESPONSIVE
+   ============================================ */
+
+@media (max-width: 767px) {
+  .eb-athletes-page {
+    padding: 16px !important;
+  }
+
+  .eb-athlete-header {
+    display: none !important;
+  }
+
+  .eb-athlete-row {
+    grid-template-columns: 1fr auto !important;
+    padding: 12px 16px !important;
+  }
+
+  .eb-athlete-col-sport,
+  .eb-athlete-col-level,
+  .eb-athlete-col-delete {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   TABLET BREAKPOINT (768px – 1023px)
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --sidebar-width: 200px;
+  }
 }

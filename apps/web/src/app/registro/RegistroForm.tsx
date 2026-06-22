@@ -40,7 +40,7 @@ export function RegistroForm() {
     })
 
     if (error) {
-      setError(error.message)
+      setError(typeof error.message === 'string' && error.message ? error.message : JSON.stringify(error))
       setLoading(false)
       return
     }

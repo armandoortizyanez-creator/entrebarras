@@ -3,6 +3,7 @@ import { AthleteDetail } from './AthleteDetail'
 
 export const metadata: Metadata = { title: 'Perfil del atleta' }
 
-export default function AthleteDetailPage({ params }: { params: { id: string } }) {
-  return <AthleteDetail athleteId={params.id} />
+export default async function AthleteDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return <AthleteDetail athleteId={id} />
 }

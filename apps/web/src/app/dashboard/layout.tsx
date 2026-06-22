@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { BottomNav } from '@/components/layout/BottomNav'
+import { MobileHeader } from '@/components/layout/MobileHeader'
+import { SidebarProvider } from '@/components/layout/SidebarContext'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -9,16 +12,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!user) redirect('/login')
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)' }}>
-      <Sidebar />
-      <main style={{
-        flex: 1,
-        marginLeft: 'var(--sidebar-width)',
-        minHeight: '100vh',
-        overflowX: 'hidden',
-      }}>
-        {children}
-      </main>
-    </div>
+    <SidebarProvider>
+      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)' }}>
+        <Sidebar />
+        <div className="eb-main-wrapper">
+          <MobileHeader />
+          <main className="eb-main-content">
+            {children}
+          </main>
+        </div>
+      </div>
+      <BottomNav />
+    </SidebarProvider>
   )
 }

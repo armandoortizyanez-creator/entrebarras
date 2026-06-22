@@ -95,7 +95,7 @@ export async function getCoaches() {
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .in('role', ['owner', 'coach'])
+    .in('role', ['super_admin', 'coach'])
     .order('first_name')
 
   if (error) throw error

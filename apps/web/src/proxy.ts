@@ -29,8 +29,10 @@ export async function proxy(request: NextRequest) {
                       request.nextUrl.pathname.startsWith('/registro') ||
                       request.nextUrl.pathname.startsWith('/invite')
 
+  const isPublicApi = request.nextUrl.pathname.startsWith('/api/')
+
   // Redirect unauthenticated users to login
-  if (!user && !isAuthRoute && request.nextUrl.pathname !== '/') {
+  if (!user && !isAuthRoute && !isPublicApi && request.nextUrl.pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

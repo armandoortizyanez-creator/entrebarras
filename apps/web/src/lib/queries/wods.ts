@@ -66,12 +66,22 @@ export async function createWod(data: {
   is_template?: boolean
 }) {
   const supabase = createClient()
-  const { data: user } = await supabase.auth.getUser()
-  if (!user.user) throw new Error('No autenticado')
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) throw new Error('No autenticado')
+
+  const tenantId = userRes.user.app_metadata?.tenant_id
+  if (!tenantId) throw new Error('Tenant no encontrado')
+
+  const { data: publicUser, error: uErr } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', userRes.user.id)
+    .single()
+  if (uErr) throw uErr
 
   const { data: wod, error } = await supabase
     .from('wods')
-    .insert({ ...data, created_by: user.user.id })
+    .insert({ ...data, created_by: publicUser.id, tenant_id: tenantId })
     .select()
     .single()
   if (error) throw error

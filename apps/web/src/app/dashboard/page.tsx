@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardStats } from './DashboardStats'
+import { AthleteHomeDashboard } from './AthleteHomeDashboard'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -15,14 +16,16 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const firstName = user?.user_metadata?.first_name ?? user?.email?.split('@')[0] ?? 'Coach'
+  const role = user?.app_metadata?.role as string | undefined
+  const isAthlete = role === 'athlete'
+  const firstName = user?.user_metadata?.first_name ?? user?.email?.split('@')[0] ?? (isAthlete ? 'Atleta' : 'Coach')
   const greeting = getGreeting()
   const today = new Date().toLocaleDateString('es-CL', {
     weekday: 'long', day: 'numeric', month: 'long',
   })
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 1180 }}>
+    <div className="eb-page-padding" style={{ padding: '32px 36px', maxWidth: 1180 }}>
       {/* Page header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
@@ -42,7 +45,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <DashboardStats />
+      {isAthlete ? <AthleteHomeDashboard /> : <DashboardStats />}
     </div>
   )
 }

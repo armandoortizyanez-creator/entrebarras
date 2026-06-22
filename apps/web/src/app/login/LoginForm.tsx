@@ -20,10 +20,8 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError(error.message === 'Invalid login credentials'
-        ? 'Email o contraseña incorrectos'
-        : error.message
-      )
+      const msg = typeof error.message === 'string' ? error.message : JSON.stringify(error)
+      setError(msg === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : msg)
       setLoading(false)
       return
     }

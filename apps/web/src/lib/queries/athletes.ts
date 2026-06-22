@@ -64,6 +64,21 @@ export async function deleteAthlete(id: string) {
   if (error) throw error
 }
 
+// Get the athlete profile for the currently logged-in user
+export async function getMyAthlete(): Promise<Athlete | null> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data } = await supabase
+    .from('athletes')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  return data as Athlete | null
+}
+
 export async function getComplianceData() {
   const supabase = createClient()
   const { data, error } = await supabase

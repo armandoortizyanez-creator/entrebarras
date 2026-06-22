@@ -4,18 +4,19 @@
 
 // --- Enums ---
 
-export type UserRole = 'owner' | 'coach' | 'athlete'
+export type UserRole = 'platform_admin' | 'super_admin' | 'coach' | 'athlete'
 export type PlanTier = 'trial' | 'starter' | 'growth' | 'pro'
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled'
 export type SportLevel = 'beginner' | 'intermediate' | 'advanced' | 'competitive'
 export type AthleteStatus = 'active' | 'inactive' | 'prospect'
 export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say'
-export type ExerciseSource = 'exercisedb' | 'custom'
+export type ExerciseSource = 'exercisedb' | 'custom' | 'crossfit' | 'strength' | 'hyrox' | 'gymnastics'
 export type RoutineType = 'strength' | 'hypertrophy' | 'cardio' | 'crossfit' | 'rehab' | 'general'
 export type BlockType = 'standard' | 'superset' | 'circuit'
 export type WodType = 'amrap' | 'emom' | 'for_time' | 'tabata' | 'chipper' | 'intervals' | 'custom'
 export type SessionType = 'routine' | 'wod' | 'rest' | 'event'
 export type SessionStatus = 'scheduled' | 'started' | 'completed' | 'skipped'
+export type InvitationStatus = 'pending' | 'accepted' | 'expired'
 
 // --- Core Entities ---
 
@@ -81,6 +82,7 @@ export interface Coach {
   bio: string | null
   specialties: string[]
   certifications: string[]
+  hourly_sessions: boolean
   created_at: string
   user?: User
 }
@@ -89,10 +91,32 @@ export interface Group {
   id: string
   tenant_id: string
   name: string
+  description: string | null
   type: 'class' | 'program' | 'team'
   coach_id: string | null
   schedule: Record<string, unknown> | null
+  day_of_week: number[]
+  start_time: string | null
+  end_time: string | null
+  max_capacity: number | null
+  is_global: boolean
+  sport: string | null
+  updated_at: string
   created_at: string
+}
+
+export interface Invitation {
+  id: string
+  tenant_id: string
+  invited_by: string
+  email: string
+  role: 'super_admin' | 'coach' | 'athlete'
+  token: string
+  expires_at: string
+  accepted_at: string | null
+  created_at: string
+  status: InvitationStatus
+  inviter?: Pick<User, 'id' | 'first_name' | 'last_name'>
 }
 
 export interface Exercise {
@@ -299,4 +323,48 @@ export interface AuthUser {
     tenant_id?: string
     role?: UserRole
   }
+}
+
+// --- Permission helpers ---
+
+export function isPlatformAdmin(role: UserRole | undefined): boolean {
+  return role === 'platform_admin'
+}
+
+export function isSuperAdmin(role: UserRole | undefined): boolean {
+  return role === 'super_admin'
+}
+
+export function isCoach(role: UserRole | undefined): boolean {
+  return role === 'coach' || role === 'super_admin' || role === 'platform_admin'
+}
+
+export function isAthleteRole(role: UserRole | undefined): boolean {
+  return role === 'athlete'
+}
+
+export function canManageUsers(role: UserRole | undefined): boolean {
+  return role === 'super_admin' || role === 'platform_admin'
+}
+
+export function canManageCoaches(role: UserRole | undefined): boolean {
+  return role === 'super_admin' || role === 'platform_admin'
+}
+
+export function canCreateGlobalClasses(role: UserRole | undefined): boolean {
+  return role === 'super_admin' || role === 'platform_admin'
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  platform_admin: 'Super Super Admin',
+  super_admin: 'Administrador',
+  coach: 'Coach',
+  athlete: 'Atleta',
+}
+
+export const ROLE_COLORS: Record<UserRole, string> = {
+  platform_admin: '#6c63ff',
+  super_admin: '#4caf50',
+  coach: '#e91e8c',
+  athlete: '#2196f3',
 }

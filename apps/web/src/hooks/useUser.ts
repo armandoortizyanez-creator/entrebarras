@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import type { UserRole } from '@entrebarras/types'
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null)
@@ -23,10 +24,35 @@ export function useUser() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const tenantId = user?.app_metadata?.tenant_id as string | undefined
-  const role = user?.app_metadata?.role as 'owner' | 'coach' | 'athlete' | undefined
-  const isOwner = role === 'owner'
-  const isCoach = role === 'coach' || role === 'owner'
+  const tenantId  = user?.app_metadata?.tenant_id as string | undefined
+  const role      = user?.app_metadata?.role as UserRole | undefined
 
-  return { user, loading, tenantId, role, isOwner, isCoach }
+  const isPlatformAdmin = role === 'platform_admin'
+  const isSuperAdmin    = role === 'super_admin'
+  const isCoach         = role === 'coach' || role === 'super_admin' || role === 'platform_admin'
+  const isAthlete       = role === 'athlete'
+
+  const canManageUsers       = isPlatformAdmin || isSuperAdmin
+  const canManageCoaches     = isPlatformAdmin || isSuperAdmin
+  const canInvite            = isPlatformAdmin || isSuperAdmin || role === 'coach'
+  const canViewAllTenants    = isPlatformAdmin
+  const canCreateGlobalClasses = isPlatformAdmin || isSuperAdmin
+
+  return {
+    user,
+    loading,
+    tenantId,
+    role,
+    isPlatformAdmin,
+    isSuperAdmin,
+    isCoach,
+    isAthlete,
+    canManageUsers,
+    canManageCoaches,
+    canInvite,
+    canViewAllTenants,
+    canCreateGlobalClasses,
+    // legacy alias
+    isOwner: isSuperAdmin,
+  }
 }

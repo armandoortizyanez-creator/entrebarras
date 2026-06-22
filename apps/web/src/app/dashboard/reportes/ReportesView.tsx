@@ -2,12 +2,21 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { getRetentionReport, getSessionReport } from '@/lib/queries/reports'
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend as RechartsLegend,
+} from 'recharts'
 
 const TYPE_LABELS: Record<string, string> = {
   routine: 'Rutinas',
   wod: 'WODs',
   rest: 'Descanso',
   event: 'Eventos',
+}
+
+function formatWeekLabel(dateStr: string) {
+  const d = new Date(dateStr + 'T00:00:00')
+  return `${d.getDate()}/${d.getMonth() + 1}`
 }
 
 export function ReportesView() {
@@ -94,6 +103,49 @@ export function ReportesView() {
           )}
         </Section>
       </div>
+
+      {/* Weekly adherence chart */}
+      {!loadingSes && sessions?.byWeek && sessions.byWeek.length > 1 && (
+        <Section title="Adherencia semanal" subtitle="Sesiones programadas vs completadas por semana">
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={sessions.byWeek.map(w => ({
+              week: formatWeekLabel(w.week),
+              Programadas: w.total,
+              Completadas: w.completed,
+              Cumplimiento: w.total > 0 ? Math.round((w.completed / w.total) * 100) : 0,
+            }))} margin={{ top: 4, right: 16, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'var(--color-text-3)' }} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-3)' }} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+              <RechartsLegend wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="Programadas" stroke="var(--color-border)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="Completadas" stroke="var(--color-red)" strokeWidth={2.5} dot={{ r: 3, fill: 'var(--color-red)' }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </Section>
+      )}
+
+      {/* Sessions by type bar chart */}
+      {!loadingSes && sessions?.byType && Object.keys(sessions.byType).length > 0 && (
+        <Section title="Sesiones por tipo" subtitle="Distribución del último mes">
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart
+              data={Object.entries(sessions.byType).map(([type, count]) => ({
+                name: TYPE_LABELS[type] ?? type,
+                Sesiones: count,
+              }))}
+              margin={{ top: 4, right: 16, left: -20, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--color-text-3)' }} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-3)' }} allowDecimals={false} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+              <Bar dataKey="Sesiones" fill="var(--color-red)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Section>
+      )}
 
       {/* Tabla de atletas en riesgo */}
       <Section title="Atletas en riesgo de abandono" subtitle="Ordenados por días sin entrenar">

@@ -3,6 +3,7 @@ import { WodBuilder } from './WodBuilder'
 
 export const metadata: Metadata = { title: 'Editor de WOD' }
 
-export default function WodDetailPage({ params }: { params: { id: string } }) {
-  return <WodBuilder wodId={params.id} />
+export default async function WodDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return <WodBuilder wodId={id} />
 }
