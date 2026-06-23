@@ -102,19 +102,13 @@ export function Sidebar() {
       <aside className={`eb-sidebar${isOpen ? ' is-open' : ''}`}>
         {/* Logo + mobile close */}
         <div style={{ padding: '18px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Link href="/dashboard" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 9,
-              background: 'var(--color-red)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 2px 10px rgba(99,102,241,0.50)',
-            }}>
-              <span style={{
-                fontSize: 13, fontWeight: 800, color: '#fff',
-                letterSpacing: '-0.01em',
-                fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
-              }}>T</span>
-            </div>
+          <Link href="/dashboard" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/thryra-icon-lime-dark.png"
+              alt="THRYRA logo"
+              style={{ width: 36, height: 36, flexShrink: 0, mixBlendMode: 'screen' }}
+            />
             <div>
               <span style={{
                 display: 'block',

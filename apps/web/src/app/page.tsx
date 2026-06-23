@@ -70,10 +70,9 @@ export default function HomePage() {
       }}>
         <div style={{ padding: `0 ${px}`, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>T</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logos/thryra-icon-lime-dark.png" alt="THRYRA" style={{ width: 32, height: 32, mixBlendMode: 'screen' }} />
             <span style={{ fontWeight: 800, fontSize: 15, color: '#fff', letterSpacing: '0.04em', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>THRYRA</span>
           </div>
 

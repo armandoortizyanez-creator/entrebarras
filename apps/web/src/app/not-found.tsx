@@ -17,10 +17,9 @@ export default function NotFound() {
       fontFamily: 'var(--font-inter, Inter, system-ui, sans-serif)',
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 56 }}>
-        <div style={{ width: 30, height: 30, borderRadius: 8, background: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>T</span>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 56 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logos/thryra-icon-lime-dark.png" alt="THRYRA" style={{ width: 34, height: 34, mixBlendMode: 'screen' }} />
         <span style={{ fontWeight: 800, fontSize: 16, color: '#fff', letterSpacing: '0.04em', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>THRYRA</span>
       </div>
 
