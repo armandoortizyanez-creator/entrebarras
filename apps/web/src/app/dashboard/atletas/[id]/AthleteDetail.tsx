@@ -9,7 +9,7 @@ import { getLatestPRs } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
 import type { Athlete } from '@entrebarras/types'
 import Link from 'next/link'
-import { ArrowLeft, Mail, Phone, Calendar, CheckCircle2, Trash2, Plus, Scale, Ruler, Activity, Percent, Trophy, Dumbbell } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Calendar, CheckCircle2, Trash2, Plus, Scale, Ruler, Activity, Percent, Trophy, Dumbbell, Play, ChevronRight } from 'lucide-react'
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado', competitive: 'Competitivo',
@@ -442,6 +442,7 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
         ) : (
           sessions.map((s, i) => {
             const content = (s as any).routine?.name ?? (s as any).wod?.name ?? (s.type === 'rest' ? 'Descanso' : 'Evento')
+            const canStart = s.status === 'scheduled' || s.status === 'started'
             return (
               <div key={s.id} style={{
                 display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px',
@@ -466,6 +467,20 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
                 }}>
                   {STATUS_LABELS[s.status]}
                 </span>
+                <Link
+                  href={`/dashboard/sesion/${s.id}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 12px', borderRadius: 8, textDecoration: 'none',
+                    fontSize: 12, fontWeight: 600,
+                    background: canStart ? '#E53E3E' : '#F8FAFC',
+                    color: canStart ? '#fff' : '#94A3B8',
+                    border: canStart ? 'none' : '1px solid #E2E8F0',
+                    flexShrink: 0,
+                  }}
+                >
+                  {canStart ? <><Play size={11} fill="#fff" />Iniciar</> : <><ChevronRight size={12} />Ver</>}
+                </Link>
               </div>
             )
           })

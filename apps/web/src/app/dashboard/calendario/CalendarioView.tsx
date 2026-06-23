@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import Link from 'next/link'
 import {
   getSessionsByMonth, createSession, deleteSession, updateSessionStatus,
   type TrainingSession,
@@ -301,20 +302,33 @@ function SessionItem({ session, isLast, onDelete, onStatusChange }: {
             {session.athlete?.first_name} {session.athlete?.last_name}
             {session.scheduled_time ? ` · ${session.scheduled_time.substring(0, 5)}` : ''}
           </p>
-          <select
-            value={session.status}
-            onChange={e => onStatusChange(e.target.value as TrainingSession['status'])}
-            style={{
-              fontSize: 11, padding: '3px 6px', borderRadius: 'var(--radius-sm)',
-              border: `1px solid ${STATUS_COLORS[session.status]}`,
-              color: STATUS_COLORS[session.status], background: 'transparent', cursor: 'pointer',
-            }}
-          >
-            <option value="scheduled">Programado</option>
-            <option value="started">En curso</option>
-            <option value="completed">Completado</option>
-            <option value="skipped">Saltado</option>
-          </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <select
+              value={session.status}
+              onChange={e => onStatusChange(e.target.value as TrainingSession['status'])}
+              style={{
+                fontSize: 11, padding: '3px 6px', borderRadius: 'var(--radius-sm)',
+                border: `1px solid ${STATUS_COLORS[session.status]}`,
+                color: STATUS_COLORS[session.status], background: 'transparent', cursor: 'pointer',
+              }}
+            >
+              <option value="scheduled">Programado</option>
+              <option value="started">En curso</option>
+              <option value="completed">Completado</option>
+              <option value="skipped">Saltado</option>
+            </select>
+            {(session.status === 'scheduled' || session.status === 'started') && (
+              <Link
+                href={`/dashboard/sesion/${session.id}`}
+                style={{
+                  fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--color-red)', color: '#fff', textDecoration: 'none',
+                }}
+              >
+                ▶ Iniciar
+              </Link>
+            )}
+          </div>
         </div>
         <button
           onClick={onDelete}
