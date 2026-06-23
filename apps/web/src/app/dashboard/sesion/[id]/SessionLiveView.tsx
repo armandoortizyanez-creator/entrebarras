@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -21,7 +21,7 @@ import {
   ChevronDown, ChevronUp, Timer, Dumbbell, Trophy, SkipForward,
 } from 'lucide-react'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ExerciseState {
   rxId: string        // routine_exercise id
@@ -33,7 +33,7 @@ interface ExerciseState {
   collapsed: boolean
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function fmtTime(s: number) {
   const h = Math.floor(s / 3600)
@@ -82,7 +82,7 @@ function NumStepper({
   )
 }
 
-// ─── Set row ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Set row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function SetRow({
   set, setNum, onUpdate, onDelete,
@@ -135,7 +135,7 @@ function SetRow({
   )
 }
 
-// ─── Exercise Card ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Exercise Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ExerciseCard({
   ex, onAddSet, onUpdateSet, onDeleteSet, saving,
@@ -151,7 +151,7 @@ function ExerciseCard({
     ex.prescribed.sets ? `${ex.prescribed.sets} series` : null,
     ex.prescribed.reps ? `${ex.prescribed.reps} reps` : null,
     ex.prescribed.weight_kg ? `${ex.prescribed.weight_kg} kg` : null,
-  ].filter(Boolean).join(' × ')
+  ].filter(Boolean).join(' Í— ')
 
   return (
     <div style={{
@@ -221,7 +221,7 @@ function ExerciseCard({
             fontSize: 13, fontWeight: 600, justifyContent: 'center',
             transition: 'border-color 0.15s, background 0.15s',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(229,57,53,0.04)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(99,102,241,0.06)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
         >
           <Plus size={14} />
@@ -232,13 +232,13 @@ function ExerciseCard({
   )
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function SessionLiveView({ sessionId }: { sessionId: string }) {
   const router = useRouter()
   const qc = useQueryClient()
 
-  // ── Load session ──
+  // â”€â”€ Load session â”€â”€
   const { data: session, isLoading: loadingSession } = useQuery({
     queryKey: ['session', sessionId],
     queryFn: async () => {
@@ -257,21 +257,21 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     },
   })
 
-  // ── Load routine if applicable ──
+  // â”€â”€ Load routine if applicable â”€â”€
   const { data: routine, isLoading: loadingRoutine } = useQuery({
     queryKey: ['routine', session?.routine_id],
     queryFn: () => getRoutine(session!.routine_id!),
     enabled: !!session?.routine_id,
   })
 
-  // ── Load existing logs ──
+  // â”€â”€ Load existing logs â”€â”€
   const { data: existingLogs = [] } = useQuery({
     queryKey: ['session-logs', sessionId],
     queryFn: () => getSessionLogs(sessionId),
     enabled: !!session,
   })
 
-  // ── Elapsed timer ──
+  // â”€â”€ Elapsed timer â”€â”€
   const [elapsed, setElapsed] = useState(0)
   const startRef = useRef<number | null>(null)
 
@@ -285,7 +285,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     }
   }, [session?.status])
 
-  // ── Exercise states (local) ──
+  // â”€â”€ Exercise states (local) â”€â”€
   const [exercises, setExercises] = useState<ExerciseState[]>([])
   const [savingSet, setSavingSet] = useState(false)
   const [completing, setCompleting] = useState(false)
@@ -313,7 +313,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     }))
   }, [routine, existingLogs])
 
-  // ── Start session ──
+  // â”€â”€ Start session â”€â”€
   const startMutation = useMutation({
     mutationFn: () => updateSessionStatus(sessionId, 'started'),
     onSuccess: () => {
@@ -322,13 +322,13 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     },
   })
 
-  // ── Skip session ──
+  // â”€â”€ Skip session â”€â”€
   const skipMutation = useMutation({
     mutationFn: () => updateSessionStatus(sessionId, 'skipped'),
     onSuccess: () => router.back(),
   })
 
-  // ── Add set ──
+  // â”€â”€ Add set â”€â”€
   const handleAddSet = useCallback(async (rxId: string) => {
     setSavingSet(true)
     try {
@@ -364,7 +364,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     }
   }, [exercises, sessionId, session?.athlete_id])
 
-  // ── Update set ──
+  // â”€â”€ Update set â”€â”€
   const handleUpdateSet = useCallback(async (rxId: string, setId: string, updates: Partial<SetLog>) => {
     setExercises(prev => prev.map(e =>
       e.rxId === rxId
@@ -374,7 +374,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     await updateSetLog(setId, updates)
   }, [])
 
-  // ── Delete set ──
+  // â”€â”€ Delete set â”€â”€
   const handleDeleteSet = useCallback(async (rxId: string, setId: string) => {
     setExercises(prev => prev.map(e =>
       e.rxId === rxId
@@ -384,7 +384,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     await deleteSetLog(setId)
   }, [])
 
-  // ── Complete session ──
+  // â”€â”€ Complete session â”€â”€
   const handleComplete = async () => {
     setCompleting(true)
     try {
@@ -397,7 +397,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
     }
   }
 
-  // ── Loading ──
+  // â”€â”€ Loading â”€â”€
   const loading = loadingSession || (!!session?.routine_id && loadingRoutine)
   if (loading) return (
     <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>
@@ -424,7 +424,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="eb-page" style={{ maxWidth: 760 }}>
-      {/* ── Back ── */}
+      {/* â”€â”€ Back â”€â”€ */}
       <button
         onClick={() => router.back()}
         style={{
@@ -436,7 +436,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
         <ArrowLeft size={15} /> Volver
       </button>
 
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div style={{
         background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 16, padding: '20px 24px', marginBottom: 20,
@@ -446,7 +446,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               {new Date(session.scheduled_date + 'T12:00:00').toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
-              {athleteName && ` · ${athleteName}`}
+              {athleteName && ` Â· ${athleteName}`}
             </p>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em' }}>
               {sessionName}
@@ -482,7 +482,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           <div style={{ marginTop: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
-                {doneSets} de {exercises.length} ejercicios completados · {totalSets} series registradas
+                {doneSets} de {exercises.length} ejercicios completados Â· {totalSets} series registradas
               </span>
               <span style={{ fontSize: 12, fontWeight: 700, color: progress === 100 ? '#16A34A' : 'var(--color-red)' }}>
                 {progress}%
@@ -499,7 +499,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
         )}
       </div>
 
-      {/* ── Not started yet ── */}
+      {/* â”€â”€ Not started yet â”€â”€ */}
       {session.status === 'scheduled' && (
         <div style={{
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -509,7 +509,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           <div style={{
             width: 56, height: 56, borderRadius: 16, background: 'var(--color-red)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px', boxShadow: '0 4px 14px rgba(229,57,53,0.35)',
+            margin: '0 auto 16px', boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
           }}>
             <Play size={24} color="#fff" fill="#fff" />
           </div>
@@ -518,7 +518,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           </h2>
           <p style={{ fontSize: 13.5, color: 'var(--color-text-3)', marginBottom: 28, lineHeight: 1.5 }}>
             {exercises.length > 0
-              ? `${exercises.length} ejercicios · ${exercises.reduce((s, e) => s + (e.prescribed.sets ?? 0), 0)} series totales`
+              ? `${exercises.length} ejercicios Â· ${exercises.reduce((s, e) => s + (e.prescribed.sets ?? 0), 0)} series totales`
               : 'Sesión de ' + (session.type === 'wod' ? 'WOD' : session.type)
             }
           </p>
@@ -531,7 +531,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
                 padding: '12px 28px', background: 'var(--color-red)', color: '#fff',
                 border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700,
                 cursor: startMutation.isPending ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 14px rgba(229,57,53,0.35)',
+                boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
               }}
             >
               <Play size={16} fill="#fff" />
@@ -553,7 +553,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
         </div>
       )}
 
-      {/* ── WOD in session: redirect to timer ── */}
+      {/* â”€â”€ WOD in session: redirect to timer â”€â”€ */}
       {isStarted && session.type === 'wod' && session.wod_id && (
         <div style={{
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -594,7 +594,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
         </div>
       )}
 
-      {/* ── Routine exercises ── */}
+      {/* â”€â”€ Routine exercises â”€â”€ */}
       {isStarted && exercises.length > 0 && (
         <>
           {routine?.blocks.map(block => {
@@ -645,18 +645,18 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
                 color: '#fff', border: 'none', borderRadius: 10,
                 fontSize: 15, fontWeight: 700, cursor: completing ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                boxShadow: `0 4px 14px ${progress === 100 ? 'rgba(22,163,74,0.35)' : 'rgba(229,57,53,0.35)'}`,
+                boxShadow: `0 4px 14px ${progress === 100 ? 'rgba(22,163,74,0.35)' : 'rgba(99,102,241,0.35)'}`,
                 transition: 'background 0.2s, box-shadow 0.2s',
               }}
             >
               <CheckCircle2 size={18} />
-              {completing ? 'Completando...' : progress === 100 ? '¡Completar sesión!' : `Completar sesión (${progress}%)`}
+              {completing ? 'Completando...' : progress === 100 ? 'Â¡Completar sesión!' : `Completar sesión (${progress}%)`}
             </button>
           </div>
         </>
       )}
 
-      {/* ── Completed summary ── */}
+      {/* â”€â”€ Completed summary â”€â”€ */}
       {isCompleted && (
         <div style={{
           background: 'var(--color-surface)', border: '1px solid rgba(22,163,74,0.25)',

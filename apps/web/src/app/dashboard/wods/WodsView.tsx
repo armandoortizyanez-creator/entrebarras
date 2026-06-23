@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getWods, createWod, deleteWod, WOD_TYPES } from '@/lib/queries/wods'
 import Link from 'next/link'
@@ -15,16 +16,17 @@ function formatSeconds(seconds: number) {
 
 // Color por tipo de WOD
 const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
-  amrap:       { bg: '#EFF6FF', text: '#1D4ED8', dot: '#3B82F6' },
-  emom:        { bg: '#F5F3FF', text: '#6D28D9', dot: '#8B5CF6' },
-  for_time:    { bg: '#FFF7ED', text: '#C2410C', dot: '#F97316' },
-  tabata:      { bg: '#FDF2F8', text: '#9D174D', dot: '#EC4899' },
-  chipper:     { bg: '#F0FDF4', text: '#15803D', dot: '#22C55E' },
-  intervals:   { bg: '#FFFBEB', text: '#B45309', dot: '#F59E0B' },
-  custom:      { bg: '#F8FAFC', text: '#475569', dot: '#94A3B8' },
+  amrap:       { bg: 'rgba(129,140,248,0.12)', text: '#818CF8', dot: '#818CF8' },
+  emom:        { bg: 'rgba(167,139,250,0.12)', text: '#A78BFA', dot: '#A78BFA' },
+  for_time:    { bg: 'rgba(198,255,0,0.10)',   text: '#C6FF00', dot: '#C6FF00' },
+  tabata:      { bg: 'rgba(244,114,182,0.10)', text: '#F472B6', dot: '#F472B6' },
+  chipper:     { bg: 'rgba(52,211,153,0.10)',  text: '#34D399', dot: '#34D399' },
+  intervals:   { bg: 'rgba(251,191,36,0.10)',  text: '#FBBF24', dot: '#FBBF24' },
+  custom:      { bg: 'rgba(138,147,168,0.10)', text: '#8A93A8', dot: '#8A93A8' },
 }
 
 export function WodsView() {
+  const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
@@ -98,7 +100,7 @@ export function WodsView() {
           onSuccess={(id) => {
             setShowModal(false)
             qc.invalidateQueries({ queryKey: ['wods'] })
-            window.location.href = `/dashboard/wods/${id}`
+            router.push(`/dashboard/wods/${id}`)
           }}
         />
       )}
@@ -122,7 +124,7 @@ function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
     }}
     onMouseEnter={e => {
       const el = e.currentTarget as HTMLElement
-      el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'
+      el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.25)'
       el.style.transform = 'translateY(-1px)'
     }}
     onMouseLeave={e => {
@@ -253,11 +255,11 @@ function EmptyWods({ onAdd }: { onAdd: () => void }) {
     }}>
       <div style={{
         width: 52, height: 52, borderRadius: 14,
-        background: '#FFF7ED', border: '1px solid #FED7AA',
+        background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 18px',
       }}>
-        <Zap size={22} color="#F97316" strokeWidth={2} />
+        <Zap size={22} color="#818CF8" strokeWidth={2} />
       </div>
       <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: 8 }}>
         Sin WODs todavía
@@ -269,9 +271,9 @@ function EmptyWods({ onAdd }: { onAdd: () => void }) {
         onClick={onAdd}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 7,
-          background: 'var(--color-red)', color: '#fff',
+          background: '#C6FF00', color: '#0D1117',
           border: 'none', borderRadius: 10,
-          padding: '10px 22px', fontSize: 14, fontWeight: 600,
+          padding: '10px 22px', fontSize: 14, fontWeight: 700,
           cursor: 'pointer',
         }}
       >
@@ -380,7 +382,7 @@ function NewWodModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               cursor: 'pointer', fontSize: 16, color: 'var(--color-text-3)',
             }}
           >
-            ✕
+            âœ•
           </button>
         </div>
 

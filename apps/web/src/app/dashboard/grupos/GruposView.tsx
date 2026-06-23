@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -118,7 +118,7 @@ export function GruposView() {
     chips:    { display: 'flex', flexWrap: 'wrap' as const, gap: 5, marginBottom: 12 },
     chip:     (active: boolean) => ({
       padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 600,
-      background: active ? 'rgba(229,57,53,0.15)' : 'var(--color-border)',
+      background: active ? 'rgba(99,102,241,0.15)' : 'var(--color-border)',
       color: active ? 'var(--color-red)' : 'var(--color-text-3)',
     }),
     meta:     { display: 'flex', gap: 14, alignItems: 'center' },
@@ -143,7 +143,7 @@ export function GruposView() {
     }),
     toggleKnob: (on: boolean) => ({
       position: 'absolute' as const, top: 3, left: on ? 21 : 3,
-      width: 18, height: 18, borderRadius: '50%', background: '#fff',
+      width: 18, height: 18, borderRadius: '50%', background: 'var(--color-surface)',
       transition: 'left 0.2s',
     }),
   }
@@ -221,7 +221,7 @@ export function GruposView() {
                 <label style={s.label}>Deporte</label>
                 <select style={s.select} value={form.sport}
                   onChange={e => setForm(f => ({ ...f, sport: e.target.value }))}>
-                  <option value="">— Sin especificar —</option>
+                  <option value="">"” Sin especificar "”</option>
                   {SPORTS.map(sp => <option key={sp} value={sp}>{sp}</option>)}
                 </select>
               </div>
@@ -301,7 +301,7 @@ export function GruposView() {
                   </div>
                   <div style={s.type}>
                     {GROUP_TYPES.find(t => t.value === g.type)?.label ?? g.type}
-                    {g.sport && ` · ${g.sport}`}
+                    {g.sport && ` Â· ${g.sport}`}
                   </div>
                 </div>
                 <button
@@ -330,7 +330,7 @@ export function GruposView() {
                 {(g.start_time || g.end_time) && (
                   <span style={s.metaItem}>
                     <Clock size={12} />
-                    {g.start_time && g.end_time ? `${g.start_time.slice(0,5)} – ${g.end_time.slice(0,5)}` : g.start_time?.slice(0,5) ?? g.end_time?.slice(0,5)}
+                    {g.start_time && g.end_time ? `${g.start_time.slice(0,5)} "“ ${g.end_time.slice(0,5)}` : g.start_time?.slice(0,5) ?? g.end_time?.slice(0,5)}
                   </span>
                 )}
                 <span style={s.metaItem}>
@@ -339,7 +339,7 @@ export function GruposView() {
                 </span>
                 {g.coach_name && !g.is_global && (
                   <span style={s.metaItem} title="Coach">
-                    🎯 {g.coach_name}
+                    ðŸŽ¯ {g.coach_name}
                   </span>
                 )}
               </div>

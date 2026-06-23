@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -33,7 +33,7 @@ const STATUS_LABELS: Record<string, string> = {
   scheduled: 'Programado', started: 'En curso', completed: 'Completado', skipped: 'Saltado',
 }
 const STATUS_BG: Record<string, string> = {
-  scheduled: '#EFF6FF', started: '#FFFBEB', completed: '#F0FDF4', skipped: '#F8FAFC',
+  scheduled: '#EFF6FF', started: '#FFFBEB', completed: '#F0FDF4', skipped: 'var(--color-bg)',
 }
 const STATUS_TEXT: Record<string, string> = {
   scheduled: '#1D4ED8', started: '#B45309', completed: '#16A34A', skipped: '#94A3B8',
@@ -41,8 +41,8 @@ const STATUS_TEXT: Record<string, string> = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 11px',
-  border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13.5,
-  color: '#0F172A', background: '#fff', boxSizing: 'border-box',
+  border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13.5,
+  color: 'var(--color-text)', background: 'var(--color-surface)', boxSizing: 'border-box',
   outline: 'none',
 }
 
@@ -54,7 +54,7 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
     queryFn: () => getAthlete(athleteId),
   })
 
-  if (isLoading) return <div style={{ padding: 48, color: '#94A3B8', fontSize: 14 }}>Cargando...</div>
+  if (isLoading) return <div style={{ padding: 48, color: 'var(--color-text-3)', fontSize: 14 }}>Cargando...</div>
   if (!athlete) return <div style={{ padding: 48, color: '#EF4444', fontSize: 14 }}>Atleta no encontrado</div>
 
   const initials = `${athlete.first_name[0]}${athlete.last_name[0]}`.toUpperCase()
@@ -76,7 +76,7 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
       {/* Back */}
       <Link href="/dashboard/atletas" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: 13, color: '#64748B', textDecoration: 'none',
+        fontSize: 13, color: 'var(--color-text-2)', textDecoration: 'none',
         fontWeight: 500, marginBottom: 24,
       }}>
         <ArrowLeft size={15} />
@@ -85,15 +85,15 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
 
       {/* Athlete header */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 16, padding: '24px 28px', marginBottom: 20,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
         display: 'flex', alignItems: 'flex-start', gap: 20,
       }}>
         {/* Avatar */}
         <div style={{
           width: 60, height: 60, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #E53E3E 0%, #B91C1C 100%)',
+          background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 20, fontWeight: 800, color: '#fff', flexShrink: 0,
           letterSpacing: '-0.02em',
@@ -103,7 +103,7 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em' }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em' }}>
               {athlete.first_name} {athlete.last_name}
             </h1>
             {athlete.sport_level && lc && (
@@ -119,7 +119,7 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
               fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
               textTransform: 'uppercase', padding: '3px 9px',
               borderRadius: 20,
-              background: athlete.status === 'active' ? '#F0FDF4' : '#F8FAFC',
+              background: athlete.status === 'active' ? '#F0FDF4' : 'var(--color-bg)',
               color: athlete.status === 'active' ? '#16A34A' : '#94A3B8',
             }}>
               {athlete.status === 'active' ? 'Activo' : athlete.status === 'inactive' ? 'Inactivo' : 'Prospecto'}
@@ -128,25 +128,25 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
 
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
             {athlete.email && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#64748B' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--color-text-2)' }}>
                 <Mail size={13} />
                 {athlete.email}
               </span>
             )}
             {athlete.phone && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#64748B' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--color-text-2)' }}>
                 <Phone size={13} />
                 {athlete.phone}
               </span>
             )}
             {age && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#64748B' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--color-text-2)' }}>
                 <Calendar size={13} />
                 {age} años
               </span>
             )}
             {athlete.primary_sport && (
-              <span style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>
+              <span style={{ fontSize: 13, color: 'var(--color-text-2)', fontWeight: 500 }}>
                 {athlete.primary_sport}
               </span>
             )}
@@ -164,8 +164,8 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
               padding: '8px 18px', border: 'none', cursor: 'pointer',
               borderRadius: 8, fontSize: 13.5, fontWeight: 600,
               transition: 'all 0.14s',
-              background: tab === t.id ? '#0F172A' : 'transparent',
-              color: tab === t.id ? '#fff' : '#64748B',
+              background: tab === t.id ? 'var(--color-text)' : 'transparent',
+              color: tab === t.id ? 'var(--color-surface)' : 'var(--color-text-2)',
             }}
           >
             {t.label}
@@ -266,21 +266,21 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {groups.map(group => (
         <div key={group.group} style={{
-          background: '#fff', border: '1px solid #E2E8F0',
+          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
           borderRadius: 14, overflow: 'hidden',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
         }}>
           <div style={{
-            padding: '14px 20px', borderBottom: '1px solid #F1F5F9',
+            padding: '14px 20px', borderBottom: '1px solid var(--color-border)',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
-            <h3 style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {group.group}
             </h3>
             {!editing && group.group === 'Información personal' && (
               <button
                 onClick={() => setEditing(true)}
-                style={{ fontSize: 13, fontWeight: 600, color: '#E53E3E', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ fontSize: 13, fontWeight: 600, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 Editar
               </button>
@@ -289,7 +289,7 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
           <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: `repeat(${group.cols}, 1fr)`, gap: 16 }}>
             {group.items.map(field => (
               <div key={field.key}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
                   {field.label}
                 </p>
                 {editing ? (
@@ -310,11 +310,11 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
                     />
                   )
                 ) : (
-                  <p style={{ fontSize: 14, fontWeight: 500, color: (form as any)[field.key] ? '#0F172A' : '#CBD5E1' }}>
-                    {field.key === 'gender' ? (GENDER_LABELS[(form as any)[field.key]] || '—')
-                     : field.key === 'sport_level' ? (LEVEL_LABELS[(form as any)[field.key]] || '—')
-                     : field.key === 'status' ? (STATUS_ATHLETE_LABELS[(form as any)[field.key]] || '—')
-                     : ((form as any)[field.key] || '—')}
+                  <p style={{ fontSize: 14, fontWeight: 500, color: (form as any)[field.key] ? 'var(--color-text)' : 'var(--color-text-4)' }}>
+                    {field.key === 'gender' ? (GENDER_LABELS[(form as any)[field.key]] || '"”')
+                     : field.key === 'sport_level' ? (LEVEL_LABELS[(form as any)[field.key]] || '"”')
+                     : field.key === 'status' ? (STATUS_ATHLETE_LABELS[(form as any)[field.key]] || '"”')
+                     : ((form as any)[field.key] || '"”')}
                   </p>
                 )}
               </div>
@@ -325,12 +325,12 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
 
       {/* Medical notes */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
       }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9' }}>
-          <h3 style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)' }}>
+          <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Notas médicas
           </h3>
         </div>
@@ -344,7 +344,7 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
               style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
             />
           ) : (
-            <p style={{ fontSize: 14, color: form.medical_notes ? '#0F172A' : '#CBD5E1', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: form.medical_notes ? 'var(--color-text)' : 'var(--color-text-4)', lineHeight: 1.6 }}>
               {form.medical_notes || 'Sin notas médicas'}
             </p>
           )}
@@ -356,9 +356,9 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
           <button
             onClick={() => setEditing(false)}
             style={{
-              padding: '9px 20px', border: '1px solid #E2E8F0',
+              padding: '9px 20px', border: '1px solid var(--color-border)',
               borderRadius: 9, fontSize: 13.5, cursor: 'pointer',
-              background: '#fff', color: '#64748B', fontWeight: 500,
+              background: 'var(--color-surface)', color: 'var(--color-text-2)', fontWeight: 500,
             }}
           >
             Cancelar
@@ -368,13 +368,13 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
             disabled={mutation.isPending}
             style={{
               padding: '9px 22px',
-              background: saved ? '#16A34A' : '#E53E3E',
+              background: saved ? '#16A34A' : '#6366F1',
               color: '#fff', border: 'none', borderRadius: 9,
               fontSize: 13.5, fontWeight: 700, cursor: mutation.isPending ? 'not-allowed' : 'pointer',
               transition: 'background 0.2s',
             }}
           >
-            {mutation.isPending ? 'Guardando...' : saved ? '¡Guardado!' : 'Guardar cambios'}
+            {mutation.isPending ? 'Guardando...' : saved ? 'Â¡Guardado!' : 'Guardar cambios'}
           </button>
         </div>
       )}
@@ -394,9 +394,9 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
   const rate = total > 0 ? Math.round((completed / total) * 100) : null
 
   const kpis = [
-    { period: 'ÚLTIMOS 30 DÍAS', value: total, label: 'Sesiones totales', color: '#0F172A' },
+    { period: 'ÍšLTIMOS 30 DÍAS', value: total, label: 'Sesiones totales', color: 'var(--color-text)' },
     { period: 'COMPLETADAS', value: completed, label: 'Con éxito', color: '#16A34A' },
-    { period: 'CUMPLIMIENTO', value: rate !== null ? `${rate}%` : '—', label: 'Tasa de asistencia', color: rate === null ? '#94A3B8' : rate >= 75 ? '#16A34A' : rate >= 50 ? '#F59E0B' : '#E53E3E' },
+    { period: 'CUMPLIMIENTO', value: rate !== null ? `${rate}%` : '"”', label: 'Tasa de asistencia', color: rate === null ? '#94A3B8' : rate >= 75 ? '#16A34A' : rate >= 50 ? '#F59E0B' : '#EF4444' },
   ]
 
   return (
@@ -405,39 +405,39 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
         {kpis.map(k => (
           <div key={k.period} style={{
-            background: '#fff', border: '1px solid #E2E8F0',
+            background: 'var(--color-surface)', border: '1px solid var(--color-border)',
             borderRadius: 14, padding: '18px 20px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
           }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
               {k.period}
             </p>
             <p style={{ fontSize: 36, fontWeight: 800, color: k.color, letterSpacing: '-0.04em', lineHeight: 1 }}>
               {k.value}
             </p>
-            <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 6 }}>{k.label}</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 6 }}>{k.label}</p>
           </div>
         ))}
       </div>
 
       {/* Sessions list */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
       }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9' }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Últimas 30 días
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Íšltimas 30 días
           </span>
         </div>
 
         {isLoading ? (
-          <div style={{ padding: 32, color: '#94A3B8', fontSize: 14 }}>Cargando...</div>
+          <div style={{ padding: 32, color: 'var(--color-text-3)', fontSize: 14 }}>Cargando...</div>
         ) : sessions.length === 0 ? (
           <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <CheckCircle2 size={28} color="#CBD5E1" style={{ margin: '0 auto 10px' }} />
-            <p style={{ fontSize: 14, color: '#94A3B8' }}>Sin sesiones en los últimos 30 días.</p>
+            <CheckCircle2 size={28} color="var(--color-text-4)" style={{ margin: '0 auto 10px' }} />
+            <p style={{ fontSize: 14, color: 'var(--color-text-3)' }}>Sin sesiones en los últimos 30 días.</p>
           </div>
         ) : (
           sessions.map((s, i) => {
@@ -446,23 +446,23 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
             return (
               <div key={s.id} style={{
                 display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px',
-                borderBottom: i < sessions.length - 1 ? '1px solid #F8FAFC' : 'none',
+                borderBottom: i < sessions.length - 1 ? '1px solid var(--color-border)' : 'none',
               }}>
                 <div style={{
                   width: 8, height: 8, borderRadius: '50%',
                   background: STATUS_DOT[s.status], flexShrink: 0,
                 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{content}</p>
-                  <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{content}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 1 }}>
                     {new Date(s.scheduled_date + 'T12:00:00').toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    {s.scheduled_time ? ` · ${s.scheduled_time.substring(0, 5)}` : ''}
+                    {s.scheduled_time ? ` Â· ${s.scheduled_time.substring(0, 5)}` : ''}
                   </p>
                 </div>
                 <span style={{
                   fontSize: 11.5, fontWeight: 600, padding: '4px 10px',
                   borderRadius: 20,
-                  background: STATUS_BG[s.status] ?? '#F8FAFC',
+                  background: STATUS_BG[s.status] ?? 'var(--color-bg)',
                   color: STATUS_TEXT[s.status] ?? '#94A3B8',
                 }}>
                   {STATUS_LABELS[s.status]}
@@ -473,9 +473,9 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '6px 12px', borderRadius: 8, textDecoration: 'none',
                     fontSize: 12, fontWeight: 600,
-                    background: canStart ? '#E53E3E' : '#F8FAFC',
+                    background: canStart ? '#6366F1' : 'var(--color-bg)',
                     color: canStart ? '#fff' : '#94A3B8',
-                    border: canStart ? 'none' : '1px solid #E2E8F0',
+                    border: canStart ? 'none' : '1px solid var(--color-border)',
                     flexShrink: 0,
                   }}
                 >
@@ -537,17 +537,17 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${statCards.length}, 1fr)`, gap: 12 }}>
           {statCards.map(k => (
             <div key={k.label} style={{
-              background: '#fff', border: '1px solid #E2E8F0',
+              background: 'var(--color-surface)', border: '1px solid var(--color-border)',
               borderRadius: 14, padding: '18px 20px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <span style={{ color: '#CBD5E1' }}>{k.icon}</span>
-                <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k.label}</p>
+                <span style={{ color: 'var(--color-text-4)' }}>{k.icon}</span>
+                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k.label}</p>
               </div>
-              <p style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', lineHeight: 1 }}>
+              <p style={{ fontSize: 32, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em', lineHeight: 1 }}>
                 {k.value}
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#94A3B8', marginLeft: 3 }}>{k.unit}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-3)', marginLeft: 3 }}>{k.unit}</span>
               </p>
             </div>
           ))}
@@ -556,23 +556,23 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
 
       {/* Measurements list */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
       }}>
         <div style={{
-          padding: '14px 20px', borderBottom: '1px solid #F1F5F9',
+          padding: '14px 20px', borderBottom: '1px solid var(--color-border)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Historial de mediciones
           </span>
           <button
             onClick={() => setShowForm(!showForm)}
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
-              fontSize: 13, fontWeight: 600, color: '#E53E3E',
-              background: '#FFF5F5', border: '1px solid #FED7D7',
+              fontSize: 13, fontWeight: 600, color: '#6366F1',
+              background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)',
               borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
             }}
           >
@@ -581,8 +581,8 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
         </div>
 
         {showForm && (
-          <form onSubmit={handleAdd} style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9', background: '#FAFAFA' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+          <form onSubmit={handleAdd} style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
               Nueva medición
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 }}>
@@ -595,7 +595,7 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
                 { label: 'Notas', key: 'notes', type: 'text' },
               ].map(f => (
                 <div key={f.key}>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: '#64748B', marginBottom: 4 }}>{f.label}</label>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-2)', marginBottom: 4 }}>{f.label}</label>
                   <input
                     type={f.type}
                     required={f.required}
@@ -610,7 +610,7 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
               type="submit"
               disabled={saving}
               style={{
-                padding: '8px 18px', background: '#E53E3E', color: '#fff',
+                padding: '8px 18px', background: '#6366F1', color: '#fff',
                 border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600,
                 cursor: saving ? 'not-allowed' : 'pointer',
               }}
@@ -621,20 +621,20 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
         )}
 
         {isLoading ? (
-          <div style={{ padding: 32, color: '#94A3B8', fontSize: 14 }}>Cargando...</div>
+          <div style={{ padding: 32, color: 'var(--color-text-3)', fontSize: 14 }}>Cargando...</div>
         ) : measurements.length === 0 && !showForm ? (
           <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <Scale size={28} color="#CBD5E1" style={{ margin: '0 auto 10px' }} />
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Sin mediciones</p>
-            <p style={{ fontSize: 13, color: '#94A3B8' }}>Registra el peso y composición corporal del atleta.</p>
+            <Scale size={28} color="var(--color-text-4)" style={{ margin: '0 auto 10px' }} />
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>Sin mediciones</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Registra el peso y composición corporal del atleta.</p>
           </div>
         ) : (
           measurements.map((m, i) => (
             <div key={m.id} style={{
               display: 'flex', alignItems: 'center', gap: 16, padding: '13px 20px',
-              borderBottom: i < measurements.length - 1 ? '1px solid #F8FAFC' : 'none',
+              borderBottom: i < measurements.length - 1 ? '1px solid var(--color-border)' : 'none',
             }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#475569', minWidth: 90, flexShrink: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-2)', minWidth: 90, flexShrink: 0 }}>
                 {new Date(m.measured_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
               <div style={{ flex: 1, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
@@ -645,7 +645,7 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
               </div>
               <button
                 onClick={() => { if (confirm('¿Eliminar esta medición?')) deleteMutation.mutate(m.id) }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: 4, display: 'flex', alignItems: 'center' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: 4, display: 'flex', alignItems: 'center' }}
               >
                 <Trash2 size={14} />
               </button>
@@ -660,8 +660,8 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
 function StatVal({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{value}</p>
+      <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{value}</p>
     </div>
   )
 }
@@ -684,13 +684,13 @@ function PRSparkline({ values }: { values: number[] }) {
       <polyline
         points={pts.join(' ')}
         fill="none"
-        stroke="#E53E3E"
+        stroke="#6366F1"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         opacity="0.7"
       />
-      <circle cx={lastX} cy={lastY} r="3" fill="#E53E3E" />
+      <circle cx={lastX} cy={lastY} r="3" fill="#6366F1" />
     </svg>
   )
 }
@@ -709,19 +709,19 @@ function PRsTab({ athleteId }: { athleteId: string }) {
     enabled: !!expanded,
   })
 
-  if (isLoading) return <div style={{ padding: 40, color: '#94A3B8', fontSize: 14 }}>Cargando PRs...</div>
+  if (isLoading) return <div style={{ padding: 40, color: 'var(--color-text-3)', fontSize: 14 }}>Cargando PRs...</div>
 
   if (prs.length === 0) return (
     <div style={{
-      background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14,
+      background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14,
       padding: '48px 24px', textAlign: 'center',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
     }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFF5F5', border: '1px solid #FED7D7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-        <Dumbbell size={20} color="#E53E3E" />
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+        <Dumbbell size={20} color="#6366F1" />
       </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Sin récords personales</p>
-      <p style={{ fontSize: 13, color: '#94A3B8' }}>Los PRs se registran desde la Calculadora de %.</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>Sin récords personales</p>
+      <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Los PRs se registran desde la Calculadora de %.</p>
     </div>
   )
 
@@ -730,15 +730,15 @@ function PRsTab({ athleteId }: { athleteId: string }) {
       {/* Summary row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {[
-          { label: 'Movimientos', value: prs.length, color: '#0F172A' },
-          { label: 'Mejor 1RM', value: `${Math.max(...prs.map(p => p.estimated_1rm ?? p.weight_kg))} kg`, color: '#E53E3E' },
-          { label: 'Último registro', value: new Date(prs[0]?.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }), color: '#0F172A' },
+          { label: 'Movimientos', value: prs.length, color: 'var(--color-text)' },
+          { label: 'Mejor 1RM', value: `${Math.max(...prs.map(p => p.estimated_1rm ?? p.weight_kg))} kg`, color: '#6366F1' },
+          { label: 'Íšltimo registro', value: new Date(prs[0]?.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }), color: 'var(--color-text)' },
         ].map(k => (
           <div key={k.label} style={{
-            background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12,
-            padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12,
+            padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
           }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>{k.label}</p>
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>{k.label}</p>
             <p style={{ fontSize: 26, fontWeight: 800, color: k.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{k.value}</p>
           </div>
         ))}
@@ -746,13 +746,13 @@ function PRsTab({ athleteId }: { athleteId: string }) {
 
       {/* PR cards with expandable history */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14, overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
       }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Trophy size={14} color="#E53E3E" />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Récords personales</span>
-          <span style={{ fontSize: 11, fontWeight: 600, background: '#F1F5F9', color: '#475569', borderRadius: 20, padding: '2px 8px' }}>{prs.length}</span>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Trophy size={14} color="#C6FF00" />
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Récords personales</span>
+          <span style={{ fontSize: 11, fontWeight: 600, background: 'var(--color-surface-2)', color: 'var(--color-text-2)', borderRadius: 20, padding: '2px 8px' }}>{prs.length}</span>
         </div>
 
         {prs.map((pr, i) => {
@@ -764,12 +764,12 @@ function PRsTab({ athleteId }: { athleteId: string }) {
           const gain = best && first && best > first ? +(best - first).toFixed(1) : null
 
           return (
-            <div key={pr.id} style={{ borderBottom: i < prs.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
+            <div key={pr.id} style={{ borderBottom: i < prs.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
               {/* PR row */}
               <button
                 onClick={() => setExpanded(isOpen ? null : pr.movement_name)}
                 style={{
-                  width: '100%', textAlign: 'left', background: isOpen ? '#FFFBFB' : '#fff',
+                  width: '100%', textAlign: 'left', background: isOpen ? 'var(--color-surface-2)' : 'var(--color-surface)',
                   border: 'none', cursor: 'pointer', padding: '14px 20px',
                   display: 'flex', alignItems: 'center', gap: 14,
                   transition: 'background 0.12s',
@@ -777,73 +777,73 @@ function PRsTab({ athleteId }: { athleteId: string }) {
               >
                 <div style={{
                   width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                  background: isOpen ? '#E53E3E' : '#F8FAFC',
-                  border: `1px solid ${isOpen ? '#E53E3E' : '#E2E8F0'}`,
+                  background: isOpen ? '#6366F1' : 'var(--color-bg)',
+                  border: `1px solid ${isOpen ? '#6366F1' : 'var(--color-border)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Dumbbell size={15} color={isOpen ? '#fff' : '#CBD5E1'} />
+                  <Dumbbell size={15} color={isOpen ? '#fff' : 'var(--color-text-4)'} />
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{pr.movement_name}</p>
-                  <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
-                    {pr.reps > 1 ? `${pr.weight_kg} kg × ${pr.reps} reps` : `${pr.weight_kg} kg`}
-                    {' · '}{new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>{pr.movement_name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>
+                    {pr.reps > 1 ? `${pr.weight_kg} kg Í— ${pr.reps} reps` : `${pr.weight_kg} kg`}
+                    {' Â· '}{new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
 
-                <p style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', flexShrink: 0 }}>
-                  {rm} <span style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8' }}>kg</span>
+                <p style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em', flexShrink: 0 }}>
+                  {rm} <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-3)' }}>kg</span>
                 </p>
 
-                <ChevronRight size={16} color="#CBD5E1" style={{ flexShrink: 0, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+                <ChevronRight size={16} color="var(--color-text-4)" style={{ flexShrink: 0, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
 
               {/* Expanded history */}
               {isOpen && (
-                <div style={{ background: '#FAFAFA', borderTop: '1px solid #F1F5F9', padding: '16px 20px 20px 20px' }}>
+                <div style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)', padding: '16px 20px 20px 20px' }}>
                   {histLoading ? (
-                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Cargando historial...</p>
+                    <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Cargando historial...</p>
                   ) : history.length <= 1 ? (
-                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Solo un registro — agrega más PRs para ver la progresión.</p>
+                    <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Solo un registro "” agrega más PRs para ver la progresión.</p>
                   ) : (
                     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                       {/* Sparkline */}
-                      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10, padding: '12px 16px', flexShrink: 0 }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                      <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 10, padding: '12px 16px', flexShrink: 0 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
                           Progresión
                         </p>
                         <PRSparkline values={histValues} />
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                          <span style={{ fontSize: 10, color: '#CBD5E1' }}>{first} kg</span>
-                          <span style={{ fontSize: 10, color: '#CBD5E1' }}>{best} kg</span>
+                          <span style={{ fontSize: 10, color: 'var(--color-text-4)' }}>{first} kg</span>
+                          <span style={{ fontSize: 10, color: 'var(--color-text-4)' }}>{best} kg</span>
                         </div>
                       </div>
 
                       {/* Gain badge */}
                       {gain && (
                         <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: '12px 16px', flexShrink: 0 }}>
-                          <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Mejora total</p>
+                          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Mejora total</p>
                           <p style={{ fontSize: 24, fontWeight: 800, color: '#16A34A', letterSpacing: '-0.04em' }}>+{gain} kg</p>
                         </div>
                       )}
 
                       {/* History list */}
                       <div style={{ flex: 1, minWidth: 200 }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Historial</p>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Historial</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {history.slice(0, 8).map((h, idx) => {
                             const val = h.estimated_1rm ?? h.weight_kg
                             const isBest = val === best
                             return (
                               <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ fontSize: 12, color: '#64748B', minWidth: 80 }}>
+                                <span style={{ fontSize: 12, color: 'var(--color-text-2)', minWidth: 80 }}>
                                   {new Date(h.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
-                                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{val} kg</span>
-                                {h.reps > 1 && <span style={{ fontSize: 11, color: '#94A3B8' }}>× {h.reps} reps</span>}
+                                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>{val} kg</span>
+                                {h.reps > 1 && <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>Í— {h.reps} reps</span>}
                                 {isBest && idx === 0 && (
-                                  <span style={{ fontSize: 10, fontWeight: 700, background: '#FFF5F5', color: '#E53E3E', border: '1px solid #FED7D7', borderRadius: 8, padding: '1px 6px' }}>PR</span>
+                                  <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(198,255,0,0.12)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.25)', borderRadius: 8, padding: '1px 6px' }}>PR</span>
                                 )}
                               </div>
                             )
@@ -868,33 +868,33 @@ function WodResultsTab({ athleteId }: { athleteId: string }) {
     queryFn: () => getAthleteWodResults(athleteId, 30),
   })
 
-  if (isLoading) return <div style={{ padding: 40, color: '#94A3B8', fontSize: 14 }}>Cargando resultados...</div>
+  if (isLoading) return <div style={{ padding: 40, color: 'var(--color-text-3)', fontSize: 14 }}>Cargando resultados...</div>
 
   if (results.length === 0) return (
     <div style={{
-      background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14,
+      background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14,
       padding: '48px 24px', textAlign: 'center',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
     }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFF7ED', border: '1px solid #FED7AA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
         <Trophy size={20} color="#F97316" />
       </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Sin resultados de WODs</p>
-      <p style={{ fontSize: 13, color: '#94A3B8' }}>Los resultados se guardan desde el timer del WOD.</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>Sin resultados de WODs</p>
+      <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Los resultados se guardan desde el timer del WOD.</p>
     </div>
   )
 
   return (
     <div style={{
-      background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14, overflow: 'hidden',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
     }}>
-      <div style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <Trophy size={14} color="#F97316" />
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Resultados de WODs
         </span>
-        <span style={{ fontSize: 11, fontWeight: 600, background: '#F1F5F9', color: '#475569', borderRadius: 20, padding: '2px 8px' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, background: 'var(--color-surface-2)', color: 'var(--color-text-2)', borderRadius: 20, padding: '2px 8px' }}>
           {results.length}
         </span>
       </div>
@@ -904,25 +904,25 @@ function WodResultsTab({ athleteId }: { athleteId: string }) {
         return (
           <div key={r.id} style={{
             display: 'flex', alignItems: 'center', gap: 14, padding: '13px 20px',
-            borderBottom: i < results.length - 1 ? '1px solid #F8FAFC' : 'none',
+            borderBottom: i < results.length - 1 ? '1px solid var(--color-border)' : 'none',
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
                 {(r as any).wod_name ?? 'WOD'}
               </p>
               {r.notes && (
-                <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>{r.notes}</p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>{r.notes}</p>
               )}
             </div>
             {display && (
-              <p style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+              <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
                 {display}
               </p>
             )}
             <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 20, border: `1px solid ${sc.border}`, background: sc.bg, color: sc.text, flexShrink: 0 }}>
               {SCALE_LABELS[r.scale]}
             </span>
-            <p style={{ fontSize: 11, color: '#CBD5E1', flexShrink: 0, minWidth: 60, textAlign: 'right' }}>
+            <p style={{ fontSize: 11, color: 'var(--color-text-4)', flexShrink: 0, minWidth: 60, textAlign: 'right' }}>
               {new Date(r.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
             </p>
           </div>

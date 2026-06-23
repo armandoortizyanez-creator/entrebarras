@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -18,7 +18,7 @@ const LEVEL_LABELS: Record<string, string> = {
 }
 const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
   active:   { label: 'Activo',    color: '#16A34A', bg: '#F0FDF4' },
-  inactive: { label: 'Inactivo',  color: '#94A3B8', bg: '#F8FAFC' },
+  inactive: { label: 'Inactivo',  color: 'var(--color-text-3)', bg: 'var(--color-bg)' },
   prospect: { label: 'Prospecto', color: '#1D4ED8', bg: '#EFF6FF' },
 }
 
@@ -35,8 +35,8 @@ function useIsMobile() {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 11px',
-  border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13.5,
-  color: '#0F172A', background: '#fff', boxSizing: 'border-box', outline: 'none',
+  border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13.5,
+  color: 'var(--color-text)', background: 'var(--color-surface)', boxSizing: 'border-box', outline: 'none',
 }
 
 export function AthletesView() {
@@ -86,10 +86,10 @@ export function AthletesView() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em' }}>
+          <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em' }}>
             {coachFilter ? 'Mis atletas' : 'Atletas'}
           </h1>
-          <p style={{ fontSize: 14, color: '#64748B', marginTop: 4 }}>
+          <p style={{ fontSize: 14, color: 'var(--color-text-2)', marginTop: 4 }}>
             {athletes.length} {athletes.length === 1 ? 'atleta registrado' : 'atletas registrados'}
             {coachFilter ? ' asignados a ti' : ''}
           </p>
@@ -98,7 +98,7 @@ export function AthletesView() {
           onClick={() => setShowModal(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: '#E53E3E', color: '#fff', border: 'none',
+            background: '#6366F1', color: '#fff', border: 'none',
             borderRadius: 10, padding: isMobile ? '8px 14px' : '9px 18px',
             fontSize: 13.5, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
           }}
@@ -110,11 +110,11 @@ export function AthletesView() {
 
       {/* Filters card */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14,
-        overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14,
+        overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
       }}>
         <div style={{
-          padding: '14px 16px', borderBottom: '1px solid #F1F5F9',
+          padding: '14px 16px', borderBottom: '1px solid var(--color-border)',
           display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
         }}>
           <input
@@ -133,8 +133,8 @@ export function AthletesView() {
                   padding: '7px 13px', borderRadius: 8, fontSize: 13,
                   fontWeight: status === tab.value ? 700 : 500,
                   cursor: 'pointer', border: 'none', whiteSpace: 'nowrap',
-                  background: status === tab.value ? '#E53E3E' : '#F8FAFC',
-                  color: status === tab.value ? '#fff' : '#64748B',
+                  background: status === tab.value ? '#6366F1' : 'var(--color-bg)',
+                  color: status === tab.value ? '#fff' : 'var(--color-text-2)',
                 }}
               >
                 {tab.label}
@@ -144,7 +144,7 @@ export function AthletesView() {
         </div>
 
         {isLoading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#94A3B8', fontSize: 14 }}>Cargando...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando...</div>
         ) : filtered.length === 0 ? (
           <EmptyState onAdd={() => setShowModal(true)} hasSearch={search.length > 0} />
         ) : isMobile ? (
@@ -156,20 +156,20 @@ export function AthletesView() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div style={{
-            padding: '12px 16px', borderTop: '1px solid #F1F5F9',
+            padding: '12px 16px', borderTop: '1px solid var(--color-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
-            <span style={{ fontSize: 13, color: '#64748B' }}>
-              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+            <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
+              {(page - 1) * PAGE_SIZE + 1}"“{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
             </span>
             <div style={{ display: 'flex', gap: 6 }}>
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
                 style={{
-                  padding: '6px 10px', border: '1px solid #E2E8F0', borderRadius: 8,
+                  padding: '6px 10px', border: '1px solid var(--color-border)', borderRadius: 8,
                   background: 'transparent', cursor: page === 1 ? 'not-allowed' : 'pointer',
-                  color: page === 1 ? '#CBD5E1' : '#475569', display: 'flex', alignItems: 'center',
+                  color: page === 1 ? 'var(--color-text-4)' : 'var(--color-text-2)', display: 'flex', alignItems: 'center',
                 }}
               >
                 <ChevronLeft size={15} />
@@ -180,9 +180,9 @@ export function AthletesView() {
                   onClick={() => setPage(p)}
                   style={{
                     padding: '6px 11px', border: '1px solid', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    borderColor: p === page ? '#E53E3E' : '#E2E8F0',
-                    background: p === page ? '#E53E3E' : 'transparent',
-                    color: p === page ? '#fff' : '#64748B',
+                    borderColor: p === page ? '#6366F1' : 'var(--color-border)',
+                    background: p === page ? '#6366F1' : 'transparent',
+                    color: p === page ? '#fff' : 'var(--color-text-2)',
                   }}
                 >
                   {p}
@@ -192,9 +192,9 @@ export function AthletesView() {
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 style={{
-                  padding: '6px 10px', border: '1px solid #E2E8F0', borderRadius: 8,
+                  padding: '6px 10px', border: '1px solid var(--color-border)', borderRadius: 8,
                   background: 'transparent', cursor: page === totalPages ? 'not-allowed' : 'pointer',
-                  color: page === totalPages ? '#CBD5E1' : '#475569', display: 'flex', alignItems: 'center',
+                  color: page === totalPages ? 'var(--color-text-4)' : 'var(--color-text-2)', display: 'flex', alignItems: 'center',
                 }}
               >
                 <ChevronRight size={15} />
@@ -217,14 +217,14 @@ export function AthletesView() {
   )
 }
 
-/* ═══════════════ DESKTOP TABLE ═══════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DESKTOP TABLE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (id: string) => void }) {
   return (
     <div>
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
-        padding: '10px 20px', borderBottom: '1px solid #F1F5F9',
-        fontSize: 10, fontWeight: 700, color: '#94A3B8',
+        padding: '10px 20px', borderBottom: '1px solid var(--color-border)',
+        fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)',
         textTransform: 'uppercase', letterSpacing: '0.07em',
       }}>
         <span>Atleta</span>
@@ -243,7 +243,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             style={{
               display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
               padding: '13px 20px', alignItems: 'center',
-              borderBottom: i < athletes.length - 1 ? '1px solid #F8FAFC' : 'none',
+              borderBottom: i < athletes.length - 1 ? '1px solid var(--color-border)' : 'none',
               transition: 'background 0.1s',
             }}
             onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
@@ -252,27 +252,27 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             <Link href={`/dashboard/atletas/${athlete.id}`} style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #E53E3E 0%, #B91C1C 100%)',
+                background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
               }}>
                 {initials}
               </div>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
                   {athlete.first_name} {athlete.last_name}
                 </p>
                 {athlete.email && (
-                  <p style={{ fontSize: 12, color: '#94A3B8' }}>{athlete.email}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-3)' }}>{athlete.email}</p>
                 )}
               </div>
             </Link>
 
-            <span style={{ fontSize: 13, color: '#64748B' }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
               {athlete.primary_sport ?? 'No definido'}
             </span>
 
-            <span style={{ fontSize: 13, color: '#64748B' }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
               {LEVEL_LABELS[athlete.sport_level ?? ''] ?? 'No definido'}
             </span>
 
@@ -288,11 +288,11 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
               onClick={() => onDelete(athlete.id)}
               style={{
                 background: 'transparent', border: 'none', cursor: 'pointer',
-                color: '#CBD5E1', padding: 4, display: 'flex', alignItems: 'center',
+                color: 'var(--color-text-4)', padding: 4, display: 'flex', alignItems: 'center',
                 transition: 'color 0.1s',
               }}
               onMouseEnter={e => (e.currentTarget.style.color = '#EF4444')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#CBD5E1')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-4)')}
             >
               <X size={14} />
             </button>
@@ -303,7 +303,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
   )
 }
 
-/* ═══════════════ MOBILE CARDS ═══════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MOBILE CARDS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (id: string) => void }) {
   return (
     <div>
@@ -315,25 +315,25 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             key={athlete.id}
             style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px',
-              borderBottom: i < athletes.length - 1 ? '1px solid #F8FAFC' : 'none',
+              borderBottom: i < athletes.length - 1 ? '1px solid var(--color-border)' : 'none',
             }}
           >
             <Link href={`/dashboard/atletas/${athlete.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, textDecoration: 'none', minWidth: 0 }}>
               <div style={{
                 width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg, #E53E3E 0%, #B91C1C 100%)',
+                background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 13, fontWeight: 800, color: '#fff',
               }}>
                 {initials}
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 2 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>
                   {athlete.first_name} {athlete.last_name}
                 </p>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   {athlete.email && (
-                    <p style={{ fontSize: 12, color: '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{athlete.email}</p>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{athlete.email}</p>
                   )}
                 </div>
               </div>
@@ -349,7 +349,7 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
 
             <button
               onClick={() => onDelete(athlete.id)}
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#CBD5E1', padding: 4, display: 'flex', alignItems: 'center' }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: 4, display: 'flex', alignItems: 'center' }}
             >
               <X size={14} />
             </button>
@@ -360,23 +360,23 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
   )
 }
 
-/* ═══════════════ EMPTY STATE ═══════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EMPTY STATE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function EmptyState({ onAdd, hasSearch }: { onAdd: () => void; hasSearch: boolean }) {
   return (
     <div style={{ padding: '56px 24px', textAlign: 'center' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-        <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <UserRound size={22} color="#CBD5E1" />
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-bg)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <UserRound size={22} color="var(--color-text-4)" />
         </div>
       </div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', marginBottom: 8 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)', marginBottom: 8 }}>
         {hasSearch ? 'Sin resultados' : 'Aún no hay atletas'}
       </h3>
-      <p style={{ fontSize: 14, color: '#94A3B8', marginBottom: 22 }}>
+      <p style={{ fontSize: 14, color: 'var(--color-text-3)', marginBottom: 22 }}>
         {hasSearch ? 'Intenta con otro nombre o email.' : 'Comienza agregando tu primer atleta.'}
       </p>
       {!hasSearch && (
-        <button onClick={onAdd} style={{ background: '#E53E3E', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
+        <button onClick={onAdd} style={{ background: '#6366F1', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
           Agregar atleta
         </button>
       )}
@@ -384,7 +384,7 @@ function EmptyState({ onAdd, hasSearch }: { onAdd: () => void; hasSearch: boolea
   )
 }
 
-/* ═══════════════ NEW ATHLETE MODAL ═══════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• NEW ATHLETE MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', primary_sport: '', sport_level: '', status: 'active' })
   const [loading, setLoading] = useState(false)
@@ -423,10 +423,10 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 480, boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid #E2E8F0', maxHeight: '90vh', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid #F1F5F9' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>Nuevo atleta</h2>
-          <button onClick={onClose} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: '#64748B' }}>
+      <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 480, boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Nuevo atleta</h2>
+          <button onClick={onClose} style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>
@@ -435,7 +435,7 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {fields.slice(0, 2).map(f => (
               <div key={f.key}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
                   {f.label}{f.required && ' *'}
                 </label>
                 <input type={f.type ?? 'text'} required={f.required} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} />
@@ -445,7 +445,7 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
 
           {fields.slice(2).map(f => (
             <div key={f.key}>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
                 {f.label}
               </label>
               <input type={f.type ?? 'text'} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} />
@@ -453,7 +453,7 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
           ))}
 
           <div>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Nivel</label>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Nivel</label>
             <select value={form.sport_level} onChange={e => setForm(p => ({ ...p, sport_level: e.target.value }))} style={{ ...inputStyle, appearance: 'none' as const }}>
               <option value="">Sin definir</option>
               {Object.entries(LEVEL_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -467,10 +467,10 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
           )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, cursor: 'pointer', background: 'transparent', color: '#64748B', fontWeight: 500 }}>
+            <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 10, fontSize: 13.5, cursor: 'pointer', background: 'transparent', color: 'var(--color-text-2)', fontWeight: 500 }}>
               Cancelar
             </button>
-            <button type="submit" disabled={loading} style={{ flex: 1, padding: '10px', background: loading ? '#F1F5F9' : '#E53E3E', color: loading ? '#94A3B8' : '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
+            <button type="submit" disabled={loading} style={{ flex: 1, padding: '10px', background: loading ? 'var(--color-surface-2)' : '#6366F1', color: loading ? 'var(--color-text-3)' : '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Guardando...' : 'Guardar atleta'}
             </button>
           </div>

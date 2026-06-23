@@ -55,10 +55,10 @@ const PLATFORM_ADMIN_ITEMS: NavItem[] = [
 ]
 
 const ROLE_BADGE: Record<string, { bg: string; color: string }> = {
-  platform_admin: { bg: 'rgba(108,99,255,0.15)', color: '#6c63ff' },
-  super_admin:    { bg: 'rgba(76,175,80,0.15)',  color: '#4caf50' },
-  coach:          { bg: 'rgba(233,30,140,0.15)', color: '#e91e8c' },
-  athlete:        { bg: 'rgba(33,150,243,0.15)', color: '#2196f3' },
+  platform_admin: { bg: 'rgba(99,102,241,0.18)', color: '#818CF8' },
+  super_admin:    { bg: 'rgba(34,197,94,0.15)',  color: '#22C55E' },
+  coach:          { bg: 'rgba(198,255,0,0.15)',  color: '#C6FF00' },
+  athlete:        { bg: 'rgba(99,102,241,0.12)', color: '#6366F1' },
 }
 
 export function Sidebar() {
@@ -107,17 +107,22 @@ export function Sidebar() {
               width: 32, height: 32, borderRadius: 9,
               background: 'var(--color-red)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 2px 8px rgba(229,57,53,0.4)',
+              flexShrink: 0, boxShadow: '0 2px 10px rgba(99,102,241,0.50)',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.04em' }}>EB</span>
+              <span style={{
+                fontSize: 13, fontWeight: 800, color: '#fff',
+                letterSpacing: '-0.01em',
+                fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
+              }}>T</span>
             </div>
             <div>
               <span style={{
                 display: 'block',
-                fontWeight: 700, fontSize: 14.5, color: '#fff',
-                letterSpacing: '-0.02em', lineHeight: 1.15,
+                fontWeight: 800, fontSize: 14.5, color: '#fff',
+                letterSpacing: '0.04em', lineHeight: 1.15,
+                fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
               }}>
-                Entre Barras
+                THRYRA
               </span>
               {roleLabel && badge ? (
                 <span style={{
@@ -130,7 +135,7 @@ export function Sidebar() {
                 </span>
               ) : (
                 <span style={{ display: 'block', fontSize: 10.5, color: 'var(--sidebar-label)', lineHeight: 1 }}>
-                  Coach Platform
+                  Train. Evolve. Thrive.
                 </span>
               )}
             </div>
@@ -188,7 +193,7 @@ export function Sidebar() {
                 <Icon
                   size={15.5}
                   strokeWidth={isActive ? 2 : 1.75}
-                  style={{ flexShrink: 0, opacity: isActive ? 1 : 0.65 }}
+                  style={{ flexShrink: 0, opacity: isActive ? 1 : 0.55 }}
                 />
                 {item.label}
               </Link>
@@ -201,8 +206,8 @@ export function Sidebar() {
               padding: '8px 10px 4px',
               marginTop: 4,
             }}>
-              <Shield size={11} style={{ color: '#6c63ff', opacity: 0.7 }} />
-              <span style={{ fontSize: 10, color: '#6c63ff', opacity: 0.7, fontWeight: 600, letterSpacing: '0.08em' }}>
+              <Shield size={11} style={{ color: '#818CF8', opacity: 0.7 }} />
+              <span style={{ fontSize: 10, color: '#818CF8', opacity: 0.7, fontWeight: 600, letterSpacing: '0.08em' }}>
                 PLATAFORMA
               </span>
             </div>
@@ -233,7 +238,7 @@ export function Sidebar() {
                 (e.currentTarget as HTMLElement).style.background = 'transparent'
             }}
           >
-            <Settings size={15.5} strokeWidth={1.75} style={{ opacity: 0.65 }} />
+            <Settings size={15.5} strokeWidth={1.75} style={{ opacity: 0.55 }} />
             Configuración
           </Link>
           <button
@@ -242,17 +247,17 @@ export function Sidebar() {
               display: 'flex', alignItems: 'center', gap: 9,
               padding: '7.5px 10px', borderRadius: 8,
               background: 'transparent', border: 'none', cursor: 'pointer',
-              fontSize: 13.5, color: 'rgba(229,57,53,0.7)',
+              fontSize: 13.5, color: 'rgba(239,68,68,0.65)',
               width: '100%', textAlign: 'left',
               transition: 'background 0.12s, color 0.12s',
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(229,57,53,0.1)'
-              ;(e.currentTarget as HTMLElement).style.color = '#E53935'
+              (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.10)'
+              ;(e.currentTarget as HTMLElement).style.color = '#EF4444'
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLElement).style.background = 'transparent'
-              ;(e.currentTarget as HTMLElement).style.color = 'rgba(229,57,53,0.7)'
+              ;(e.currentTarget as HTMLElement).style.color = 'rgba(239,68,68,0.65)'
             }}
           >
             <LogOut size={15.5} strokeWidth={1.75} />

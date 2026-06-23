@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -53,8 +53,8 @@ const SOURCES = [
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 11px',
-  border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13.5,
-  color: '#0F172A', background: '#fff', boxSizing: 'border-box', outline: 'none',
+  border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13.5,
+  color: 'var(--color-text)', background: 'var(--color-surface)', boxSizing: 'border-box', outline: 'none',
 }
 
 export function RoutineBuilder({ routineId }: { routineId: string }) {
@@ -113,7 +113,7 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
       {/* Back */}
       <Link href="/dashboard/rutinas" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: 13, color: '#64748B', textDecoration: 'none',
+        fontSize: 13, color: 'var(--color-text-2)', textDecoration: 'none',
         fontWeight: 500, marginBottom: 24,
       }}>
         <ArrowLeft size={15} />
@@ -122,18 +122,18 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
 
       {/* Header card */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16,
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16,
         padding: '20px 24px', marginBottom: 20,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
       }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', marginBottom: 4 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em', marginBottom: 4 }}>
             {routine.name}
           </h1>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
             {routine.description && (
-              <span style={{ fontSize: 13, color: '#64748B' }}>{routine.description}</span>
+              <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>{routine.description}</span>
             )}
             <div style={{ display: 'flex', gap: 12 }}>
               <MetaChip label={`${routine.blocks.length} bloques`} />
@@ -149,7 +149,7 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
           onClick={() => setShowAssign(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
-            padding: '9px 18px', background: '#E53E3E', color: '#fff',
+            padding: '9px 18px', background: '#6366F1', color: '#fff',
             border: 'none', borderRadius: 10, fontSize: 13.5,
             fontWeight: 700, cursor: 'pointer', flexShrink: 0,
           }}
@@ -182,14 +182,14 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
           onClick={() => addBlockMutation.mutate()}
           disabled={addBlockMutation.isPending}
           style={{
-            border: '2px dashed #E2E8F0', borderRadius: 14,
+            border: '2px dashed var(--color-border)', borderRadius: 14,
             padding: '16px', background: 'transparent', cursor: 'pointer',
-            color: '#94A3B8', fontSize: 13.5, fontWeight: 600, width: '100%',
+            color: 'var(--color-text-3)', fontSize: 13.5, fontWeight: 600, width: '100%',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             transition: 'border-color 0.15s, color 0.15s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#E53E3E'; e.currentTarget.style.color = '#E53E3E' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#94A3B8' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.color = '#6366F1' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-3)' }}
         >
           <Plus size={15} />
           {addBlockMutation.isPending ? 'Agregando...' : 'Agregar bloque'}
@@ -230,8 +230,8 @@ function MetaChip({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 12, fontWeight: 500, color: '#64748B',
-      background: '#F8FAFC', border: '1px solid #E2E8F0',
+      fontSize: 12, fontWeight: 500, color: 'var(--color-text-2)',
+      background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
       padding: '3px 9px', borderRadius: 20,
     }}>
       {icon}
@@ -240,7 +240,7 @@ function MetaChip({ label, icon }: { label: string; icon?: React.ReactNode }) {
   )
 }
 
-/* ═══════════════════ BLOCK CARD ═══════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BLOCK CARD â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpdateExercise, onUpdateBlock, onDeleteBlock }: {
   block: RoutineBlockFull
   blockNumber: number
@@ -264,20 +264,20 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
 
   return (
     <div style={{
-      background: '#fff', border: '1px solid #E2E8F0',
+      background: 'var(--color-surface)', border: '1px solid var(--color-border)',
       borderRadius: 14, overflow: 'hidden',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
     }}>
       {/* Block header */}
       <div style={{
-        padding: '12px 18px', borderBottom: '1px solid #F1F5F9',
+        padding: '12px 18px', borderBottom: '1px solid var(--color-border)',
         display: 'flex', alignItems: 'center', gap: 10,
         background: '#FAFBFC',
       }}>
         {/* Block number circle */}
         <div style={{
           width: 26, height: 26, borderRadius: '50%',
-          background: '#0F172A', color: '#fff',
+          background: 'var(--color-text)', color: 'var(--color-surface)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 800, flexShrink: 0,
         }}>
@@ -291,21 +291,21 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
               value={headerForm.name}
               onChange={e => setHeaderForm(p => ({ ...p, name: e.target.value }))}
               placeholder={`Bloque ${blockNumber}`}
-              style={{ flex: 1, padding: '6px 10px', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13, color: '#0F172A', outline: 'none' }}
+              style={{ flex: 1, padding: '6px 10px', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13, color: 'var(--color-text)', outline: 'none' }}
             />
             <select
               value={headerForm.type}
               onChange={e => setHeaderForm(p => ({ ...p, type: e.target.value }))}
-              style={{ padding: '6px 8px', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, color: '#0F172A', background: '#fff' }}
+              style={{ padding: '6px 8px', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12, color: 'var(--color-text)', background: 'var(--color-surface)' }}
             >
               {BLOCK_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
-            <button onClick={saveHeader} style={{ padding: '6px 14px', background: '#E53E3E', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>OK</button>
-            <button onClick={() => setEditingHeader(false)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, color: '#64748B', cursor: 'pointer' }}>✕</button>
+            <button onClick={saveHeader} style={{ padding: '6px 14px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>OK</button>
+            <button onClick={() => setEditingHeader(false)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12, color: 'var(--color-text-2)', cursor: 'pointer' }}>âœ•</button>
           </div>
         ) : (
           <>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#0F172A', flex: 1 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text)', flex: 1 }}>
               {block.name || `Bloque ${blockNumber}`}
             </span>
             <span style={{
@@ -319,7 +319,7 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
             <div style={{ display: 'flex', gap: 6 }}>
               <button
                 onClick={() => setEditingHeader(true)}
-                style={{ fontSize: 12, padding: '4px 10px', border: '1px solid #E2E8F0', borderRadius: 7, cursor: 'pointer', background: 'transparent', color: '#64748B', fontWeight: 500 }}
+                style={{ fontSize: 12, padding: '4px 10px', border: '1px solid var(--color-border)', borderRadius: 7, cursor: 'pointer', background: 'transparent', color: 'var(--color-text-2)', fontWeight: 500 }}
               >
                 Editar
               </button>
@@ -338,8 +338,8 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
       <div>
         {block.exercises.length === 0 ? (
           <div style={{ padding: '32px 20px', textAlign: 'center' }}>
-            <Dumbbell size={24} color="#CBD5E1" style={{ margin: '0 auto 8px' }} />
-            <p style={{ fontSize: 13.5, color: '#94A3B8' }}>Sin ejercicios. Agrega el primero.</p>
+            <Dumbbell size={24} color="var(--color-text-4)" style={{ margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 13.5, color: 'var(--color-text-3)' }}>Sin ejercicios. Agrega el primero.</p>
           </div>
         ) : (
           block.exercises.map((ex, i) => (
@@ -356,13 +356,13 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
 
         <div style={{
           padding: '12px 18px',
-          borderTop: block.exercises.length > 0 ? '1px solid #F1F5F9' : 'none',
+          borderTop: block.exercises.length > 0 ? '1px solid var(--color-border)' : 'none',
         }}>
           <button
             onClick={onAddExercise}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              fontSize: 13, color: '#E53E3E', background: '#FFF5F5',
+              fontSize: 13, color: '#6366F1', background: 'rgba(99,102,241,0.10)',
               border: '1px solid #FED7D7', borderRadius: 8,
               padding: '6px 12px', cursor: 'pointer', fontWeight: 600,
             }}
@@ -376,7 +376,7 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
   )
 }
 
-/* ═══════════════════ EXERCISE ROW ═══════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EXERCISE ROW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
   exercise: RoutineExerciseFull
   index: number
@@ -407,19 +407,19 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
   }
 
   const specs = [
-    exercise.sets && exercise.reps ? `${exercise.sets} × ${exercise.reps}` : null,
+    exercise.sets && exercise.reps ? `${exercise.sets} Í— ${exercise.reps}` : null,
     exercise.weight_kg ? `${exercise.weight_kg} kg` : null,
     exercise.rest_seconds ? `${exercise.rest_seconds}s descanso` : null,
     exercise.rpe ? `RPE ${exercise.rpe}` : null,
   ].filter(Boolean)
 
   return (
-    <div style={{ borderBottom: isLast ? 'none' : '1px solid #F8FAFC' }}>
+    <div style={{ borderBottom: isLast ? 'none' : '1px solid var(--color-border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px' }}>
         {/* Index circle */}
         <div style={{
           width: 26, height: 26, borderRadius: '50%',
-          background: '#E2E8F0', color: '#475569',
+          background: 'var(--color-surface-2)', color: 'var(--color-text-2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 700, flexShrink: 0,
         }}>
@@ -429,27 +429,27 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
         {/* Exercise thumbnail */}
         <div style={{
           width: 40, height: 40, borderRadius: 8,
-          background: '#F8FAFC', flexShrink: 0, overflow: 'hidden',
+          background: 'var(--color-surface-2)', flexShrink: 0, overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          border: '1px solid #E2E8F0',
+          border: '1px solid var(--color-border)',
         }}>
           {exercise.exercise?.gif_url
             ? <img src={exercise.exercise.gif_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <Dumbbell size={16} color="#CBD5E1" />
+            : <Dumbbell size={16} color="var(--color-text-4)" />
           }
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {exercise.exercise?.name ?? 'Ejercicio'}
           </p>
           {specs.length > 0 && (
-            <p style={{ fontSize: 12, color: '#64748B' }}>
-              {specs.join(' · ')}
+            <p style={{ fontSize: 12, color: 'var(--color-text-2)' }}>
+              {specs.join(' Â· ')}
             </p>
           )}
           {exercise.notes && (
-            <p style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 1, fontStyle: 'italic' }}>{exercise.notes}</p>
+            <p style={{ fontSize: 11.5, color: 'var(--color-text-3)', marginTop: 1, fontStyle: 'italic' }}>{exercise.notes}</p>
           )}
         </div>
 
@@ -458,9 +458,9 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
             onClick={() => setEditing(!editing)}
             style={{
               fontSize: 12, padding: '5px 10px',
-              border: '1px solid #E2E8F0', borderRadius: 7, cursor: 'pointer',
-              background: editing ? '#F1F5F9' : 'transparent',
-              color: '#475569', fontWeight: 500,
+              border: '1px solid var(--color-border)', borderRadius: 7, cursor: 'pointer',
+              background: editing ? 'var(--color-surface-2)' : 'transparent',
+              color: 'var(--color-text-2)', fontWeight: 500,
               display: 'flex', alignItems: 'center', gap: 4,
             }}
           >
@@ -470,13 +470,13 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
           <button
             onClick={onRemove}
             style={{
-              padding: '5px 8px', border: '1px solid #E2E8F0',
+              padding: '5px 8px', border: '1px solid var(--color-border)',
               borderRadius: 7, cursor: 'pointer', background: 'transparent',
-              color: '#CBD5E1', display: 'flex', alignItems: 'center',
+              color: 'var(--color-border)', display: 'flex', alignItems: 'center',
               transition: 'color 0.1s, border-color 0.1s',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#EF4444'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#FEE2E2' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#CBD5E1'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#E2E8F0' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-4)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)' }}
           >
             <Trash2 size={13} />
           </button>
@@ -484,7 +484,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
       </div>
 
       {editing && (
-        <div style={{ padding: '0 18px 14px 18px', background: '#FAFAFA', borderTop: '1px solid #F1F5F9' }}>
+        <div style={{ padding: '0 18px 14px 18px', background: 'var(--color-surface-2)', borderTop: '1px solid var(--color-border)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10, paddingTop: 12 }}>
             <NumField label="Series" value={local.sets} onChange={v => setLocal(p => ({ ...p, sets: v }))} />
             <div>
@@ -501,7 +501,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
             </div>
             <button
               onClick={save}
-              style={{ padding: '8px 18px', background: '#E53E3E', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              style={{ padding: '8px 18px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
               Guardar
             </button>
@@ -512,7 +512,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
   )
 }
 
-/* ═══════════════════ EXERCISE PICKER ═══════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EXERCISE PICKER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: (id: string) => void }) {
   const [search, setSearch] = useState('')
   const [muscle, setMuscle] = useState('')
@@ -530,18 +530,18 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 600, height: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid #E2E8F0' }}>
+      <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 600, height: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)' }}>
 
         {/* Modal header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>Seleccionar ejercicio</h2>
-          <button onClick={onClose} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: '#64748B' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Seleccionar ejercicio</h2>
+          <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>
 
         {/* Filters */}
-        <div style={{ padding: '14px 22px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
+        <div style={{ padding: '14px 22px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <input
             autoFocus
             placeholder="Buscar por nombre..."
@@ -565,15 +565,15 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
         {/* Results */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {isLoading ? (
-            <div style={{ padding: 32, textAlign: 'center', color: '#94A3B8', fontSize: 14 }}>Cargando ejercicios...</div>
+            <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando ejercicios...</div>
           ) : exercises.length === 0 ? (
             <div style={{ padding: 40, textAlign: 'center' }}>
-              <Dumbbell size={24} color="#CBD5E1" style={{ margin: '0 auto 10px' }} />
-              <p style={{ fontSize: 14, color: '#94A3B8' }}>Sin resultados</p>
+              <Dumbbell size={24} color="var(--color-text-4)" style={{ margin: '0 auto 10px' }} />
+              <p style={{ fontSize: 14, color: 'var(--color-text-3)' }}>Sin resultados</p>
             </div>
           ) : (
             <>
-              <div style={{ padding: '10px 22px 0', fontSize: 11, color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <div style={{ padding: '10px 22px 0', fontSize: 11, color: 'var(--color-text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {exercises.length} resultado{exercises.length !== 1 ? 's' : ''}
               </div>
               {exercises.map(ex => (
@@ -583,24 +583,24 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12, width: '100%',
                     padding: '11px 22px', background: 'transparent', border: 'none',
-                    cursor: 'pointer', textAlign: 'left', borderBottom: '1px solid #F8FAFC',
+                    cursor: 'pointer', textAlign: 'left', borderBottom: '1px solid var(--color-border)',
                     transition: 'background 0.1s',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-2)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <div style={{ width: 40, height: 40, borderRadius: 8, background: '#F8FAFC', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #E2E8F0' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--color-surface-2)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
                     {ex.gif_url
                       ? <img src={ex.gif_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <Dumbbell size={16} color="#CBD5E1" />
+                      : <Dumbbell size={16} color="var(--color-text-4)" />
                     }
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</p>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      {ex.muscle_group && <span style={{ fontSize: 12, color: '#64748B' }}>{ex.muscle_group}</span>}
+                      {ex.muscle_group && <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>{ex.muscle_group}</span>}
                       {ex.source && ex.source !== 'exercisedb' && (
-                        <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 20, background: '#F1F5F9', color: '#64748B', fontWeight: 500 }}>
+                        <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 20, background: 'var(--color-surface-2)', color: 'var(--color-text-2)', fontWeight: 500 }}>
                           {ex.source}
                         </span>
                       )}
@@ -616,7 +616,7 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
   )
 }
 
-/* ═══════════════════ ASSIGN MODAL ═══════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ASSIGN MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   routineId: string
   currentAssignments: string[]
@@ -657,25 +657,25 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid #E2E8F0' }}>
+      <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)' }}>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>Asignar a atletas</h2>
-            <p style={{ fontSize: 13, color: '#64748B', marginTop: 2 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Asignar a atletas</h2>
+            <p style={{ fontSize: 13, color: 'var(--color-text-2)', marginTop: 2 }}>
               {selected.size} seleccionado{selected.size !== 1 ? 's' : ''}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: '#64748B' }}>
+          <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
           {isLoading ? (
-            <div style={{ padding: 32, textAlign: 'center', color: '#94A3B8', fontSize: 14 }}>Cargando atletas...</div>
+            <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando atletas...</div>
           ) : athletes.length === 0 ? (
-            <div style={{ padding: 32, textAlign: 'center', color: '#94A3B8', fontSize: 14 }}>No hay atletas activos</div>
+            <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>No hay atletas activos</div>
           ) : (
             athletes.map(a => {
               const checked = selected.has(a.id)
@@ -687,40 +687,40 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12, width: '100%',
                     padding: '11px 22px',
-                    background: checked ? '#FFF5F5' : 'transparent',
+                    background: checked ? 'rgba(99,102,241,0.10)' : 'transparent',
                     border: 'none', cursor: 'pointer', textAlign: 'left',
-                    borderBottom: '1px solid #F8FAFC', transition: 'background 0.1s',
+                    borderBottom: '1px solid var(--color-border)', transition: 'background 0.1s',
                   }}
                 >
                   {/* Checkbox */}
                   <div style={{
                     width: 20, height: 20, borderRadius: 6,
-                    border: `2px solid ${checked ? '#E53E3E' : '#CBD5E1'}`,
-                    background: checked ? '#E53E3E' : 'transparent',
+                    border: `2px solid ${checked ? '#6366F1' : 'var(--color-text-4)'}`,
+                    background: checked ? '#6366F1' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, transition: 'all 0.12s',
                   }}>
-                    {checked && <span style={{ color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1 }}>✓</span>}
+                    {checked && <span style={{ color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1 }}>âœ“</span>}
                   </div>
                   {/* Athlete initials */}
                   <div style={{
                     width: 34, height: 34, borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #E53E3E 0%, #B91C1C 100%)',
+                    background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
                   }}>
                     {initials}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
                       {a.first_name} {a.last_name ?? ''}
                     </p>
                     {a.email && (
-                      <p style={{ fontSize: 12, color: '#94A3B8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email}</p>
+                      <p style={{ fontSize: 12, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email}</p>
                     )}
                   </div>
                   {currentAssignments.includes(a.id) && (
-                    <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: '#FFF5F5', color: '#E53E3E', fontWeight: 600, flexShrink: 0 }}>
+                    <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: 'rgba(99,102,241,0.10)', color: '#6366F1', fontWeight: 600, flexShrink: 0 }}>
                       Asignada
                     </span>
                   )}
@@ -730,13 +730,13 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
           )}
         </div>
 
-        <div style={{ padding: '16px 22px', borderTop: '1px solid #F1F5F9', flexShrink: 0 }}>
+        <div style={{ padding: '16px 22px', borderTop: '1px solid var(--color-border)', flexShrink: 0 }}>
           {error && <p style={{ fontSize: 13, color: '#EF4444', marginBottom: 10 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{ flex: 1, padding: '10px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13.5, cursor: 'pointer', background: 'transparent', color: '#64748B', fontWeight: 500 }}>
+            <button onClick={onClose} style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 10, fontSize: 13.5, cursor: 'pointer', background: 'transparent', color: 'var(--color-text-2)', fontWeight: 500 }}>
               Cancelar
             </button>
-            <button onClick={save} disabled={saving} style={{ flex: 1, padding: '10px', background: saving ? '#F1F5F9' : '#E53E3E', color: saving ? '#94A3B8' : '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer' }}>
+            <button onClick={save} disabled={saving} style={{ flex: 1, padding: '10px', background: saving ? 'var(--color-surface-2)' : '#6366F1', color: saving ? 'var(--color-text-3)' : '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer' }}>
               {saving ? 'Guardando...' : `Asignar a ${selected.size} atleta${selected.size !== 1 ? 's' : ''}`}
             </button>
           </div>
@@ -746,7 +746,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   )
 }
 
-/* ═══════════════════ UTILS ═══════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• UTILS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function NumField({ label, value, onChange, placeholder }: { label: string; value: any; onChange: (v: any) => void; placeholder?: string }) {
   return (
     <div>
@@ -762,10 +762,10 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
       onClick={onClick}
       style={{
         fontSize: 12, padding: '4px 10px', borderRadius: 20,
-        border: active ? 'none' : '1px solid #E2E8F0',
+        border: active ? 'none' : '1px solid var(--color-border)',
         cursor: 'pointer',
-        background: active ? '#0F172A' : 'transparent',
-        color: active ? '#fff' : '#64748B',
+        background: active ? 'var(--color-text)' : 'transparent',
+        color: active ? 'var(--color-surface)' : 'var(--color-text-2)',
         fontWeight: active ? 600 : 400,
         transition: 'all 0.1s',
       }}
@@ -778,13 +778,13 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
 function SkeletonLoader() {
   return (
     <div style={{ padding: '36px 40px', maxWidth: 860 }}>
-      <div style={{ height: 20, width: 120, background: '#F1F5F9', borderRadius: 6, marginBottom: 24 }} />
-      <div style={{ height: 72, background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, marginBottom: 20 }} />
+      <div style={{ height: 20, width: 120, background: 'var(--color-surface-2)', borderRadius: 6, marginBottom: 24 }} />
+      <div style={{ height: 72, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, marginBottom: 20 }} />
       {[...Array(2)].map((_, i) => (
-        <div key={i} style={{ height: 180, background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, marginBottom: 14 }} />
+        <div key={i} style={{ height: 180, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14, marginBottom: 14 }} />
       ))}
     </div>
   )
 }
 
-const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }
+const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }

@@ -92,11 +92,11 @@ export function AthleteHomeDashboard() {
           display: 'flex', alignItems: 'center', gap: 16,
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
           borderRadius: 14, padding: '18px 24px',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
         }}>
           <div style={{
             width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
-            background: 'linear-gradient(135deg, #E53E3E 0%, #B91C1C 100%)',
+            background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em',
           }}>
@@ -152,7 +152,7 @@ export function AthleteHomeDashboard() {
               const name = entry.wod?.name ?? entry.routine?.name ?? 'Sin nombre'
               const type = entry.wod?.type
               const accent = type ? (WOD_TYPE_COLORS[type] ?? '#475569') : '#6366F1'
-              const bg = type ? (WOD_TYPE_BG[type] ?? '#F8FAFC') : '#EEF2FF'
+              const bg = type ? (WOD_TYPE_BG[type] ?? 'var(--color-bg)') : '#EEF2FF'
               const href = isWod && entry.wod_id ? `/dashboard/wods/${entry.wod_id}` : '#'
 
               return (
@@ -215,13 +215,13 @@ export function AthleteHomeDashboard() {
               label: 'Racha actual',
               value: streak > 0 ? streak : '—',
               sub: streak > 0 ? `día${streak > 1 ? 's' : ''} consecutivo${streak > 1 ? 's' : ''}` : 'sin racha activa',
-              color: streak >= 7 ? '#E53E3E' : streak >= 3 ? '#D97706' : '#0F172A',
+              color: streak >= 7 ? '#C6FF00' : streak >= 3 ? '#D97706' : 'var(--color-text-2)',
             },
           ].map(k => (
             <div key={k.label} style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
               borderRadius: 14, padding: '20px 20px 18px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12, color: k.color }}>
                 {k.icon}
@@ -242,11 +242,11 @@ export function AthleteHomeDashboard() {
         {/* Mis PRs */}
         <div style={{
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-          borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
         }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Dumbbell size={14} color="#E53E3E" />
+              <Dumbbell size={14} color="#C6FF00" />
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>Mis PRs</span>
             </div>
             <Link href="/dashboard/calculadora" style={{ fontSize: 12, color: 'var(--color-red)', textDecoration: 'none', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -286,7 +286,7 @@ export function AthleteHomeDashboard() {
         {/* Mis últimos WODs */}
         <div style={{
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-          borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
         }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -344,7 +344,7 @@ export function AthleteHomeDashboard() {
           </p>
           <div style={{
             background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-            borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+            borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
           }}>
             {sessions.slice(-8).reverse().map((s, i, arr) => {
               const label = (s as any).wod?.name ?? (s as any).routine?.name ?? (s.type === 'rest' ? 'Descanso' : 'Evento')
