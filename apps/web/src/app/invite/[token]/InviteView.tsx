@@ -122,7 +122,7 @@ export function InviteView({ token }: { token: string }) {
     label:   { display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--color-text-2)', marginBottom: 5 },
     input:   { width: '100%', height: 42, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', color: 'var(--color-text)', padding: '0 12px', fontSize: 14, boxSizing: 'border-box' as const, marginBottom: 14 },
     btn:     { width: '100%', height: 44, background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 4 },
-    err:     { fontSize: 13, color: '#e53935', background: '#e5393511', padding: '8px 12px', borderRadius: 'var(--radius-md)', marginBottom: 14 },
+    err:     { fontSize: 13, color: '#EF4444', background: 'rgba(239,68,68,0.10)', padding: '8px 12px', borderRadius: 'var(--radius-md)', marginBottom: 14 },
     center:  { textAlign: 'center' as const },
     icon:    { fontSize: 44, marginBottom: 16 },
     msg:     { fontSize: 16, fontWeight: 600, color: 'var(--color-text)', marginBottom: 8 },
@@ -131,8 +131,8 @@ export function InviteView({ token }: { token: string }) {
 
   const Logo = () => (
     <div style={s.logo}>
-      <div style={s.logoBg}>EB</div>
-      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>Entre Barras</span>
+      <div style={{ ...s.logoBg, fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>T</div>
+      <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '0.04em', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>THRYRA</span>
     </div>
   )
 
@@ -192,7 +192,7 @@ export function InviteView({ token }: { token: string }) {
         <div style={{ ...s.card, ...s.center }}>
           <Logo />
           <div style={s.icon}>🎉</div>
-          <p style={s.msg}>¡Bienvenido a Entre Barras!</p>
+          <p style={s.msg}>¡Bienvenido a THRYRA!</p>
           <p style={s.msgsub}>Tu cuenta fue creada. Redirigiendo al dashboard...</p>
         </div>
       </div>

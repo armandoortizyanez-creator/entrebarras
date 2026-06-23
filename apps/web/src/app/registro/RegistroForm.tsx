@@ -100,8 +100,8 @@ export function RegistroForm() {
         disabled={loading}
         style={{
           width: '100%', padding: '11px',
-          background: loading ? 'var(--color-border)' : 'var(--color-red)',
-          color: loading ? 'var(--color-text-3)' : '#fff',
+          background: loading ? 'var(--color-border)' : '#C6FF00',
+          color: loading ? 'var(--color-text-3)' : '#0D1117',
           border: 'none', borderRadius: 'var(--radius-md)',
           fontSize: 14, fontWeight: 600,
           cursor: loading ? 'not-allowed' : 'pointer',

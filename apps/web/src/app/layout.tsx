@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Montserrat } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
@@ -10,12 +10,19 @@ const inter = Inter({
   weight: ['400', '500', '600', '700'],
 })
 
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  variable: '--font-montserrat',
+  display: 'swap',
+  weight: ['600', '700', '800', '900'],
+})
+
 export const metadata: Metadata = {
   title: {
-    default: 'Entre Barras',
-    template: '%s | Entre Barras',
+    default: 'THRYRA',
+    template: '%s | THRYRA',
   },
-  description: 'La plataforma para entrenadores deportivos de Latinoamérica.',
+  description: 'La plataforma de entrenamiento para coaches y atletas de Latinoamérica.',
   icons: {
     icon: '/favicon.ico',
   },
@@ -24,12 +31,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#E53935',
+  themeColor: '#6366F1',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning className={inter.variable}>
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${montserrat.variable}`}>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

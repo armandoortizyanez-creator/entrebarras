@@ -11,13 +11,13 @@ import { ArrowLeft, Plus, Trash2, GripVertical, Clock, RotateCcw, Zap, Timer, Pl
 import { WodTimer } from './WodTimer'
 
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  amrap:     { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
-  emom:      { bg: '#F5F3FF', text: '#6D28D9', border: '#DDD6FE' },
-  for_time:  { bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA' },
-  tabata:    { bg: '#FDF2F8', text: '#9D174D', border: '#FBCFE8' },
-  chipper:   { bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0' },
-  intervals: { bg: '#FFFBEB', text: '#B45309', border: '#FDE68A' },
-  custom:    { bg: '#F8FAFC', text: '#475569', border: '#E2E8F0' },
+  amrap:     { bg: 'rgba(129,140,248,0.12)', text: '#818CF8', border: 'rgba(129,140,248,0.25)' },
+  emom:      { bg: 'rgba(167,139,250,0.12)', text: '#A78BFA', border: 'rgba(167,139,250,0.25)' },
+  for_time:  { bg: 'rgba(198,255,0,0.10)',   text: '#C6FF00', border: 'rgba(198,255,0,0.20)'  },
+  tabata:    { bg: 'rgba(244,114,182,0.10)', text: '#F472B6', border: 'rgba(244,114,182,0.20)' },
+  chipper:   { bg: 'rgba(52,211,153,0.10)',  text: '#34D399', border: 'rgba(52,211,153,0.20)'  },
+  intervals: { bg: 'rgba(251,191,36,0.10)',  text: '#FBBF24', border: 'rgba(251,191,36,0.20)'  },
+  custom:    { bg: 'rgba(138,147,168,0.10)', text: '#8A93A8', border: 'rgba(138,147,168,0.20)' },
 }
 
 function formatSeconds(s: number | null) {
@@ -28,8 +28,8 @@ function formatSeconds(s: number | null) {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 11px',
-  border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13,
-  color: '#0F172A', background: '#fff', boxSizing: 'border-box',
+  border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13,
+  color: 'var(--color-text)', background: 'var(--color-surface)', boxSizing: 'border-box',
   outline: 'none', transition: 'border-color 0.15s',
 }
 
@@ -67,7 +67,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
   }
 
   if (isLoading) return (
-    <div style={{ padding: '48px 40px', color: '#94A3B8', fontSize: 14 }}>Cargando WOD...</div>
+    <div style={{ padding: '48px 40px', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando WOD...</div>
   )
   if (!wod) return (
     <div style={{ padding: '48px 40px', color: '#EF4444', fontSize: 14 }}>WOD no encontrado</div>
@@ -88,7 +88,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
       {/* Back */}
       <Link href="/dashboard/wods" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: 13, color: '#64748B', textDecoration: 'none',
+        fontSize: 13, color: 'var(--color-text-2)', textDecoration: 'none',
         fontWeight: 500, marginBottom: 24,
       }}>
         <ArrowLeft size={15} />
@@ -97,15 +97,15 @@ export function WodBuilder({ wodId }: { wodId: string }) {
 
       {/* Header card */}
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 16, padding: '24px 28px', marginBottom: 16,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <h1 style={{
-                fontSize: 24, fontWeight: 800, color: '#0F172A',
+                fontSize: 24, fontWeight: 800, color: 'var(--color-text)',
                 letterSpacing: '-0.04em', lineHeight: 1.1,
               }}>
                 {wod.name}
@@ -120,7 +120,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
               </span>
             </div>
             {wod.description && (
-              <p style={{ fontSize: 14, color: '#64748B', lineHeight: 1.5, maxWidth: 480 }}>
+              <p style={{ fontSize: 14, color: 'var(--color-text-2)', lineHeight: 1.5, maxWidth: 480 }}>
                 {wod.description}
               </p>
             )}
@@ -131,15 +131,15 @@ export function WodBuilder({ wodId }: { wodId: string }) {
             onClick={() => setTimerOpen(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
-              background: '#0F172A', color: '#fff', border: 'none',
+              background: '#C6FF00', color: '#0D1117', border: 'none',
               borderRadius: 10, padding: '9px 16px',
               fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              flexShrink: 0, transition: 'background 0.15s',
+              flexShrink: 0, transition: 'opacity 0.15s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#E53E3E')}
-            onMouseLeave={e => (e.currentTarget.style.background = '#0F172A')}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
-            <Play size={14} fill="white" />
+            <Play size={14} fill="#0D1117" />
             Iniciar Timer
           </button>
         </div>
@@ -149,12 +149,12 @@ export function WodBuilder({ wodId }: { wodId: string }) {
             {metaItems.map((m, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: '#F8FAFC', border: '1px solid #E2E8F0',
+                background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
                 borderRadius: 8, padding: '6px 12px',
               }}>
-                <span style={{ color: '#94A3B8' }}>{m.icon}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{m.value}</span>
-                <span style={{ fontSize: 12, color: '#94A3B8' }}>{m.label}</span>
+                <span style={{ color: 'var(--color-text-3)' }}>{m.icon}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{m.value}</span>
+                <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>{m.label}</span>
               </div>
             ))}
           </div>
@@ -169,8 +169,8 @@ export function WodBuilder({ wodId }: { wodId: string }) {
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 14px', borderRadius: 9, fontSize: 13, fontWeight: 600,
               cursor: 'pointer', border: 'none',
-              background: activeTab === tab ? '#0F172A' : '#F1F5F9',
-              color: activeTab === tab ? '#fff' : '#64748B',
+              background: activeTab === tab ? 'var(--color-red)' : 'var(--color-surface-2)',
+              color: activeTab === tab ? '#fff' : 'var(--color-text-2)',
               transition: 'all 0.15s',
             }}
           >
@@ -186,22 +186,22 @@ export function WodBuilder({ wodId }: { wodId: string }) {
 
       {activeTab === 'movimientos' && (
       <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
         borderRadius: 16, overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
       }}>
         {/* Card header */}
         <div style={{
-          padding: '16px 20px', borderBottom: '1px solid #F1F5F9',
+          padding: '16px 20px', borderBottom: '1px solid var(--color-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               Movimientos
             </span>
             <span style={{
               fontSize: 11, fontWeight: 600,
-              background: '#F1F5F9', color: '#475569',
+              background: 'var(--color-surface-2)', color: 'var(--color-text-2)',
               borderRadius: 20, padding: '2px 8px',
             }}>
               {wod.movements.length}
@@ -212,8 +212,8 @@ export function WodBuilder({ wodId }: { wodId: string }) {
               onClick={() => setAddingMovement(true)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
-                fontSize: 13, fontWeight: 600, color: '#E53E3E',
-                background: '#FFF5F5', border: '1px solid #FED7D7',
+                fontSize: 13, fontWeight: 600, color: '#6366F1',
+                background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.20)',
                 borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
               }}
             >
@@ -228,14 +228,14 @@ export function WodBuilder({ wodId }: { wodId: string }) {
           <div style={{ padding: '48px 24px', textAlign: 'center' }}>
             <div style={{
               width: 44, height: 44, borderRadius: 12,
-              background: '#FFF5F5', border: '1px solid #FED7D7',
+              background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 12px',
             }}>
-              <Zap size={20} color="#E53E3E" />
+              <Zap size={20} color="#6366F1" />
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Sin movimientos</p>
-            <p style={{ fontSize: 13, color: '#94A3B8' }}>Agrega los ejercicios que componen este WOD.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>Sin movimientos</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Agrega los ejercicios que componen este WOD.</p>
           </div>
         )}
 
@@ -258,10 +258,10 @@ export function WodBuilder({ wodId }: { wodId: string }) {
         {/* Add form */}
         {addingMovement && (<form onSubmit={handleAddMovement} style={{
             padding: '16px 20px',
-            borderTop: wod.movements.length > 0 ? '1px solid #F1F5F9' : 'none',
-            background: '#FAFAFA',
+            borderTop: wod.movements.length > 0 ? '1px solid var(--color-border)' : 'none',
+            background: 'var(--color-surface-2)',
           }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
               Nuevo movimiento
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
@@ -273,7 +273,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
                 { label: 'Cal', key: 'calories', type: 'number', placeholder: '50' },
               ].map((f, fi) => (
                 <div key={f.key}>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: '#64748B', marginBottom: 4 }}>{f.label}</label>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-2)', marginBottom: 4 }}>{f.label}</label>
                   <input
                     autoFocus={fi === 0}
                     required={fi === 0}
@@ -292,8 +292,8 @@ export function WodBuilder({ wodId }: { wodId: string }) {
                 onClick={() => { setAddingMovement(false); setNewMovement({ name: '', reps: '', weight_kg: '', distance_m: '', calories: '' }) }}
                 style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 500,
-                  border: '1px solid #E2E8F0', borderRadius: 8,
-                  background: '#fff', color: '#64748B', cursor: 'pointer',
+                  border: '1px solid var(--color-border)', borderRadius: 8,
+                  background: 'var(--color-surface)', color: 'var(--color-text-2)', cursor: 'pointer',
                 }}
               >
                 Cancelar
@@ -302,7 +302,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
                 type="submit"
                 style={{
                   padding: '8px 18px', fontSize: 13, fontWeight: 600,
-                  background: '#E53E3E', color: '#fff',
+                  background: '#6366F1', color: '#fff',
                   border: 'none', borderRadius: 8, cursor: 'pointer',
                 }}
               >
@@ -358,18 +358,18 @@ function WodLeaderboard({ wodId }: { wodId: string }) {
   })
 
   if (isLoading) return (
-    <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '40px 24px', textAlign: 'center', color: '#94A3B8', fontSize: 14 }}>
+    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, padding: '40px 24px', textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>
       Cargando resultados...
     </div>
   )
 
   if (results.length === 0) return (
-    <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '48px 24px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFF7ED', border: '1px solid #FED7AA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-        <Trophy size={20} color="#F97316" />
+    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, padding: '48px 24px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.20)' }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(198,255,0,0.10)', border: '1px solid rgba(198,255,0,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+        <Trophy size={20} color="#C6FF00" />
       </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 4 }}>Sin resultados aún</p>
-      <p style={{ fontSize: 13, color: '#94A3B8' }}>Inicia el timer y guarda tu primer resultado.</p>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>Sin resultados aún</p>
+      <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Inicia el timer y guarda tu primer resultado.</p>
     </div>
   )
 
@@ -395,8 +395,8 @@ function WodLeaderboard({ wodId }: { wodId: string }) {
         })
 
         return (
-          <div key={scale} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-            <div style={{ padding: '12px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div key={scale} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.20)' }}>
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Trophy size={13} color={sc.text} />
               <span style={{ fontSize: 12, fontWeight: 700, color: sc.text, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 {SCALE_LABELS[scale]}
@@ -414,24 +414,24 @@ function WodLeaderboard({ wodId }: { wodId: string }) {
                 <div key={r.id} style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 20px',
-                  borderBottom: idx < rows.length - 1 ? '1px solid #F1F5F9' : 'none',
-                  background: idx === 0 ? '#FFFBEB' : '#fff',
+                  borderBottom: idx < rows.length - 1 ? '1px solid var(--color-border)' : 'none',
+                  background: idx === 0 ? 'rgba(198,255,0,0.06)' : 'transparent',
                 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8', width: 20, textAlign: 'center' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-3)', width: 20, textAlign: 'center' }}>
                     {medal ?? `${idx + 1}`}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{athleteName}</p>
-                    {r.notes && <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>{r.notes}</p>}
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{athleteName}</p>
+                    {r.notes && <p style={{ fontSize: 11, color: 'var(--color-text-3)', marginTop: 1 }}>{r.notes}</p>}
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
                       {resultDisplay}
                     </p>
-                    <p style={{ fontSize: 11, color: '#94A3B8' }}>{r.recorded_at}</p>
+                    <p style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{r.recorded_at}</p>
                   </div>
                   <button onClick={() => delMutation.mutate(r.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#CBD5E1', display: 'flex', alignItems: 'center' }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-border)', display: 'flex', alignItems: 'center' }}
                     title="Eliminar resultado"
                   >
                     <XIcon size={14} />
@@ -478,31 +478,31 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
   ].filter(Boolean).join(' · ')
 
   return (
-    <div style={{ borderBottom: isLast && !editing ? 'none' : '1px solid #F1F5F9' }}>
+    <div style={{ borderBottom: isLast && !editing ? 'none' : '1px solid var(--color-border)' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px',
       }}>
-        <GripVertical size={14} color="#CBD5E1" style={{ flexShrink: 0, cursor: 'grab' }} />
+        <GripVertical size={14} color="var(--color-border)" style={{ flexShrink: 0, cursor: 'grab' }} />
         <span style={{
           width: 26, height: 26, borderRadius: '50%',
-          background: '#0F172A', color: '#fff',
+          background: 'var(--color-red)', color: '#fff',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 700, flexShrink: 0,
         }}>
           {number}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{movement.name}</p>
-          {specs && <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 1 }}>{specs}</p>}
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{movement.name}</p>
+          {specs && <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 1 }}>{specs}</p>}
         </div>
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
           <button
             onClick={() => setEditing(e => !e)}
             style={{
               fontSize: 12, padding: '5px 11px', fontWeight: 500,
-              border: '1px solid #E2E8F0', borderRadius: 7, cursor: 'pointer',
-              background: editing ? '#F1F5F9' : '#fff',
-              color: '#475569', transition: 'all 0.12s',
+              border: '1px solid var(--color-border)', borderRadius: 7, cursor: 'pointer',
+              background: editing ? 'var(--color-surface-2)' : 'transparent',
+              color: 'var(--color-text-2)', transition: 'all 0.12s',
             }}
           >
             {editing ? 'Cerrar' : 'Editar'}
@@ -510,9 +510,9 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
           <button
             onClick={onRemove}
             style={{
-              padding: '5px 8px', border: '1px solid #E2E8F0',
-              borderRadius: 7, cursor: 'pointer', background: '#fff',
-              color: '#94A3B8', display: 'flex', alignItems: 'center',
+              padding: '5px 8px', border: '1px solid var(--color-border)',
+              borderRadius: 7, cursor: 'pointer', background: 'transparent',
+              color: 'var(--color-text-3)', display: 'flex', alignItems: 'center',
               transition: 'all 0.12s',
             }}
           >
@@ -532,7 +532,7 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
               { label: 'Cal', key: 'calories', type: 'number' },
             ].map(f => (
               <div key={f.key}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: '#64748B', marginBottom: 4 }}>{f.label}</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-2)', marginBottom: 4 }}>{f.label}</label>
                 <input
                   type={f.type}
                   value={(local as any)[f.key]}
@@ -547,7 +547,7 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
               onClick={save}
               style={{
                 padding: '7px 16px', fontSize: 13, fontWeight: 600,
-                background: '#0F172A', color: '#fff',
+                background: 'var(--color-red)', color: '#fff',
                 border: 'none', borderRadius: 8, cursor: 'pointer',
               }}
             >

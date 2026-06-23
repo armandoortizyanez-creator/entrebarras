@@ -25,24 +25,23 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="eb-page-padding" style={{ padding: '32px 36px', maxWidth: 1180 }}>
+    <div style={{ padding: '32px 36px', maxWidth: 1180 }}>
       {/* Page header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{
-          fontSize: 22, fontWeight: 700,
-          color: 'var(--color-text)',
-          letterSpacing: '-0.03em',
-          marginBottom: 4,
-        }}>
-          {greeting}, {firstName}
-        </h1>
-        <p style={{
-          fontSize: 13.5,
-          color: 'var(--color-text-3)',
-          textTransform: 'capitalize',
-        }}>
-          {today}
-        </p>
+      <div style={{ marginBottom: 32, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: 6 }}>
+            {today.charAt(0).toUpperCase() + today.slice(1)}
+          </p>
+          <h1 style={{
+            fontSize: 26, fontWeight: 800,
+            color: 'var(--color-text)',
+            letterSpacing: '-0.04em',
+            lineHeight: 1.1,
+          }}>
+            {greeting},{' '}
+            <span style={{ color: 'var(--color-red)' }}>{firstName}</span>
+          </h1>
+        </div>
       </div>
 
       {isAthlete ? <AthleteHomeDashboard /> : <DashboardStats />}

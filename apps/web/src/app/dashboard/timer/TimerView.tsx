@@ -121,7 +121,9 @@ export function TimerView() {
   const warningTime = mode === 'countdown' ? displayTime : mode === 'interval' ? displayTime : Infinity
   const isWarning = warningTime <= 10 && warningTime > 0 && timerState === 'running'
   const isFinished = timerState === 'finished'
-  const timerColor = isFinished ? '#EF4444' : isWarning ? '#F97316' : '#fff'
+  const timerColor = isFinished ? '#EF4444' : isWarning ? '#F97316' : mode === 'interval' && timerState !== 'idle'
+    ? (phase === 'work' ? '#C6FF00' : '#60A5FA')
+    : '#fff'
 
   const tick = useCallback(() => {
     setElapsed(prev => {
@@ -303,12 +305,12 @@ export function TimerView() {
           <div style={{
             fontSize: 13, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' as const,
             color: mode === 'interval'
-              ? (phase === 'work' ? '#F97316' : '#60A5FA')
+              ? (phase === 'work' ? '#C6FF00' : '#60A5FA')
               : 'rgba(255,255,255,0.35)',
             marginBottom: 12, minHeight: 20, textAlign: 'center',
           }}>
             {isFinished ? '¡TIEMPO!' : mode === 'interval'
-              ? `${phaseLabel}  ·  Ronda ${currentRound}/${totalRounds}`
+              ? `${phaseLabel}  ·  Ronda ${currentRound} / ${totalRounds}`
               : mode === 'countdown'
               ? 'CUENTA REGRESIVA'
               : 'CRONÓMETRO'
@@ -343,7 +345,7 @@ export function TimerView() {
           <div style={{ width: '100%', maxWidth: 480, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, marginTop: 28, overflow: 'hidden', padding: '0 40px', boxSizing: 'border-box' as const }}>
             <div style={{
               height: '100%', borderRadius: 2,
-              background: isWarning ? '#F97316' : 'rgba(255,255,255,0.5)',
+              background: isWarning ? '#F97316' : mode === 'interval' && phase === 'rest' ? '#60A5FA' : '#C6FF00',
               width: `${progressPct}%`,
               transition: 'width 1s linear, background 0.4s',
             }} />
@@ -382,15 +384,15 @@ export function TimerView() {
               background: isFinished
                 ? 'rgba(255,255,255,0.05)'
                 : timerState === 'running'
-                ? 'rgba(255,255,255,0.15)'
-                : '#fff',
+                ? 'rgba(255,255,255,0.12)'
+                : '#C6FF00',
               border: 'none',
               cursor: isFinished ? 'not-allowed' : 'pointer',
-              color: timerState === 'running' ? '#fff' : '#000',
+              color: timerState === 'running' ? '#fff' : '#0D1117',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: isFinished || timerState === 'running'
                 ? 'none'
-                : '0 0 0 14px rgba(255,255,255,0.06), 0 8px 32px rgba(255,255,255,0.15)',
+                : '0 0 0 14px rgba(198,255,0,0.10), 0 8px 32px rgba(198,255,0,0.25)',
               transition: 'all 0.2s',
             }}
             onMouseEnter={e => { if (!isFinished) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)' }}
@@ -398,7 +400,7 @@ export function TimerView() {
           >
             {timerState === 'running'
               ? <Pause size={34} fill="white" />
-              : <Play size={34} fill={isFinished ? 'rgba(255,255,255,0.3)' : '#000'} style={{ marginLeft: 4 }} />
+              : <Play size={34} fill={isFinished ? 'rgba(255,255,255,0.3)' : '#0D1117'} style={{ marginLeft: 4 }} />
             }
           </button>
 

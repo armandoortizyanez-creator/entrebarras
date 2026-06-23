@@ -20,10 +20,17 @@ export function MobileHeader() {
           background: 'var(--color-red)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#fff', letterSpacing: '-0.04em' }}>EB</span>
+          <span style={{
+            fontSize: 12, fontWeight: 800, color: '#fff',
+            fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
+          }}>T</span>
         </div>
-        <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
-          Entre Barras
+        <span style={{
+          fontWeight: 800, fontSize: 15, color: '#fff',
+          letterSpacing: '0.04em',
+          fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
+        }}>
+          THRYRA
         </span>
       </div>
       <div style={{ width: 36 }} />

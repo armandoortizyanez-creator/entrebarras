@@ -19,13 +19,13 @@ type Phase = 'work' | 'rest'
 type State = 'idle' | 'running' | 'paused' | 'finished'
 
 const TYPE_COLORS: Record<string, { accent: string; bg: string }> = {
-  amrap:     { accent: '#3B82F6', bg: '#1E3A5F' },
-  emom:      { accent: '#8B5CF6', bg: '#2D1B69' },
-  for_time:  { accent: '#F97316', bg: '#431407' },
-  tabata:    { accent: '#EC4899', bg: '#500724' },
-  chipper:   { accent: '#10B981', bg: '#064E3B' },
-  intervals: { accent: '#F59E0B', bg: '#451A03' },
-  custom:    { accent: '#94A3B8', bg: '#1E293B' },
+  amrap:     { accent: '#6366F1', bg: '#16184A' },
+  emom:      { accent: '#818CF8', bg: '#1A1E52' },
+  for_time:  { accent: '#C6FF00', bg: '#1A2800' },
+  tabata:    { accent: '#F472B6', bg: '#2D0A1E' },
+  chipper:   { accent: '#34D399', bg: '#022C22' },
+  intervals: { accent: '#FBBF24', bg: '#1C1200' },
+  custom:    { accent: '#8A93A8', bg: '#13181F' },
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -344,13 +344,20 @@ export function WodTimer({ wod, wodId, athletes, onClose, onResultSaved }: {
 
           {/* Progress bar */}
           {progressPct > 0 && (
-            <div style={{ width: '100%', maxWidth: 400, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 24, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: 2,
-                background: accentColor,
-                width: `${progressPct}%`,
-                transition: 'width 1s linear, background 0.3s',
-              }} />
+            <div style={{ width: '100%', maxWidth: 480, marginTop: 28 }}>
+              <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', borderRadius: 3,
+                  background: accentColor,
+                  width: `${progressPct}%`,
+                  transition: 'width 1s linear, background 0.3s',
+                  boxShadow: `0 0 8px ${accentColor}88`,
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em' }}>0%</span>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em' }}>{Math.round(progressPct)}%</span>
+              </div>
             </div>
           )}
 
@@ -421,10 +428,10 @@ export function WodTimer({ wod, wodId, athletes, onClose, onResultSaved }: {
               style={{
                 marginTop: 24,
                 display: 'flex', alignItems: 'center', gap: 8,
-                background: '#10B981', color: '#fff', border: 'none',
+                background: '#C6FF00', color: '#0D1117', border: 'none',
                 borderRadius: 12, padding: '12px 24px',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                boxShadow: '0 0 0 8px rgba(16,185,129,0.15)',
+                boxShadow: '0 0 0 8px rgba(198,255,0,0.12)',
               }}
             >
               <CheckCircle size={18} />

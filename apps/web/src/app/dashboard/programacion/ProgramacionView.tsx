@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -104,7 +104,7 @@ export function ProgramacionView() {
     if (start.getMonth() === end.getMonth()) {
       return `${MONTHS_ES[start.getMonth()]} ${start.getFullYear()}`
     }
-    return `${MONTHS_ES[start.getMonth()]} – ${MONTHS_ES[end.getMonth()]} ${end.getFullYear()}`
+    return `${MONTHS_ES[start.getMonth()]} "“ ${MONTHS_ES[end.getMonth()]} ${end.getFullYear()}`
   })()
 
   return (
@@ -119,29 +119,29 @@ export function ProgramacionView() {
         marginBottom: isMobile ? 16 : 28,
       }}>
         <div>
-          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em', marginBottom: 4 }}>
             Programación del Box
           </h1>
-          {!isMobile && <p style={{ fontSize: 13, color: '#64748B' }}>Asigna el WOD o rutina de cada día para tus grupos</p>}
+          {!isMobile && <p style={{ fontSize: 13, color: 'var(--color-text-2)' }}>Asigna el WOD o rutina de cada día para tus grupos</p>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button onClick={goToday} style={{
             padding: '7px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8,
-            border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', cursor: 'pointer',
+            border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-2)', cursor: 'pointer',
           }}>
             Hoy
           </button>
-          <button onClick={prevWeek} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+          <button onClick={prevWeek} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)' }}>
             <ChevronLeft size={16} />
           </button>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', minWidth: isMobile ? 'auto' : 140, textAlign: 'center' }}>{monthYear}</span>
-          <button onClick={nextWeek} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', minWidth: isMobile ? 'auto' : 140, textAlign: 'center' }}>{monthYear}</span>
+          <button onClick={nextWeek} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)' }}>
             <ChevronRight size={16} />
           </button>
         </div>
       </div>
 
-      {/* Week grid — desktop: 7 columns; mobile: vertical list */}
+      {/* Week grid "” desktop: 7 columns; mobile: vertical list */}
       <div style={isMobile
         ? { display: 'flex', flexDirection: 'column', gap: 8 }
         : { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }
@@ -153,19 +153,19 @@ export function ProgramacionView() {
 
           return (
             <div key={dateStr} style={{
-              background: '#fff',
-              border: isToday ? '1.5px solid #E53E3E' : '1px solid #E2E8F0',
+              background: 'var(--color-surface)',
+              border: isToday ? '1.5px solid #6366F1' : '1px solid var(--color-border)',
               borderRadius: 14,
               overflow: 'hidden',
-              boxShadow: isToday ? '0 0 0 3px rgba(229,62,62,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
+              boxShadow: isToday ? '0 0 0 3px rgba(99,102,241,0.12)' : '0 1px 3px rgba(0,0,0,0.25)',
               minHeight: isMobile ? 'auto' : 160,
               display: 'flex', flexDirection: isMobile ? 'row' : 'column',
             }}>
               {/* Day header */}
               <div style={{
                 padding: isMobile ? '12px 14px' : '10px 12px',
-                borderRight: isMobile ? '1px solid #F1F5F9' : 'none',
-                borderBottom: isMobile ? 'none' : '1px solid #F1F5F9',
+                borderRight: isMobile ? '1px solid var(--color-border)' : 'none',
+                borderBottom: isMobile ? 'none' : '1px solid var(--color-border)',
                 display: 'flex',
                 alignItems: isMobile ? 'center' : 'center',
                 justifyContent: isMobile ? 'flex-start' : 'space-between',
@@ -175,10 +175,10 @@ export function ProgramacionView() {
                 minWidth: isMobile ? 72 : 'auto',
               }}>
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: isToday ? '#E53E3E' : '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: isToday ? '#6366F1' : 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     {DAYS_ES[i]}
                   </p>
-                  <p style={{ fontSize: 18, fontWeight: 800, color: isToday ? '#E53E3E' : '#0F172A', letterSpacing: '-0.04em', lineHeight: 1.1, marginTop: 1 }}>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: isToday ? '#6366F1' : 'var(--color-text)', letterSpacing: '-0.04em', lineHeight: 1.1, marginTop: 1 }}>
                     {day.getDate()}
                   </p>
                 </div>
@@ -187,10 +187,10 @@ export function ProgramacionView() {
                     onClick={() => openDay(dateStr, `${DAYS_FULL[i]} ${day.getDate()}`)}
                     style={{
                       width: 26, height: 26, borderRadius: 7,
-                      background: isToday ? '#FED7D7' : '#F1F5F9',
+                      background: isToday ? '#FED7D7' : 'var(--color-surface-2)',
                       border: 'none', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: isToday ? '#E53E3E' : '#94A3B8',
+                      color: isToday ? '#6366F1' : 'var(--color-text-3)',
                     }}
                   >
                     <Plus size={13} />
@@ -230,15 +230,15 @@ export function ProgramacionView() {
                           {isWod ? 'WOD' : 'RUTINA'}
                         </p>
                       </div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: '#0F172A', lineHeight: 1.3 }}>{name}</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.3 }}>{name}</p>
                       {entry.group && (
-                        <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <p style={{ fontSize: 10, color: 'var(--color-text-3)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
                           <Users size={9} />
                           {entry.group.name}
                         </p>
                       )}
                       {entry.notes && (
-                        <p style={{ fontSize: 10, color: '#94A3B8', marginTop: 1 }}>{entry.notes}</p>
+                        <p style={{ fontSize: 10, color: 'var(--color-text-3)', marginTop: 1 }}>{entry.notes}</p>
                       )}
                       <button
                         className="del-btn"
@@ -250,7 +250,7 @@ export function ProgramacionView() {
                           display: 'flex', alignItems: 'center',
                         }}
                       >
-                        <X size={10} color="#94A3B8" />
+                        <X size={10} color="var(--color-text-3)" />
                       </button>
                     </div>
                   )
@@ -260,8 +260,8 @@ export function ProgramacionView() {
                   <button
                     onClick={() => openDay(dateStr, `${DAYS_FULL[i]} ${day.getDate()}`)}
                     style={{
-                      flex: 1, background: 'none', border: '1.5px dashed #E2E8F0',
-                      borderRadius: 8, cursor: 'pointer', color: '#CBD5E1',
+                      flex: 1, background: 'none', border: '1.5px dashed var(--color-border)',
+                      borderRadius: 8, cursor: 'pointer', color: 'var(--color-text-4)',
                       fontSize: 11, fontWeight: 500,
                       padding: isMobile ? '10px 14px' : '12px 8px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -288,7 +288,7 @@ export function ProgramacionView() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#fff', borderRadius: isMobile ? '20px 20px 0 0' : 20,
+              background: 'var(--color-surface)', borderRadius: isMobile ? '20px 20px 0 0' : 20,
               padding: isMobile ? '24px 20px 32px' : '28px 28px 24px',
               width: '100%', maxWidth: isMobile ? '100%' : 440,
               boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
@@ -300,15 +300,15 @@ export function ProgramacionView() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
                   Programar entrenamiento
                 </p>
-                <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+                <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em' }}>
                   {selected.dayLabel}
                 </h3>
               </div>
-              <button onClick={() => setSelected(null)} style={{ background: '#F1F5F9', border: 'none', borderRadius: 9, padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                <X size={16} color="#64748B" />
+              <button onClick={() => setSelected(null)} style={{ background: 'var(--color-surface-2)', border: 'none', borderRadius: 9, padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <X size={16} color="var(--color-text-2)" />
               </button>
             </div>
 
@@ -319,8 +319,8 @@ export function ProgramacionView() {
                   style={{
                     flex: 1, padding: '8px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer',
                     border: 'none',
-                    background: form.type === t ? '#0F172A' : '#F1F5F9',
-                    color: form.type === t ? '#fff' : '#64748B',
+                    background: form.type === t ? 'var(--color-text)' : 'var(--color-surface-2)',
+                    color: form.type === t ? 'var(--color-surface)' : 'var(--color-text-2)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   }}>
                   {t === 'wod' ? <Zap size={13} /> : <Dumbbell size={13} />}
@@ -332,18 +332,18 @@ export function ProgramacionView() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
               {form.type === 'wod' ? (
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>WOD *</label>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>WOD *</label>
                   <select value={form.wod_id} onChange={e => setForm(f => ({ ...f, wod_id: e.target.value }))}
-                    style={{ width: '100%', padding: '9px 11px', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13, color: '#0F172A', background: '#fff', outline: 'none', boxSizing: 'border-box' }}>
+                    style={{ width: '100%', padding: '9px 11px', border: '1px solid var(--color-border)', borderRadius: 9, fontSize: 13, color: 'var(--color-text)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }}>
                     <option value="">Selecciona un WOD...</option>
                     {wods.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select>
                 </div>
               ) : (
                 <div>
-                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Rutina *</label>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Rutina *</label>
                   <select value={form.routine_id} onChange={e => setForm(f => ({ ...f, routine_id: e.target.value }))}
-                    style={{ width: '100%', padding: '9px 11px', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13, color: '#0F172A', background: '#fff', outline: 'none', boxSizing: 'border-box' }}>
+                    style={{ width: '100%', padding: '9px 11px', border: '1px solid var(--color-border)', borderRadius: 9, fontSize: 13, color: 'var(--color-text)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }}>
                     <option value="">Selecciona una rutina...</option>
                     {routines.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
                   </select>
@@ -351,26 +351,26 @@ export function ProgramacionView() {
               )}
 
               <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Grupo (opcional)</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Grupo (opcional)</label>
                 <select value={form.group_id} onChange={e => setForm(f => ({ ...f, group_id: e.target.value }))}
-                  style={{ width: '100%', padding: '9px 11px', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13, color: '#0F172A', background: '#fff', outline: 'none', boxSizing: 'border-box' }}>
+                  style={{ width: '100%', padding: '9px 11px', border: '1px solid var(--color-border)', borderRadius: 9, fontSize: 13, color: 'var(--color-text)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }}>
                   <option value="">Todos los grupos</option>
                   {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Notas</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Notas</label>
                 <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                   placeholder="Ej. Clase de las 7am, cargar 80%..."
-                  style={{ width: '100%', padding: '9px 11px', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13, color: '#0F172A', background: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '9px 11px', border: '1px solid var(--color-border)', borderRadius: 9, fontSize: 13, color: 'var(--color-text)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setSelected(null)}
-                style={{ flex: 1, padding: '10px', border: '1px solid #E2E8F0', borderRadius: 10, fontSize: 13, fontWeight: 500, background: '#fff', color: '#64748B', cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 10, fontSize: 13, fontWeight: 500, background: 'var(--color-surface)', color: 'var(--color-text-2)', cursor: 'pointer' }}>
                 Cancelar
               </button>
               <button
@@ -379,10 +379,10 @@ export function ProgramacionView() {
                 style={{
                   flex: 2, padding: '10px', border: 'none', borderRadius: 10,
                   fontSize: 13, fontWeight: 700, color: '#fff',
-                  background: saveMutation.isPending ? '#94A3B8' : '#E53E3E',
+                  background: saveMutation.isPending ? 'var(--color-text-3)' : '#6366F1',
                   cursor: saveMutation.isPending ? 'not-allowed' : 'pointer',
                 }}>
-                {saveMutation.isPending ? 'Guardando...' : '✓ Programar'}
+                {saveMutation.isPending ? 'Guardando...' : 'âœ“ Programar'}
               </button>
             </div>
           </div>
