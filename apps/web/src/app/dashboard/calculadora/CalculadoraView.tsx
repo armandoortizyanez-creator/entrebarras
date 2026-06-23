@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAthletes } from '@/lib/queries/athletes'
+import { getAthletes, getMyAthlete } from '@/lib/queries/athletes'
 import { getLatestPRs, getPRHistory, savePR, deletePR, epley1RM, percentageTable } from '@/lib/queries/prs'
 import type { PersonalRecord } from '@/lib/queries/prs'
 import { useUser } from '@/hooks/useUser'
@@ -74,18 +74,15 @@ export function CalculadoraView() {
     enabled: !loading && !isAthlete,
   })
 
-  // Load current user's athlete ID for athlete role
-  const { data: selfPRs } = useQuery({
-    queryKey: ['prs', 'self'],
-    queryFn: async () => {
-      // For athlete role we fetch by matching auth user later — for now use first found
-      return [] as PersonalRecord[]
-    },
-    enabled: isAthlete,
+  // Load own athlete profile when role = athlete
+  const { data: myAthlete } = useQuery({
+    queryKey: ['my-athlete'],
+    queryFn: () => getMyAthlete(),
+    enabled: !loading && isAthlete,
   })
 
   // PRs for selected athlete
-  const effectiveAthleteId = selectedAthleteId
+  const effectiveAthleteId = isAthlete ? (myAthlete?.id ?? null) : selectedAthleteId
   const { data: prs = [], isLoading: prsLoading } = useQuery({
     queryKey: ['prs', effectiveAthleteId],
     queryFn: () => getLatestPRs(effectiveAthleteId!),
@@ -193,7 +190,26 @@ export function CalculadoraView() {
         )}
       </div>
 
-      {/* Athlete selector (coaches only) */}
+      {/* Athlete selector (coaches only) — athletes see their own name */}
+      {isAthlete && myAthlete && (
+        <div style={{
+          background: '#fff', border: '1px solid #E2E8F0',
+          borderRadius: 14, padding: '14px 20px', marginBottom: 20,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FFF5F5', border: '1px solid #FED7D7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Trophy size={16} color="#E53E3E" />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>
+              {myAthlete.first_name} {myAthlete.last_name}
+            </div>
+            <div style={{ fontSize: 12, color: '#94A3B8' }}>Tus récords personales</div>
+          </div>
+        </div>
+      )}
+
       {!isAthlete && (
         <div style={{
           background: '#fff', border: '1px solid #E2E8F0',
@@ -230,7 +246,11 @@ export function CalculadoraView() {
         </div>
       )}
 
-      {!effectiveAthleteId && !isAthlete ? (
+      {!effectiveAthleteId && isAthlete ? (
+        <div style={{ padding: '48px 24px', textAlign: 'center', color: '#94A3B8', fontSize: 14 }}>
+          Cargando...
+        </div>
+      ) : !effectiveAthleteId && !isAthlete ? (
         <div style={{
           background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16,
           padding: '64px 24px', textAlign: 'center',
