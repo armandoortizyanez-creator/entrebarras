@@ -1,15 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, Dumbbell, Zap,
   BookOpen, CalendarDays, BarChart2, Settings,
-  UserCog, Mail, UsersRound, Building2, Shield, X, Percent, ClipboardList, Timer,
+  UserCog, Mail, UsersRound, Building2, Shield, X, Percent, ClipboardList, Timer, LogOut,
 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 import { ROLE_LABELS } from '@entrebarras/types'
 import { useSidebar } from './SidebarContext'
+import { createClient } from '@/lib/supabase/client'
 
 type NavItem = { href: string; label: string; icon: React.ElementType }
 
@@ -62,8 +63,15 @@ const ROLE_BADGE: Record<string, { bg: string; color: string }> = {
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { role, isPlatformAdmin, isSuperAdmin, isCoach, isAthlete } = useUser()
   const { isOpen, close } = useSidebar()
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   const extraItems = isPlatformAdmin
     ? PLATFORM_ADMIN_ITEMS
@@ -201,8 +209,8 @@ export function Sidebar() {
           )}
         </nav>
 
-        {/* Bottom: Configuración */}
-        <div style={{ padding: '10px', borderTop: '1px solid var(--sidebar-border)' }}>
+        {/* Bottom: Configuración + Cerrar sesión */}
+        <div style={{ padding: '10px', borderTop: '1px solid var(--sidebar-border)', display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Link
             href="/dashboard/configuracion"
             onClick={handleNavClick}
@@ -228,6 +236,28 @@ export function Sidebar() {
             <Settings size={15.5} strokeWidth={1.75} style={{ opacity: 0.65 }} />
             Configuración
           </Link>
+          <button
+            onClick={handleSignOut}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 9,
+              padding: '7.5px 10px', borderRadius: 8,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              fontSize: 13.5, color: 'rgba(229,57,53,0.7)',
+              width: '100%', textAlign: 'left',
+              transition: 'background 0.12s, color 0.12s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(229,57,53,0.1)'
+              ;(e.currentTarget as HTMLElement).style.color = '#E53935'
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = 'transparent'
+              ;(e.currentTarget as HTMLElement).style.color = 'rgba(229,57,53,0.7)'
+            }}
+          >
+            <LogOut size={15.5} strokeWidth={1.75} />
+            Cerrar sesión
+          </button>
         </div>
       </aside>
     </>
