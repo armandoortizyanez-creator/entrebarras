@@ -45,7 +45,7 @@ export function RutinasView() {
   })
 
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 1100 }}>
+    <div className="eb-page" style={{ maxWidth: 1100 }}>
       {/* Page header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>

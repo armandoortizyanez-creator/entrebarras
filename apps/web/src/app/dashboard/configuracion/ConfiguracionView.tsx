@@ -33,7 +33,7 @@ export function ConfiguracionView() {
   ]
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 760 }}>
+    <div className="eb-page" style={{ maxWidth: 760 }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: 28 }}>
         Configuración
       </h1>

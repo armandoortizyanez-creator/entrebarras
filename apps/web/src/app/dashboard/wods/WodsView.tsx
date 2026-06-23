@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getWods, createWod, deleteWod, WOD_TYPES } from '@/lib/queries/wods'
 import Link from 'next/link'
@@ -26,6 +26,13 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
 
 export function WodsView() {
   const [showModal, setShowModal] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
   const qc = useQueryClient()
 
   const { data: wods = [], isLoading } = useQuery({
@@ -39,10 +46,10 @@ export function WodsView() {
   })
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 1180 }}>
+    <div style={{ padding: isMobile ? '16px 16px 80px' : '32px 36px', maxWidth: 1180 }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isMobile ? 16 : 28 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.03em', marginBottom: 3 }}>
             WODs

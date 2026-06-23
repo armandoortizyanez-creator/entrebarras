@@ -99,7 +99,7 @@ export function GruposView() {
   const canGlobal = isSuperAdmin || isPlatformAdmin
 
   const s = {
-    page:     { padding: '32px 40px', maxWidth: 1100 },
+    page:     { maxWidth: 1100 },
     header:   { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 },
     title:    { fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' },
     sub:      { fontSize: 14, color: 'var(--color-text-3)', marginTop: 4 },
@@ -149,7 +149,7 @@ export function GruposView() {
   }
 
   return (
-    <div style={s.page}>
+    <div className="eb-page" style={s.page}>
       <div style={s.header}>
         <div>
           <h1 style={s.title}>Grupos de entrenamiento</h1>

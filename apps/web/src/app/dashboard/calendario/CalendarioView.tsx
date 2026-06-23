@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getSessionsByMonth, createSession, deleteSession, updateSessionStatus,
@@ -36,6 +36,13 @@ export function CalendarioView() {
   const [month, setMonth] = useState(today.getMonth() + 1)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [showAssign, setShowAssign] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
   const qc = useQueryClient()
 
   const { data: sessions = [] } = useQuery({
@@ -81,20 +88,20 @@ export function CalendarioView() {
   const selectedSessions = selectedDate ? (sessionsByDate[selectedDate] ?? []) : []
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+    <div style={{ padding: isMobile ? '16px 16px 80px' : '32px 40px', maxWidth: 1200 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 28 }}>
+        <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
           Calendario
         </h1>
         <button
           onClick={() => { setShowAssign(true) }}
-          style={{ background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', padding: '9px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          style={{ background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', padding: isMobile ? '8px 12px' : '9px 18px', fontSize: isMobile ? 12 : 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
         >
-          + Asignar entrenamiento
+          {isMobile ? '+ Asignar' : '+ Asignar entrenamiento'}
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 20, alignItems: 'start' }}>
         {/* Calendario */}
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
           {/* Header del mes */}
@@ -119,7 +126,7 @@ export function CalendarioView() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
             {/* Celdas vacías del inicio */}
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} style={{ minHeight: 88, borderRight: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }} />
+              <div key={`empty-${i}`} style={{ minHeight: isMobile ? 52 : 88, borderRight: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }} />
             ))}
 
             {/* Días del mes */}
@@ -136,7 +143,7 @@ export function CalendarioView() {
                   key={day}
                   onClick={() => setSelectedDate(ds === selectedDate ? null : ds)}
                   style={{
-                    minHeight: 88, padding: '6px', cursor: 'pointer',
+                    minHeight: isMobile ? 52 : 88, padding: isMobile ? '4px' : '6px', cursor: 'pointer',
                     borderRight: isLastCol ? 'none' : '1px solid var(--color-border)',
                     borderBottom: '1px solid var(--color-border)',
                     background: isSelected ? 'var(--color-red-muted)' : isToday ? 'var(--color-surface-2)' : 'transparent',
@@ -144,32 +151,44 @@ export function CalendarioView() {
                   }}
                 >
                   <div style={{
-                    width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    borderRadius: '50%', marginBottom: 4,
+                    width: isMobile ? 22 : 26, height: isMobile ? 22 : 26,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: '50%', marginBottom: isMobile ? 2 : 4,
                     background: isToday ? 'var(--color-red)' : 'transparent',
-                    fontSize: 13, fontWeight: isToday ? 700 : 400,
+                    fontSize: isMobile ? 11 : 13, fontWeight: isToday ? 700 : 400,
                     color: isToday ? '#fff' : isSelected ? 'var(--color-red)' : 'var(--color-text)',
                   }}>
                     {day}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {daySessions.slice(0, 3).map(s => (
-                      <div
-                        key={s.id}
-                        style={{
-                          fontSize: 11, padding: '1px 5px', borderRadius: 3,
-                          background: TYPE_COLORS[s.type] + '22',
-                          color: TYPE_COLORS[s.type],
-                          fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {s.athlete?.first_name} {s.athlete?.last_name?.[0]}.
+                  {isMobile ? (
+                    daySessions.length > 0 && (
+                      <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                        {daySessions.slice(0, 3).map(s => (
+                          <div key={s.id} style={{ width: 6, height: 6, borderRadius: '50%', background: TYPE_COLORS[s.type], flexShrink: 0 }} />
+                        ))}
+                        {daySessions.length > 3 && <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-text-4)' }} />}
                       </div>
-                    ))}
-                    {daySessions.length > 3 && (
-                      <div style={{ fontSize: 10, color: 'var(--color-text-3)' }}>+{daySessions.length - 3} más</div>
-                    )}
-                  </div>
+                    )
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {daySessions.slice(0, 3).map(s => (
+                        <div
+                          key={s.id}
+                          style={{
+                            fontSize: 11, padding: '1px 5px', borderRadius: 3,
+                            background: TYPE_COLORS[s.type] + '22',
+                            color: TYPE_COLORS[s.type],
+                            fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {s.athlete?.first_name} {s.athlete?.last_name?.[0]}.
+                        </div>
+                      ))}
+                      {daySessions.length > 3 && (
+                        <div style={{ fontSize: 10, color: 'var(--color-text-3)' }}>+{daySessions.length - 3} más</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}

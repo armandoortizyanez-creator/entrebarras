@@ -326,6 +326,24 @@ body {
 }
 
 /* ============================================
+   PAGE WRAPPER — RESPONSIVE PADDING
+   ============================================ */
+
+.eb-page {
+  padding: 32px 40px;
+}
+
+@media (max-width: 767px) {
+  .eb-page {
+    padding: 16px 16px 80px !important;
+  }
+
+  .eb-page h1 {
+    font-size: 18px !important;
+  }
+}
+
+/* ============================================
    ATLETAS TABLE — RESPONSIVE
    ============================================ */
 

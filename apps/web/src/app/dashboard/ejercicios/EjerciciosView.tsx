@@ -136,7 +136,7 @@ export function EjerciciosView() {
   const hasMore    = offset + LIMIT < total && !search && !equipFilter
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 1240 }}>
+    <div className="eb-page" style={{ maxWidth: 1240 }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>

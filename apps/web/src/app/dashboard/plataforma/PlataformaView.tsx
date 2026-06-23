@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAllTenants, getTenantStats } from '@/lib/queries/team'
 import { useUser } from '@/hooks/useUser'
@@ -29,6 +29,13 @@ export function PlataformaView() {
   const { isPlatformAdmin } = useUser()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const { data: tenants = [], isLoading } = useQuery({
     queryKey: ['platform-tenants'],
@@ -58,16 +65,16 @@ export function PlataformaView() {
   const activeCount = tenants.filter((t: TenantWithStats) => t.is_active).length
 
   const s = {
-    page:     { padding: '32px 40px', maxWidth: 1200 },
-    header:   { marginBottom: 28 },
-    title:    { fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' },
+    page:     { padding: isMobile ? '16px 16px 80px' : '32px 40px', maxWidth: 1200 },
+    header:   { marginBottom: isMobile ? 16 : 28 },
+    title:    { fontSize: isMobile ? 18 : 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' },
     sub:      { fontSize: 14, color: 'var(--color-text-3)', marginTop: 4 },
-    statRow:  { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 },
-    statCard: { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px' },
-    statNum:  { fontSize: 26, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.03em' },
+    statRow:  { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 14, marginBottom: isMobile ? 16 : 28 },
+    statCard: { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: isMobile ? '14px 16px' : '18px 20px' },
+    statNum:  { fontSize: isMobile ? 22 : 26, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.03em' },
     statLbl:  { fontSize: 11.5, color: 'var(--color-text-3)', marginTop: 3 },
-    toolbar:  { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20 },
-    search:   { flex: 1, height: 38, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', color: 'var(--color-text)', padding: '0 12px', fontSize: 13.5 },
+    toolbar:  { display: 'flex', flexDirection: isMobile ? 'column' as const : 'row' as const, gap: 10, alignItems: isMobile ? 'stretch' : 'center', marginBottom: 20 },
+    search:   { flex: 1, height: 40, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', color: 'var(--color-text)', padding: '0 12px', fontSize: 13.5 },
     tab:      (a: boolean) => ({
       padding: '6px 14px', borderRadius: 'var(--radius-sm)', border: 'none',
       fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
