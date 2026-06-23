@@ -252,10 +252,19 @@ export function WodTimer({ wod, wodId, athletes, onClose, onResultSaved }: {
   const accentColor = isInterval && phase === 'rest' ? '#94A3B8' : tc.accent
   const isFinished = timerState === 'finished'
 
+  // Warning: <= 30s remaining on countdown modes, or stopwatch approaching time cap
+  const warningSeconds = isStopwatch && timeCap
+    ? timeCap - elapsed
+    : isAMRAP || isEMOM || isInterval
+      ? displayTime
+      : Infinity
+  const isWarning = warningSeconds <= 30 && warningSeconds > 0 && timerState === 'running'
+  const timerColor = isFinished ? '#EF4444' : isWarning ? '#F97316' : '#fff'
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2000,
-      background: tc.bg,
+      background: '#000',
       display: 'flex', flexDirection: 'column',
     }}>
       {/* Top bar */}
@@ -321,13 +330,14 @@ export function WodTimer({ wod, wodId, athletes, onClose, onResultSaved }: {
           <div style={{
             fontSize: 'clamp(80px, 16vw, 140px)',
             fontWeight: 800,
-            color: isFinished ? '#EF4444' : '#fff',
+            color: timerColor,
             letterSpacing: '-0.06em',
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
-            transition: 'color 0.3s',
+            transition: 'color 0.4s',
             textAlign: 'center',
             fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", monospace',
+            animation: isWarning ? 'timer-pulse 1s ease-in-out infinite' : 'none',
           }}>
             {formatTime(displayTime)}
           </div>

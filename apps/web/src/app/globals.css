@@ -140,6 +140,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .animate-skeleton {
   animation: pulse-skeleton 1.6s ease-in-out infinite;
 }
