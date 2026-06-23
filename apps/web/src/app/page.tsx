@@ -60,90 +60,109 @@ export default function HomePage() {
     <main style={{ background: '#0D1117', color: '#EDF0F7', fontFamily: 'var(--font-inter, Inter, system-ui, sans-serif)', overflowX: 'hidden' }}>
 
       {/* ── NAV ─────────────────────────────────────────────────────── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        height: 64,
-        background: scrolled || menuOpen ? 'rgba(8,11,16,0.97)' : 'transparent',
-        backdropFilter: scrolled || menuOpen ? 'blur(16px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : 'none',
-        transition: 'all 0.3s ease',
-      }}>
-        <div style={{ padding: `0 ${px}`, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logos/thryra-icon-lime-dark.png" alt="THRYRA" style={{ width: 32, height: 32, mixBlendMode: 'screen' }} />
-            <span style={{ fontWeight: 800, fontSize: 15, color: '#fff', letterSpacing: '0.04em', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>THRYRA</span>
-          </div>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, pointerEvents: 'none' }}>
+        {/* Pill flotante — igual que vambe */}
+        <div style={{
+          margin: '12px 16px 0',
+          pointerEvents: 'auto',
+          background: 'rgba(13,17,23,0.95)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          borderRadius: 16,
+          boxShadow: '0 0 60px rgba(0,0,0,0.80)',
+          padding: '0 24px',
+        }}>
+          <div style={{ height: 52, display: 'flex', alignItems: 'center', gap: 8 }}>
 
-          {/* Desktop links */}
-          {!isMobile && (
-            <div style={{ display: 'flex', gap: 36, alignItems: 'center' }}>
-              <a href="#producto" style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontWeight: 500 }}>Producto</a>
-              <a href="#precios" style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontWeight: 500 }}>Precios</a>
-              <Link href="/login" style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontWeight: 500 }}>
-                Iniciar sesión
-              </Link>
+            {/* Logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logos/logo-dark.png" alt="THRYRA" style={{ height: 20, width: 'auto', mixBlendMode: 'screen', marginRight: 16, flexShrink: 0 }} />
+
+            {/* Nav links — desktop */}
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                {[
+                  { label: 'Producto', href: '#producto' },
+                  { label: 'Funciones', href: '#funciones' },
+                  { label: 'Precios', href: '#precios' },
+                  { label: 'Nosotros', href: '#nosotros' },
+                ].map(item => (
+                  <a key={item.label} href={item.href} style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    padding: '8px 12px', borderRadius: 8,
+                    fontSize: 14, fontWeight: 500,
+                    color: 'rgba(255,255,255,0.55)',
+                    textDecoration: 'none', transition: 'color 0.15s, background 0.15s',
+                  }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = '#fff'; el.style.background = 'rgba(255,255,255,0.08)' }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(255,255,255,0.55)'; el.style.background = 'transparent' }}
+                  >{item.label}</a>
+                ))}
+              </div>
+            )}
+
+            {/* CTAs — derecha */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+              {!isMobile && (
+                <Link href="/login" style={{
+                  padding: '8px 16px', borderRadius: 8,
+                  fontSize: 14, fontWeight: 500,
+                  color: 'rgba(255,255,255,0.70)',
+                  background: 'rgba(255,255,255,0.08)',
+                  textDecoration: 'none', transition: 'background 0.15s, color 0.15s',
+                }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,0.14)'; el.style.color = '#fff' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,0.08)'; el.style.color = 'rgba(255,255,255,0.70)' }}
+                >
+                  Iniciar sesión
+                </Link>
+              )}
               <Link href="/registro" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 18px', borderRadius: 8,
+                fontSize: 14, fontWeight: 600,
                 background: '#C6FF00', color: '#0D1117',
-                padding: '8px 20px', borderRadius: 8,
-                fontWeight: 700, fontSize: 13.5, textDecoration: 'none',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+                boxShadow: '0 2px 12px rgba(198,255,0,0.25)',
               }}>
-                Empezar gratis <ArrowRight size={13} />
+                {isMobile ? 'Empezar' : 'Empezar gratis'} <ArrowRight size={13} />
               </Link>
+              {isMobile && (
+                <button onClick={() => setMenuOpen(o => !o)} style={{
+                  width: 36, height: 36, borderRadius: 8,
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: 'none', cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.70)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {menuOpen ? <X size={16} /> : <Menu size={16} />}
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* Mobile: CTA + hamburger */}
-          {isMobile && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Link href="/registro" style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                background: '#C6FF00', color: '#0D1117',
-                padding: '7px 14px', borderRadius: 8,
-                fontWeight: 700, fontSize: 13, textDecoration: 'none',
-              }}>
-                Gratis <ArrowRight size={12} />
-              </Link>
-              <button
-                onClick={() => setMenuOpen(o => !o)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', padding: 4 }}
-              >
-                {menuOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
+          {/* Mobile dropdown */}
+          {isMobile && menuOpen && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '8px 0 16px' }}>
+              {[
+                { label: 'Producto', href: '#producto' },
+                { label: 'Funciones', href: '#funciones' },
+                { label: 'Precios', href: '#precios' },
+                { label: 'Iniciar sesión', href: '/login' },
+              ].map(item => (
+                <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)} style={{
+                  display: 'block', padding: '12px 4px',
+                  fontSize: 15, color: 'rgba(255,255,255,0.70)',
+                  textDecoration: 'none', fontWeight: 500,
+                  borderBottom: '1px solid rgba(255,255,255,0.05)',
+                }}>
+                  {item.label}
+                </a>
+              ))}
             </div>
           )}
         </div>
-
-        {/* Mobile dropdown menu */}
-        {isMobile && menuOpen && (
-          <div style={{
-            background: 'rgba(8,11,16,0.97)', backdropFilter: 'blur(16px)',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            padding: '20px',
-            display: 'flex', flexDirection: 'column', gap: 0,
-          }}>
-            {[
-              { label: 'Producto', href: '#producto' },
-              { label: 'Precios', href: '#precios' },
-              { label: 'Iniciar sesión', href: '/login' },
-            ].map(item => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  fontSize: 16, color: 'rgba(255,255,255,0.75)', textDecoration: 'none',
-                  fontWeight: 500, padding: '14px 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                }}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-        )}
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
