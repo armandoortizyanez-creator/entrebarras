@@ -39,7 +39,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 export function CalculadoraView() {
-  const { role, isAthlete } = useUser()
+  const { role, isAthlete, loading } = useUser()
   const qc = useQueryClient()
 
   // Athlete selection (coaches see all; athletes see themselves)
@@ -67,11 +67,11 @@ export function CalculadoraView() {
 
   const movementName = customMovement.trim() || selectedMovement
 
-  // Load athletes (coaches/admins only)
+  // Load athletes (coaches/admins only) — wait for auth to resolve first
   const { data: athletes = [] } = useQuery({
     queryKey: ['athletes'],
     queryFn: () => getAthletes(),
-    enabled: !isAthlete,
+    enabled: !loading && !isAthlete,
   })
 
   // Load current user's athlete ID for athlete role
