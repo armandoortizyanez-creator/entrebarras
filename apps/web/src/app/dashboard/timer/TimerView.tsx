@@ -119,7 +119,7 @@ export function TimerView() {
 
   // Warning: <= 30s remaining on countdown / interval
   const warningTime = mode === 'countdown' ? displayTime : mode === 'interval' ? displayTime : Infinity
-  const isWarning = warningTime <= 30 && warningTime > 0 && timerState === 'running'
+  const isWarning = warningTime <= 10 && warningTime > 0 && timerState === 'running'
   const isFinished = timerState === 'finished'
   const timerColor = isFinished ? '#EF4444' : isWarning ? '#F97316' : '#fff'
 

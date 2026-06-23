@@ -258,7 +258,7 @@ export function WodTimer({ wod, wodId, athletes, onClose, onResultSaved }: {
     : isAMRAP || isEMOM || isInterval
       ? displayTime
       : Infinity
-  const isWarning = warningSeconds <= 30 && warningSeconds > 0 && timerState === 'running'
+  const isWarning = warningSeconds <= 10 && warningSeconds > 0 && timerState === 'running'
   const timerColor = isFinished ? '#EF4444' : isWarning ? '#F97316' : '#fff'
 
   return (
