@@ -18,7 +18,7 @@ export default function NotFound() {
     }}>
       {/* Logo */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logos/logo-main.png" alt="THRYRA" style={{ height: 28, width: 'auto', marginBottom: 56 }} />
+      <img src="/logos/logo-main.png" alt="THRYRA" style={{ height: 36, width: 'auto', marginBottom: 56 }} />
 
       {/* 404 number */}
       <div style={{

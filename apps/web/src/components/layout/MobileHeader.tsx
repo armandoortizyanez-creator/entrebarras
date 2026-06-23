@@ -18,7 +18,7 @@ export function MobileHeader() {
       <img
         src="/logos/logo-main.png"
         alt="THRYRA"
-        style={{ height: 22, width: 'auto' }}
+        style={{ height: 30, width: 'auto' }}
       />
       <div style={{ width: 36 }} />
     </header>
