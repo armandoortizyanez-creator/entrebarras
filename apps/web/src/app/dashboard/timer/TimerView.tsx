@@ -228,14 +228,14 @@ export function TimerView() {
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         {/* Mode tabs */}
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any, scrollbarWidth: 'none' as any }}>
           {(['countdown', 'stopwatch', 'interval'] as Mode[]).map(m => (
             <button
               key={m}
               onClick={() => { setMode(m); reset() }}
               disabled={timerState === 'running'}
               style={{
-                padding: '6px 14px', borderRadius: 20, border: 'none',
+                padding: '6px 14px', borderRadius: 20, border: 'none', flexShrink: 0,
                 fontSize: 12, fontWeight: 700, cursor: timerState === 'running' ? 'not-allowed' : 'pointer',
                 letterSpacing: '0.04em', textTransform: 'uppercase' as const,
                 background: mode === m ? '#fff' : 'rgba(255,255,255,0.08)',
@@ -244,7 +244,7 @@ export function TimerView() {
                 transition: 'all 0.15s',
               }}
             >
-              {m === 'countdown' ? 'Cuenta Regresiva' : m === 'stopwatch' ? 'Cronómetro' : 'Intervalos'}
+              {m === 'countdown' ? 'Regresiva' : m === 'stopwatch' ? 'Cronómetro' : 'Intervalos'}
             </button>
           ))}
         </div>

@@ -38,17 +38,17 @@ export function ConfiguracionView() {
         Configuración
       </h1>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid var(--color-border)', paddingBottom: 0 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid var(--color-border)', paddingBottom: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' } as React.CSSProperties}>
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id)}
             style={{
-              padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
+              padding: '8px 14px', background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 14, fontWeight: activeTab === t.id ? 600 : 400,
               color: activeTab === t.id ? 'var(--color-text)' : 'var(--color-text-3)',
               borderBottom: `2px solid ${activeTab === t.id ? 'var(--color-red)' : 'transparent'}`,
-              marginBottom: -1,
+              marginBottom: -1, whiteSpace: 'nowrap', flexShrink: 0,
             }}
           >
             {t.label}

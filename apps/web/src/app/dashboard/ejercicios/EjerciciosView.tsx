@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { createExercise } from '@/lib/queries/exercises'
-import { X, Dumbbell, Search, ChevronDown } from 'lucide-react'
+import { X, Dumbbell, Search, ChevronDown, SlidersHorizontal } from 'lucide-react'
 
 // ── Wger types ────────────────────────────────────────────────────────────────
 type WgerTranslation = { language: number; name: string; description: string }
@@ -135,6 +135,15 @@ export function EjerciciosView() {
   const hasFilters = category || search || equipFilter
   const hasMore    = offset + LIMIT < total && !search && !equipFilter
 
+  const [isMobile, setIsMobile] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   return (
     <div className="eb-page" style={{ maxWidth: 1240 }}>
       {/* Header */}
@@ -157,30 +166,70 @@ export function EjerciciosView() {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-        {/* Sidebar */}
-        <aside style={{ width: 196, flexShrink: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '16px 12px', boxShadow: 'var(--shadow-card)', position: 'sticky', top: 24 }}>
-          <FilterSection title="Categoría">
-            <FilterBtn active={!category} onClick={() => setCategory(null)}>Todos</FilterBtn>
-            {CATEGORIES.map(c => (
-              <FilterBtn key={c.id} active={category === c.id} onClick={() => setCategory(c.id)}>{c.label}</FilterBtn>
-            ))}
-          </FilterSection>
-
-          {uniqueEquip.length > 0 && (
-            <FilterSection title="Equipamiento">
-              <FilterBtn active={!equipFilter} onClick={() => setEquipFilter(null)}>Todos</FilterBtn>
-              {uniqueEquip.map(eq => (
-                <FilterBtn key={eq.id} active={equipFilter === eq.id} onClick={() => setEquipFilter(eq.id)}>
-                  {EQUIPMENT_LABELS[eq.id] ?? eq.name}
-                </FilterBtn>
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
+        {/* Sidebar — desktop sticky, mobile collapsible */}
+        {isMobile ? (
+          <>
+            <button
+              onClick={() => setShowFilters(f => !f)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                padding: '10px 14px', background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+                fontSize: 14, fontWeight: 500, cursor: 'pointer', color: 'var(--color-text)',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <SlidersHorizontal size={15} style={{ color: 'var(--color-text-3)' }} />
+                Filtros{hasFilters ? ' (activos)' : ''}
+              </span>
+              <ChevronDown size={16} style={{ transform: showFilters ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />
+            </button>
+            {showFilters && (
+              <div style={{ width: '100%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
+                <FilterSection title="Categoría">
+                  <FilterBtn active={!category} onClick={() => setCategory(null)}>Todos</FilterBtn>
+                  {CATEGORIES.map(c => (
+                    <FilterBtn key={c.id} active={category === c.id} onClick={() => { setCategory(c.id); setShowFilters(false) }}>{c.label}</FilterBtn>
+                  ))}
+                </FilterSection>
+                {uniqueEquip.length > 0 && (
+                  <FilterSection title="Equipamiento">
+                    <FilterBtn active={!equipFilter} onClick={() => setEquipFilter(null)}>Todos</FilterBtn>
+                    {uniqueEquip.map(eq => (
+                      <FilterBtn key={eq.id} active={equipFilter === eq.id} onClick={() => { setEquipFilter(eq.id); setShowFilters(false) }}>
+                        {EQUIPMENT_LABELS[eq.id] ?? eq.name}
+                      </FilterBtn>
+                    ))}
+                  </FilterSection>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <aside style={{ width: 196, flexShrink: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '16px 12px', boxShadow: 'var(--shadow-card)', position: 'sticky', top: 24 }}>
+            <FilterSection title="Categoría">
+              <FilterBtn active={!category} onClick={() => setCategory(null)}>Todos</FilterBtn>
+              {CATEGORIES.map(c => (
+                <FilterBtn key={c.id} active={category === c.id} onClick={() => setCategory(c.id)}>{c.label}</FilterBtn>
               ))}
             </FilterSection>
-          )}
-        </aside>
+            {uniqueEquip.length > 0 && (
+              <FilterSection title="Equipamiento">
+                <FilterBtn active={!equipFilter} onClick={() => setEquipFilter(null)}>Todos</FilterBtn>
+                {uniqueEquip.map(eq => (
+                  <FilterBtn key={eq.id} active={equipFilter === eq.id} onClick={() => setEquipFilter(eq.id)}>
+                    {EQUIPMENT_LABELS[eq.id] ?? eq.name}
+                  </FilterBtn>
+                ))}
+              </FilterSection>
+            )}
+          </aside>
+        )}
 
         {/* Grid */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
           <div style={{ position: 'relative', marginBottom: 16 }}>
             <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-3)', pointerEvents: 'none' }} />
             <input type="text" placeholder="Buscar ejercicio..." value={search} onChange={e => setSearch(e.target.value)}

@@ -93,10 +93,10 @@ export function InvitacionesView() {
     header:   { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 },
     title:    { fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' },
     sub:      { fontSize: 14, color: 'var(--color-text-3)', marginTop: 4 },
-    tabs:     { display: 'flex', gap: 6, marginBottom: 20, borderBottom: '1px solid var(--color-border)', paddingBottom: 12 },
+    tabs:     { display: 'flex', gap: 6, marginBottom: 20, borderBottom: '1px solid var(--color-border)', paddingBottom: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' } as React.CSSProperties,
     tab:      (active: boolean) => ({
       padding: '5px 14px', borderRadius: 999, border: 'none',
-      fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
+      fontSize: 12.5, fontWeight: 500, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' as const,
       background: active ? 'var(--color-red)' : 'transparent',
       color: active ? '#fff' : 'var(--color-text-3)',
     }),
