@@ -14,21 +14,12 @@ export function MobileHeader() {
       >
         <Menu size={20} strokeWidth={2} />
       </button>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logos/thryra-icon-lime-dark.png"
-          alt="THRYRA"
-          style={{ width: 30, height: 30, mixBlendMode: 'screen' }}
-        />
-        <span style={{
-          fontWeight: 800, fontSize: 15, color: '#fff',
-          letterSpacing: '0.04em',
-          fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
-        }}>
-          THRYRA
-        </span>
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logos/logo-main.png"
+        alt="THRYRA"
+        style={{ height: 22, width: 'auto' }}
+      />
       <div style={{ width: 36 }} />
     </header>
   )

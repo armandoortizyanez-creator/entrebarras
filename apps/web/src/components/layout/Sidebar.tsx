@@ -102,37 +102,23 @@ export function Sidebar() {
       <aside className={`eb-sidebar${isOpen ? ' is-open' : ''}`}>
         {/* Logo + mobile close */}
         <div style={{ padding: '18px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Link href="/dashboard" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <Link href="/dashboard" onClick={handleNavClick} style={{ display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logos/thryra-icon-lime-dark.png"
-              alt="THRYRA logo"
-              style={{ width: 36, height: 36, flexShrink: 0, mixBlendMode: 'screen' }}
+              src="/logos/logo-main.png"
+              alt="THRYRA"
+              style={{ height: 20, width: 'auto' }}
             />
-            <div>
+            {roleLabel && badge && (
               <span style={{
-                display: 'block',
-                fontWeight: 800, fontSize: 14.5, color: '#fff',
-                letterSpacing: '0.04em', lineHeight: 1.15,
-                fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
+                display: 'inline-block',
+                fontSize: 9.5, fontWeight: 600, lineHeight: 1,
+                color: badge.color, background: badge.bg,
+                borderRadius: 4, padding: '2px 5px',
               }}>
-                THRYRA
+                {roleLabel}
               </span>
-              {roleLabel && badge ? (
-                <span style={{
-                  display: 'inline-block', marginTop: 2,
-                  fontSize: 9.5, fontWeight: 600, lineHeight: 1,
-                  color: badge.color, background: badge.bg,
-                  borderRadius: 4, padding: '2px 5px',
-                }}>
-                  {roleLabel}
-                </span>
-              ) : (
-                <span style={{ display: 'block', fontSize: 10.5, color: 'var(--sidebar-label)', lineHeight: 1 }}>
-                  Train. Evolve. Thrive.
-                </span>
-              )}
-            </div>
+            )}
           </Link>
           {/* Close button — only visible on mobile */}
           <button

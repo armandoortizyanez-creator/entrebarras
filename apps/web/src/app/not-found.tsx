@@ -17,11 +17,8 @@ export default function NotFound() {
       fontFamily: 'var(--font-inter, Inter, system-ui, sans-serif)',
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 56 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logos/thryra-icon-lime-dark.png" alt="THRYRA" style={{ width: 34, height: 34, mixBlendMode: 'screen' }} />
-        <span style={{ fontWeight: 800, fontSize: 16, color: '#fff', letterSpacing: '0.04em', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>THRYRA</span>
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logos/logo-main.png" alt="THRYRA" style={{ height: 28, width: 'auto', marginBottom: 56 }} />
 
       {/* 404 number */}
       <div style={{

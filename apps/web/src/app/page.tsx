@@ -77,7 +77,7 @@ export default function HomePage() {
 
             {/* Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logos/logo-dark.png" alt="THRYRA" style={{ height: 20, width: 'auto', mixBlendMode: 'screen', marginRight: 16, flexShrink: 0 }} />
+            <img src="/logos/logo-main.png" alt="THRYRA" style={{ height: 24, width: 'auto', marginRight: 16, flexShrink: 0 }} />
 
             {/* Nav links — desktop */}
             {!isMobile && (
