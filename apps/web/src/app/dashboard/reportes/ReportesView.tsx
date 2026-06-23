@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import { getRetentionReport, getSessionReport } from '@/lib/queries/reports'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -20,6 +21,14 @@ function formatWeekLabel(dateStr: string) {
 }
 
 export function ReportesView() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const { data: retention, isLoading: loadingRet } = useQuery({
     queryKey: ['retention-report'],
     queryFn: getRetentionReport,
@@ -31,12 +40,12 @@ export function ReportesView() {
   })
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1100 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: 28 }}>
+    <div style={{ padding: isMobile ? '16px 16px 80px' : '32px 40px', maxWidth: 1100 }}>
+      <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: isMobile ? 16 : 28 }}>
         Reportes
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
         {/* Retención */}
         <Section title="Retención de atletas" subtitle="Últimos 7 días de actividad">
           {loadingRet ? <Skeleton /> : (
@@ -152,11 +161,13 @@ export function ReportesView() {
         {loadingRet ? <Skeleton height={200} /> : (
           retention?.athletes && retention.athletes.filter(a => (a.days_since_last_workout ?? 99) >= 7).length > 0 ? (
             <div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 100px', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--color-border)', marginBottom: 4 }}>
-                {['Atleta', 'Sesiones 30d', 'Completadas', 'Riesgo'].map(h => (
-                  <span key={h} style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
-                ))}
-              </div>
+              {!isMobile && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 100px', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--color-border)', marginBottom: 4 }}>
+                  {['Atleta', 'Sesiones 30d', 'Completadas', 'Riesgo'].map(h => (
+                    <span key={h} style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</span>
+                  ))}
+                </div>
+              )}
               {retention.athletes
                 .filter(a => (a.days_since_last_workout ?? 99) >= 7)
                 .slice(0, 20)
@@ -165,6 +176,26 @@ export function ReportesView() {
                   const riskColor = risk === 'Alto' ? 'var(--color-error)' : 'var(--color-warning)'
                   const riskBg = risk === 'Alto' ? 'var(--color-error-bg)' : 'var(--color-warning-bg)'
                   const pct = a.scheduled_30d > 0 ? Math.round((a.completed_30d / a.scheduled_30d) * 100) : 0
+
+                  if (isMobile) {
+                    return (
+                      <div key={a.athlete_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--color-border)' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {a.first_name} {a.last_name}
+                          </p>
+                          <p style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
+                            {a.days_since_last_workout != null
+                              ? `Sin entrenar ${a.days_since_last_workout}d · ${a.completed_30d}/${a.scheduled_30d} (${pct}%)`
+                              : 'Sin sesiones registradas'}
+                          </p>
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: riskColor, background: riskBg, padding: '3px 10px', borderRadius: 'var(--radius-full)', display: 'inline-block', flexShrink: 0 }}>
+                          {risk}
+                        </span>
+                      </div>
+                    )
+                  }
 
                   return (
                     <div key={a.athlete_id} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px 100px', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--color-border)', alignItems: 'center' }}>

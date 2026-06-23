@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getBoxScheduleRange, upsertBoxSchedule, deleteBoxSchedule } from '@/lib/queries/box-schedule'
 import type { BoxScheduleEntry } from '@/lib/queries/box-schedule'
@@ -39,6 +39,14 @@ function toDateStr(date: Date): string {
 
 export function ProgramacionView() {
   const qc = useQueryClient()
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
   const [selected, setSelected] = useState<{ date: string; dayLabel: string } | null>(null)
   const [form, setForm] = useState({ wod_id: '', routine_id: '', group_id: '', notes: '', type: 'wod' as 'wod' | 'routine' })
@@ -100,14 +108,21 @@ export function ProgramacionView() {
   })()
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
+    <div style={{ padding: isMobile ? '16px 16px 80px' : '32px 40px', maxWidth: 1200 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+      <div style={{
+        display: 'flex',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between',
+        gap: isMobile ? 12 : 0,
+        marginBottom: isMobile ? 16 : 28,
+      }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
             Programación del Box
           </h1>
-          <p style={{ fontSize: 13, color: '#64748B' }}>Asigna el WOD o rutina de cada día para tus grupos</p>
+          {!isMobile && <p style={{ fontSize: 13, color: '#64748B' }}>Asigna el WOD o rutina de cada día para tus grupos</p>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button onClick={goToday} style={{
@@ -119,15 +134,18 @@ export function ProgramacionView() {
           <button onClick={prevWeek} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
             <ChevronLeft size={16} />
           </button>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', minWidth: 140, textAlign: 'center' }}>{monthYear}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', minWidth: isMobile ? 'auto' : 140, textAlign: 'center' }}>{monthYear}</span>
           <button onClick={nextWeek} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
             <ChevronRight size={16} />
           </button>
         </div>
       </div>
 
-      {/* Week grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+      {/* Week grid — desktop: 7 columns; mobile: vertical list */}
+      <div style={isMobile
+        ? { display: 'flex', flexDirection: 'column', gap: 8 }
+        : { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }
+      }>
         {weekDays.map((day, i) => {
           const dateStr = toDateStr(day)
           const isToday = dateStr === todayStr
@@ -140,15 +158,21 @@ export function ProgramacionView() {
               borderRadius: 14,
               overflow: 'hidden',
               boxShadow: isToday ? '0 0 0 3px rgba(229,62,62,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
-              minHeight: 160,
-              display: 'flex', flexDirection: 'column',
+              minHeight: isMobile ? 'auto' : 160,
+              display: 'flex', flexDirection: isMobile ? 'row' : 'column',
             }}>
               {/* Day header */}
               <div style={{
-                padding: '10px 12px',
-                borderBottom: '1px solid #F1F5F9',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: isMobile ? '12px 14px' : '10px 12px',
+                borderRight: isMobile ? '1px solid #F1F5F9' : 'none',
+                borderBottom: isMobile ? 'none' : '1px solid #F1F5F9',
+                display: 'flex',
+                alignItems: isMobile ? 'center' : 'center',
+                justifyContent: isMobile ? 'flex-start' : 'space-between',
+                gap: isMobile ? 10 : 0,
                 background: isToday ? '#FFF5F5' : 'transparent',
+                flexShrink: 0,
+                minWidth: isMobile ? 72 : 'auto',
               }}>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: isToday ? '#E53E3E' : '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -158,22 +182,30 @@ export function ProgramacionView() {
                     {day.getDate()}
                   </p>
                 </div>
-                <button
-                  onClick={() => openDay(dateStr, `${DAYS_FULL[i]} ${day.getDate()}`)}
-                  style={{
-                    width: 26, height: 26, borderRadius: 7,
-                    background: isToday ? '#FED7D7' : '#F1F5F9',
-                    border: 'none', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: isToday ? '#E53E3E' : '#94A3B8',
-                  }}
-                >
-                  <Plus size={13} />
-                </button>
+                {!isMobile && (
+                  <button
+                    onClick={() => openDay(dateStr, `${DAYS_FULL[i]} ${day.getDate()}`)}
+                    style={{
+                      width: 26, height: 26, borderRadius: 7,
+                      background: isToday ? '#FED7D7' : '#F1F5F9',
+                      border: 'none', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: isToday ? '#E53E3E' : '#94A3B8',
+                    }}
+                  >
+                    <Plus size={13} />
+                  </button>
+                )}
               </div>
 
               {/* Entries */}
-              <div style={{ flex: 1, padding: '8px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{
+                flex: 1, padding: isMobile ? '8px 10px' : '8px',
+                display: 'flex', flexDirection: isMobile ? 'row' : 'column',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                gap: 5,
+                alignItems: isMobile ? 'center' : 'stretch',
+              }}>
                 {dayEntries.map(entry => {
                   const isWod = !!entry.wod
                   const name = entry.wod?.name ?? entry.routine?.name ?? 'Sin nombre'
@@ -187,6 +219,7 @@ export function ProgramacionView() {
                       borderLeft: `3px solid ${accentColor}`,
                       borderRadius: 7, padding: '6px 8px',
                       position: 'relative',
+                      flex: isMobile ? '1 1 auto' : 'none',
                     }}
                       onMouseEnter={e => (e.currentTarget.querySelector('.del-btn') as HTMLElement)?.style.setProperty('opacity', '1')}
                       onMouseLeave={e => (e.currentTarget.querySelector('.del-btn') as HTMLElement)?.style.setProperty('opacity', '0')}
@@ -229,8 +262,10 @@ export function ProgramacionView() {
                     style={{
                       flex: 1, background: 'none', border: '1.5px dashed #E2E8F0',
                       borderRadius: 8, cursor: 'pointer', color: '#CBD5E1',
-                      fontSize: 11, fontWeight: 500, padding: '12px 8px',
+                      fontSize: 11, fontWeight: 500,
+                      padding: isMobile ? '10px 14px' : '12px 8px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      minWidth: isMobile ? 100 : 'auto',
                     }}
                   >
                     + Asignar
@@ -247,13 +282,20 @@ export function ProgramacionView() {
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1000, display: 'flex',
           background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)',
-          alignItems: 'center', justifyContent: 'center',
+          alignItems: isMobile ? 'flex-end' : 'center',
+          justifyContent: 'center',
         }} onClick={() => setSelected(null)}>
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#fff', borderRadius: 20, padding: '28px 28px 24px',
-              width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+              background: '#fff', borderRadius: isMobile ? '20px 20px 0 0' : 20,
+              padding: isMobile ? '24px 20px 32px' : '28px 28px 24px',
+              width: '100%', maxWidth: isMobile ? '100%' : 440,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+              position: isMobile ? 'fixed' : 'relative',
+              bottom: isMobile ? 0 : 'auto',
+              left: isMobile ? 0 : 'auto',
+              right: isMobile ? 0 : 'auto',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
