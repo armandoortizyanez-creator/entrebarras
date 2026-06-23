@@ -139,10 +139,11 @@ export function CalculadoraView() {
     }
   }, [movementName, prs])
 
-  function openAdd(movement?: string) {
+  function openAdd(movement?: string, weight?: number) {
     setAddForm(f => ({
       ...f,
       movement_name: movement || movementName,
+      weight_kg: weight ? String(weight) : f.weight_kg,
     }))
     setShowAddModal(true)
   }
@@ -556,7 +557,7 @@ export function CalculadoraView() {
                   {effectiveAthleteId && (
                     <div style={{ padding: '0 12px 12px' }}>
                       <button
-                        onClick={() => openAdd(movementName)}
+                        onClick={() => openAdd(movementName, oneRM ?? undefined)}
                         style={{
                           width: '100%', padding: '9px', background: '#0F172A', color: '#fff',
                           border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
