@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Zap, Percent, MoreHorizontal } from 'lucide-react'
+import { LayoutDashboard, Users, Zap, Timer, MoreHorizontal } from 'lucide-react'
 import { useSidebar } from './SidebarContext'
 
 const BOTTOM_ITEMS = [
-  { href: '/dashboard',             label: 'Home',    icon: LayoutDashboard },
-  { href: '/dashboard/atletas',     label: 'Atletas', icon: Users },
-  { href: '/dashboard/wods',        label: 'WODs',    icon: Zap },
-  { href: '/dashboard/calculadora', label: '%',       icon: Percent },
+  { href: '/dashboard',         label: 'Home',    icon: LayoutDashboard },
+  { href: '/dashboard/atletas', label: 'Atletas', icon: Users },
+  { href: '/dashboard/wods',    label: 'WODs',    icon: Zap },
+  { href: '/dashboard/timer',   label: 'Timer',   icon: Timer },
 ]
 
 export function BottomNav() {

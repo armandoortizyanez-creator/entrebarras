@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, Dumbbell, Zap,
   BookOpen, CalendarDays, BarChart2, Settings,
-  UserCog, Mail, UsersRound, Building2, Shield, X, Percent, ClipboardList,
+  UserCog, Mail, UsersRound, Building2, Shield, X, Percent, ClipboardList, Timer,
 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 import { ROLE_LABELS } from '@entrebarras/types'
@@ -18,6 +18,7 @@ const BASE_ITEMS: NavItem[] = [
   { href: '/dashboard/atletas',       label: 'Atletas',      icon: Users },
   { href: '/dashboard/rutinas',       label: 'Rutinas',      icon: Dumbbell },
   { href: '/dashboard/wods',          label: 'WODs',         icon: Zap },
+  { href: '/dashboard/timer',         label: 'Timer',        icon: Timer },
   { href: '/dashboard/calculadora',   label: 'Calculadora',  icon: Percent },
   { href: '/dashboard/ejercicios',    label: 'Ejercicios',   icon: BookOpen },
   { href: '/dashboard/programacion',  label: 'Programación', icon: ClipboardList },
@@ -28,6 +29,7 @@ const BASE_ITEMS: NavItem[] = [
 const ATHLETE_ITEMS: NavItem[] = [
   { href: '/dashboard',              label: 'Mi Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/wods',         label: 'WODs',         icon: Zap },
+  { href: '/dashboard/timer',        label: 'Timer',        icon: Timer },
   { href: '/dashboard/calculadora',  label: 'Mis PRs',      icon: Percent },
   { href: '/dashboard/programacion', label: 'Programación', icon: ClipboardList },
   { href: '/dashboard/calendario',   label: 'Calendario',   icon: CalendarDays },
