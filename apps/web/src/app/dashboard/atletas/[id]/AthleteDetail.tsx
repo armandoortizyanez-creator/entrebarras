@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAthlete, updateAthlete } from '@/lib/queries/athletes'
 import { getSessionsByAthlete } from '@/lib/queries/sessions'
 import { getMeasurements, addMeasurement, deleteMeasurement } from '@/lib/queries/measurements'
-import { getLatestPRs } from '@/lib/queries/prs'
+import { getLatestPRs, getPRHistory } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
 import type { Athlete } from '@entrebarras/types'
 import Link from 'next/link'
@@ -666,10 +666,47 @@ function StatVal({ label, value }: { label: string; value: string }) {
   )
 }
 
+function PRSparkline({ values }: { values: number[] }) {
+  if (values.length < 2) return null
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const W = 120, H = 36, PAD = 4
+  const pts = values.map((v, i) => {
+    const x = PAD + (i / (values.length - 1)) * (W - PAD * 2)
+    const y = H - PAD - ((v - min) / range) * (H - PAD * 2)
+    return `${x},${y}`
+  })
+  const lastX = parseFloat(pts[pts.length - 1].split(',')[0])
+  const lastY = parseFloat(pts[pts.length - 1].split(',')[1])
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+      <polyline
+        points={pts.join(' ')}
+        fill="none"
+        stroke="#E53E3E"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.7"
+      />
+      <circle cx={lastX} cy={lastY} r="3" fill="#E53E3E" />
+    </svg>
+  )
+}
+
 function PRsTab({ athleteId }: { athleteId: string }) {
+  const [expanded, setExpanded] = useState<string | null>(null)
+
   const { data: prs = [], isLoading } = useQuery({
     queryKey: ['athlete-prs', athleteId],
     queryFn: () => getLatestPRs(athleteId),
+  })
+
+  const { data: history = [], isLoading: histLoading } = useQuery({
+    queryKey: ['pr-history-detail', athleteId, expanded],
+    queryFn: () => getPRHistory(athleteId, expanded!),
+    enabled: !!expanded,
   })
 
   if (isLoading) return <div style={{ padding: 40, color: '#94A3B8', fontSize: 14 }}>Cargando PRs...</div>
@@ -689,43 +726,137 @@ function PRsTab({ athleteId }: { athleteId: string }) {
   )
 
   return (
-    <div style={{
-      background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    }}>
-      <div style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Dumbbell size={14} color="#E53E3E" />
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Récords personales
-        </span>
-        <span style={{ fontSize: 11, fontWeight: 600, background: '#F1F5F9', color: '#475569', borderRadius: 20, padding: '2px 8px' }}>
-          {prs.length}
-        </span>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 0 }}>
-        {prs.map((pr, i) => (
-          <div key={pr.id} style={{
-            padding: '16px 20px',
-            borderRight: '1px solid #F1F5F9',
-            borderBottom: '1px solid #F1F5F9',
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Summary row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+        {[
+          { label: 'Movimientos', value: prs.length, color: '#0F172A' },
+          { label: 'Mejor 1RM', value: `${Math.max(...prs.map(p => p.estimated_1rm ?? p.weight_kg))} kg`, color: '#E53E3E' },
+          { label: 'Último registro', value: new Date(prs[0]?.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }), color: '#0F172A' },
+        ].map(k => (
+          <div key={k.label} style={{
+            background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12,
+            padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-              {pr.movement_name}
-            </p>
-            <p style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', lineHeight: 1 }}>
-              {pr.estimated_1rm ?? pr.weight_kg}
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', marginLeft: 3 }}>kg</span>
-            </p>
-            {pr.estimated_1rm && pr.reps > 1 && (
-              <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>
-                {pr.weight_kg}kg × {pr.reps} reps (estimado)
-              </p>
-            )}
-            <p style={{ fontSize: 11, color: '#CBD5E1', marginTop: 4 }}>
-              {new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </p>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>{k.label}</p>
+            <p style={{ fontSize: 26, fontWeight: 800, color: k.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{k.value}</p>
           </div>
         ))}
+      </div>
+
+      {/* PR cards with expandable history */}
+      <div style={{
+        background: '#fff', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      }}>
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Trophy size={14} color="#E53E3E" />
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Récords personales</span>
+          <span style={{ fontSize: 11, fontWeight: 600, background: '#F1F5F9', color: '#475569', borderRadius: 20, padding: '2px 8px' }}>{prs.length}</span>
+        </div>
+
+        {prs.map((pr, i) => {
+          const rm = pr.estimated_1rm ?? pr.weight_kg
+          const isOpen = expanded === pr.movement_name
+          const histValues = history.map(h => h.estimated_1rm ?? h.weight_kg).reverse()
+          const best = isOpen && history.length > 0 ? Math.max(...history.map(h => h.estimated_1rm ?? h.weight_kg)) : null
+          const first = isOpen && history.length > 0 ? (history[history.length - 1].estimated_1rm ?? history[history.length - 1].weight_kg) : null
+          const gain = best && first && best > first ? +(best - first).toFixed(1) : null
+
+          return (
+            <div key={pr.id} style={{ borderBottom: i < prs.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
+              {/* PR row */}
+              <button
+                onClick={() => setExpanded(isOpen ? null : pr.movement_name)}
+                style={{
+                  width: '100%', textAlign: 'left', background: isOpen ? '#FFFBFB' : '#fff',
+                  border: 'none', cursor: 'pointer', padding: '14px 20px',
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  transition: 'background 0.12s',
+                }}
+              >
+                <div style={{
+                  width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+                  background: isOpen ? '#E53E3E' : '#F8FAFC',
+                  border: `1px solid ${isOpen ? '#E53E3E' : '#E2E8F0'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Dumbbell size={15} color={isOpen ? '#fff' : '#CBD5E1'} />
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{pr.movement_name}</p>
+                  <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                    {pr.reps > 1 ? `${pr.weight_kg} kg × ${pr.reps} reps` : `${pr.weight_kg} kg`}
+                    {' · '}{new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+
+                <p style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', flexShrink: 0 }}>
+                  {rm} <span style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8' }}>kg</span>
+                </p>
+
+                <ChevronRight size={16} color="#CBD5E1" style={{ flexShrink: 0, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+
+              {/* Expanded history */}
+              {isOpen && (
+                <div style={{ background: '#FAFAFA', borderTop: '1px solid #F1F5F9', padding: '16px 20px 20px 20px' }}>
+                  {histLoading ? (
+                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Cargando historial...</p>
+                  ) : history.length <= 1 ? (
+                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Solo un registro — agrega más PRs para ver la progresión.</p>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                      {/* Sparkline */}
+                      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10, padding: '12px 16px', flexShrink: 0 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                          Progresión
+                        </p>
+                        <PRSparkline values={histValues} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                          <span style={{ fontSize: 10, color: '#CBD5E1' }}>{first} kg</span>
+                          <span style={{ fontSize: 10, color: '#CBD5E1' }}>{best} kg</span>
+                        </div>
+                      </div>
+
+                      {/* Gain badge */}
+                      {gain && (
+                        <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: '12px 16px', flexShrink: 0 }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Mejora total</p>
+                          <p style={{ fontSize: 24, fontWeight: 800, color: '#16A34A', letterSpacing: '-0.04em' }}>+{gain} kg</p>
+                        </div>
+                      )}
+
+                      {/* History list */}
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Historial</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {history.slice(0, 8).map((h, idx) => {
+                            const val = h.estimated_1rm ?? h.weight_kg
+                            const isBest = val === best
+                            return (
+                              <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 12, color: '#64748B', minWidth: 80 }}>
+                                  {new Date(h.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{val} kg</span>
+                                {h.reps > 1 && <span style={{ fontSize: 11, color: '#94A3B8' }}>× {h.reps} reps</span>}
+                                {isBest && idx === 0 && (
+                                  <span style={{ fontSize: 10, fontWeight: 700, background: '#FFF5F5', color: '#E53E3E', border: '1px solid #FED7D7', borderRadius: 8, padding: '1px 6px' }}>PR</span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
