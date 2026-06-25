@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getWods, createWod, deleteWod, WOD_TYPES } from '@/lib/queries/wods'
 import Link from 'next/link'
 import { Plus, Timer, RotateCcw, Zap, Clock, ChevronRight, Trash2 } from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 
 function formatSeconds(seconds: number) {
   if (seconds < 60) return `${seconds}s`
@@ -14,15 +15,20 @@ function formatSeconds(seconds: number) {
   return s > 0 ? `${m}m ${s}s` : `${m}min`
 }
 
-// Color por tipo de WOD
-const TYPE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
-  amrap:       { bg: 'rgba(129,140,248,0.12)', text: '#818CF8', dot: '#818CF8' },
-  emom:        { bg: 'rgba(167,139,250,0.12)', text: '#A78BFA', dot: '#A78BFA' },
-  for_time:    { bg: 'rgba(198,255,0,0.10)',   text: '#C6FF00', dot: '#C6FF00' },
-  tabata:      { bg: 'rgba(244,114,182,0.10)', text: '#F472B6', dot: '#F472B6' },
-  chipper:     { bg: 'rgba(52,211,153,0.10)',  text: '#34D399', dot: '#34D399' },
-  intervals:   { bg: 'rgba(251,191,36,0.10)',  text: '#FBBF24', dot: '#FBBF24' },
-  custom:      { bg: 'rgba(138,147,168,0.10)', text: '#8A93A8', dot: '#8A93A8' },
+function getTypeStyles(isLight: boolean): Record<string, { bg: string; text: string; dot: string }> {
+  return {
+    amrap:     { bg: 'rgba(129,140,248,0.12)', text: '#818CF8', dot: '#818CF8' },
+    emom:      { bg: 'rgba(167,139,250,0.12)', text: '#A78BFA', dot: '#A78BFA' },
+    for_time:  {
+      bg:   isLight ? 'rgba(74,85,0,0.08)'  : 'rgba(198,255,0,0.10)',
+      text: isLight ? '#4A5500'              : '#C6FF00',
+      dot:  isLight ? '#6A7A00'              : '#C6FF00',
+    },
+    tabata:    { bg: 'rgba(244,114,182,0.10)', text: '#F472B6', dot: '#F472B6' },
+    chipper:   { bg: 'rgba(52,211,153,0.10)',  text: '#34D399', dot: '#34D399' },
+    intervals: { bg: 'rgba(251,191,36,0.10)',  text: '#FBBF24', dot: '#FBBF24' },
+    custom:    { bg: 'rgba(138,147,168,0.10)', text: '#8A93A8', dot: '#8A93A8' },
+  }
 }
 
 export function WodsView() {
@@ -64,10 +70,22 @@ export function WodsView() {
           onClick={() => setShowModal(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
-            background: 'var(--color-red)', color: '#fff',
+            background: 'linear-gradient(135deg, #6366F1, #7C3AED)', color: '#fff',
             border: 'none', borderRadius: 10,
-            padding: '9px 18px', fontSize: 13.5, fontWeight: 600,
+            padding: '9px 18px', fontSize: 13.5, fontWeight: 700,
             cursor: 'pointer', letterSpacing: '-0.01em',
+            boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget
+            el.style.transform = 'translateY(-2px)'
+            el.style.boxShadow = '0 8px 24px rgba(99,102,241,0.50)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget
+            el.style.transform = 'translateY(0)'
+            el.style.boxShadow = '0 4px 14px rgba(99,102,241,0.35)'
           }}
         >
           <Plus size={15} strokeWidth={2.5} />
@@ -109,8 +127,11 @@ export function WodsView() {
 }
 
 function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
+  const typeStyles = getTypeStyles(isLight)
   const typeInfo = WOD_TYPES.find(t => t.value === wod.type)
-  const style = TYPE_STYLES[wod.type] ?? TYPE_STYLES.custom
+  const style = typeStyles[wod.type] ?? typeStyles.custom
   const movCount = wod.movements?.length ?? 0
 
   return (
@@ -124,7 +145,7 @@ function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
     }}
     onMouseEnter={e => {
       const el = e.currentTarget as HTMLElement
-      el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.25)'
+      el.style.boxShadow = 'var(--shadow-card-hover)'
       el.style.transform = 'translateY(-1px)'
     }}
     onMouseLeave={e => {
@@ -226,18 +247,27 @@ function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '9px 14px',
-            background: 'var(--color-surface-2)',
-            borderRadius: 8,
+            background: 'rgba(99,102,241,0.08)',
+            borderRadius: 9,
             textDecoration: 'none',
-            transition: 'background 0.12s',
+            border: '1px solid rgba(99,102,241,0.15)',
+            transition: 'background 0.12s, border-color 0.12s',
           }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-border)'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.background = 'rgba(99,102,241,0.14)'
+            el.style.borderColor = 'rgba(99,102,241,0.30)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.background = 'rgba(99,102,241,0.08)'
+            el.style.borderColor = 'rgba(99,102,241,0.15)'
+          }}
         >
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-2)' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#818CF8' }}>
             Ver y editar
           </span>
-          <ChevronRight size={14} color="var(--color-text-3)" strokeWidth={2} />
+          <ChevronRight size={14} color="#818CF8" strokeWidth={2.5} />
         </Link>
       </div>
     </div>
@@ -300,6 +330,8 @@ function WodsSkeleton() {
 }
 
 function NewWodModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (id: string) => void }) {
+  const { theme } = useTheme()
+  const typeStyles = getTypeStyles(theme === 'light')
   const [form, setForm] = useState({ name: '', description: '', type: 'amrap', rounds: '', time_cap_s: '', work_s: '', rest_s: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -407,7 +439,7 @@ function NewWodModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             <label style={labelStyle}>Tipo de WOD</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
               {WOD_TYPES.map(t => {
-                const ts = TYPE_STYLES[t.value] ?? TYPE_STYLES.custom
+                const ts = typeStyles[t.value] ?? typeStyles.custom
                 const isSelected = form.type === t.value
                 return (
                   <button
@@ -532,11 +564,12 @@ function NewWodModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               disabled={loading}
               style={{
                 flex: 1, padding: '10px',
-                background: loading ? 'var(--color-border)' : 'var(--color-red)',
+                background: loading ? 'var(--color-surface-2)' : 'linear-gradient(135deg, #6366F1, #7C3AED)',
                 color: loading ? 'var(--color-text-3)' : '#fff',
                 border: 'none', borderRadius: 9,
-                fontSize: 14, fontWeight: 600,
+                fontSize: 14, fontWeight: 700,
                 cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: loading ? 'none' : '0 4px 12px rgba(99,102,241,0.35)',
               }}
             >
               {loading ? 'Creando...' : 'Crear WOD'}

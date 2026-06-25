@@ -180,7 +180,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
               display: 'flex', alignItems: 'center',
               transition: 'color 0.1s, border-color 0.1s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#EF4444'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#FEE2E2' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#EF4444'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,0.35)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-4)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)' }}
           >
             <X size={14} />
@@ -243,7 +243,7 @@ function NewRoutineModal({ onClose, onSuccess }: { onClose: () => void; onSucces
       <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 440, boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(99,102,241,0.10)', border: '1px solid #FED7D7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(99,102,241,0.10)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Layers size={16} color="#6366F1" />
             </div>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Nueva rutina</h2>
@@ -290,7 +290,7 @@ function NewRoutineModal({ onClose, onSuccess }: { onClose: () => void; onSucces
             Guardar como plantilla
           </label>
           {error && (
-            <div style={{ fontSize: 13, color: '#EF4444', background: 'rgba(99,102,241,0.10)', border: '1px solid #FEE2E2', padding: '8px 12px', borderRadius: 8 }}>
+            <div style={{ fontSize: 13, color: '#EF4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', padding: '8px 12px', borderRadius: 8 }}>
               {error}
             </div>
           )}

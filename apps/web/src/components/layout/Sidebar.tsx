@@ -6,8 +6,10 @@ import {
   LayoutDashboard, Users, Dumbbell, Zap,
   BookOpen, CalendarDays, BarChart2, Settings,
   UserCog, Mail, UsersRound, Building2, Shield, X, Percent, ClipboardList, Timer, LogOut,
+  Sun, Moon,
 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
+import { useTheme } from '@/hooks/useTheme'
 import { ROLE_LABELS } from '@entrebarras/types'
 import { useSidebar } from './SidebarContext'
 import { createClient } from '@/lib/supabase/client'
@@ -66,6 +68,17 @@ export function Sidebar() {
   const router = useRouter()
   const { role, isPlatformAdmin, isSuperAdmin, isCoach, isAthlete } = useUser()
   const { isOpen, close } = useSidebar()
+  const { theme, toggle: toggleTheme } = useTheme()
+
+  const isLight = theme === 'light'
+  const sideBg         = isLight ? '#FFFFFF' : '#080B10'
+  const sideBorder     = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)'
+  const sideText       = isLight ? 'rgba(0,0,0,0.70)' : 'rgba(255,255,255,0.45)'
+  const sideTextActive = isLight ? '#000000' : '#FFFFFF'
+  const sideBgActive   = isLight ? 'rgba(99,102,241,0.10)' : 'rgba(99,102,241,0.14)'
+  const sideBgHover    = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'
+  const sideLabel      = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)'
+  const logoSrc        = isLight ? '/logos/logo-light-v2.png' : '/logos/logo-dark-v2.png'
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -99,59 +112,43 @@ export function Sidebar() {
         />
       )}
 
-      <aside className={`eb-sidebar${isOpen ? ' is-open' : ''}`}>
+      <aside
+        className={`eb-sidebar${isOpen ? ' is-open' : ''}`}
+        style={{ background: sideBg, borderRight: `1px solid ${sideBorder}` }}
+      >
         {/* Logo + mobile close */}
         <div style={{ padding: '18px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Link href="/dashboard" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 9,
-              background: 'var(--color-red)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, boxShadow: '0 2px 10px rgba(99,102,241,0.50)',
-            }}>
+          <Link href="/dashboard" onClick={handleNavClick} style={{ display: 'flex', flexDirection: 'column', gap: 6, textDecoration: 'none' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoSrc}
+              alt="THRYRA"
+              style={{ height: 28, width: 'auto' }}
+            />
+            {roleLabel && badge && (
               <span style={{
-                fontSize: 13, fontWeight: 800, color: '#fff',
-                letterSpacing: '-0.01em',
-                fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
-              }}>T</span>
-            </div>
-            <div>
-              <span style={{
-                display: 'block',
-                fontWeight: 800, fontSize: 14.5, color: '#fff',
-                letterSpacing: '0.04em', lineHeight: 1.15,
-                fontFamily: 'var(--font-montserrat, Montserrat, system-ui, sans-serif)',
+                display: 'inline-block',
+                fontSize: 9.5, fontWeight: 600, lineHeight: 1,
+                color: badge.color, background: badge.bg,
+                borderRadius: 4, padding: '2px 5px',
               }}>
-                THRYRA
+                {roleLabel}
               </span>
-              {roleLabel && badge ? (
-                <span style={{
-                  display: 'inline-block', marginTop: 2,
-                  fontSize: 9.5, fontWeight: 600, lineHeight: 1,
-                  color: badge.color, background: badge.bg,
-                  borderRadius: 4, padding: '2px 5px',
-                }}>
-                  {roleLabel}
-                </span>
-              ) : (
-                <span style={{ display: 'block', fontSize: 10.5, color: 'var(--sidebar-label)', lineHeight: 1 }}>
-                  Train. Evolve. Thrive.
-                </span>
-              )}
-            </div>
+            )}
           </Link>
           {/* Close button — only visible on mobile */}
           <button
             className="eb-sidebar-close"
             onClick={close}
             aria-label="Cerrar menú"
+            style={{ color: sideText }}
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'var(--sidebar-border)', margin: '0 16px 10px' }} />
+        <div style={{ height: 1, background: sideBorder, margin: '0 16px 10px' }} />
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 1, overflowY: 'auto' }}>
@@ -171,13 +168,13 @@ export function Sidebar() {
                   borderRadius: 8,
                   textDecoration: 'none',
                   fontSize: 13.5, fontWeight: isActive ? 500 : 400,
-                  color: isActive ? 'var(--sidebar-text-active)' : 'var(--sidebar-text)',
-                  background: isActive ? 'var(--sidebar-bg-active)' : 'transparent',
+                  color: isActive ? sideTextActive : sideText,
+                  background: isActive ? sideBgActive : 'transparent',
                   transition: 'background 0.12s, color 0.12s',
                   position: 'relative',
                 }}
                 onMouseEnter={e => {
-                  if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-bg-hover)'
+                  if (!isActive) (e.currentTarget as HTMLElement).style.background = sideBgHover
                 }}
                 onMouseLeave={e => {
                   if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
@@ -187,7 +184,7 @@ export function Sidebar() {
                   <span style={{
                     position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
                     width: 3, height: 18, borderRadius: '0 2px 2px 0',
-                    background: 'var(--color-red)',
+                    background: '#6366F1',
                   }} />
                 )}
                 <Icon
@@ -207,7 +204,7 @@ export function Sidebar() {
               marginTop: 4,
             }}>
               <Shield size={11} style={{ color: '#818CF8', opacity: 0.7 }} />
-              <span style={{ fontSize: 10, color: '#818CF8', opacity: 0.7, fontWeight: 600, letterSpacing: '0.08em' }}>
+              <span style={{ fontSize: 10, color: sideLabel, fontWeight: 600, letterSpacing: '0.08em' }}>
                 PLATAFORMA
               </span>
             </div>
@@ -215,7 +212,7 @@ export function Sidebar() {
         </nav>
 
         {/* Bottom: Configuración + Cerrar sesión */}
-        <div style={{ padding: '10px', borderTop: '1px solid var(--sidebar-border)', display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div style={{ padding: '10px', borderTop: `1px solid ${sideBorder}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Link
             href="/dashboard/configuracion"
             onClick={handleNavClick}
@@ -223,15 +220,13 @@ export function Sidebar() {
               display: 'flex', alignItems: 'center', gap: 9,
               padding: '7.5px 10px', borderRadius: 8,
               textDecoration: 'none', fontSize: 13.5,
-              color: pathname.startsWith('/dashboard/configuracion')
-                ? 'var(--sidebar-text-active)' : 'var(--sidebar-text)',
-              background: pathname.startsWith('/dashboard/configuracion')
-                ? 'var(--sidebar-bg-active)' : 'transparent',
+              color: pathname.startsWith('/dashboard/configuracion') ? sideTextActive : sideText,
+              background: pathname.startsWith('/dashboard/configuracion') ? sideBgActive : 'transparent',
               transition: 'background 0.12s, color 0.12s',
             }}
             onMouseEnter={e => {
               if (!pathname.startsWith('/dashboard/configuracion'))
-                (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-bg-hover)'
+                (e.currentTarget as HTMLElement).style.background = sideBgHover
             }}
             onMouseLeave={e => {
               if (!pathname.startsWith('/dashboard/configuracion'))
@@ -241,6 +236,28 @@ export function Sidebar() {
             <Settings size={15.5} strokeWidth={1.75} style={{ opacity: 0.55 }} />
             Configuración
           </Link>
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 9,
+              padding: '7.5px 10px', borderRadius: 8,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              fontSize: 13.5, color: sideText,
+              width: '100%', textAlign: 'left',
+              transition: 'background 0.12s',
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = sideBgHover}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+          >
+            {isLight
+              ? <Moon size={15.5} strokeWidth={1.75} style={{ opacity: 0.65, flexShrink: 0 }} />
+              : <Sun size={15.5} strokeWidth={1.75} style={{ opacity: 0.65, flexShrink: 0 }} />
+            }
+            {isLight ? 'Modo oscuro' : 'Modo claro'}
+          </button>
+
           <button
             onClick={handleSignOut}
             style={{

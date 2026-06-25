@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -6,7 +6,10 @@ import { getAthletes, createAthlete, deleteAthlete } from '@/lib/queries/athlete
 import { useUser } from '@/hooks/useUser'
 import type { Athlete } from '@entrebarras/types'
 import Link from 'next/link'
-import { Plus, X, ChevronLeft, ChevronRight, UserRound } from 'lucide-react'
+import { Plus, X, ChevronLeft, ChevronRight, UserRound, Search } from 'lucide-react'
+
+const ACCENT = '#6366F1'
+const VIOLET = '#7C3AED'
 
 type FilterStatus = 'all' | 'active' | 'inactive' | 'prospect'
 
@@ -17,9 +20,9 @@ const LEVEL_LABELS: Record<string, string> = {
   advanced: 'Avanzado', competitive: 'Competitivo',
 }
 const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  active:   { label: 'Activo',    color: '#16A34A', bg: '#F0FDF4' },
-  inactive: { label: 'Inactivo',  color: 'var(--color-text-3)', bg: 'var(--color-bg)' },
-  prospect: { label: 'Prospecto', color: '#1D4ED8', bg: '#EFF6FF' },
+  active:   { label: 'Activo',    color: '#4ADE80', bg: 'rgba(74,222,128,0.12)' },
+  inactive: { label: 'Inactivo',  color: 'var(--color-text-3)', bg: 'var(--color-surface-2)' },
+  prospect: { label: 'Prospecto', color: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
 }
 
 function useIsMobile() {
@@ -34,9 +37,10 @@ function useIsMobile() {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 11px',
+  width: '100%', padding: '8px 11px 8px 36px',
   border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13.5,
-  color: 'var(--color-text)', background: 'var(--color-surface)', boxSizing: 'border-box', outline: 'none',
+  color: 'var(--color-text)', background: 'var(--color-bg)',
+  boxSizing: 'border-box', outline: 'none',
 }
 
 export function AthletesView() {
@@ -66,7 +70,6 @@ export function AthletesView() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  // Reset page when filters change
   useEffect(() => { setPage(1) }, [search, status])
 
   const deleteMutation = useMutation({
@@ -82,14 +85,15 @@ export function AthletesView() {
   ]
 
   return (
-    <div style={{ padding: isMobile ? '20px 16px' : '36px 40px', maxWidth: 1100 }}>
-      {/* Header */}
+    <div style={{ padding: isMobile ? '20px 16px' : '32px 36px', maxWidth: 1100 }}>
+
+      {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em' }}>
             {coachFilter ? 'Mis atletas' : 'Atletas'}
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--color-text-2)', marginTop: 4 }}>
+          <p style={{ fontSize: 13.5, color: 'var(--color-text-2)', marginTop: 4 }}>
             {athletes.length} {athletes.length === 1 ? 'atleta registrado' : 'atletas registrados'}
             {coachFilter ? ' asignados a ti' : ''}
           </p>
@@ -97,44 +101,65 @@ export function AthletesView() {
         <button
           onClick={() => setShowModal(true)}
           style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: '#6366F1', color: '#fff', border: 'none',
+            display: 'flex', alignItems: 'center', gap: 7,
+            background: `linear-gradient(135deg, ${ACCENT}, ${VIOLET})`,
+            color: '#fff', border: 'none',
             borderRadius: 10, padding: isMobile ? '8px 14px' : '9px 18px',
             fontSize: 13.5, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+            boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget
+            el.style.transform = 'translateY(-2px)'
+            el.style.boxShadow = '0 8px 24px rgba(99,102,241,0.50)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget
+            el.style.transform = 'translateY(0)'
+            el.style.boxShadow = '0 4px 14px rgba(99,102,241,0.35)'
           }}
         >
-          <Plus size={15} />
+          <Plus size={15} strokeWidth={2.5} />
           {isMobile ? 'Nuevo' : 'Nuevo atleta'}
         </button>
       </div>
 
-      {/* Filters card */}
+      {/* ── Table card ── */}
       <div style={{
-        background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 14,
-        overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16,
+        overflow: 'hidden', boxShadow: 'var(--shadow-card)',
       }}>
+        {/* Filters bar */}
         <div style={{
           padding: '14px 16px', borderBottom: '1px solid var(--color-border)',
           display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
         }}>
-          <input
-            type="text"
-            placeholder="Buscar por nombre o email..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{ ...inputStyle, flex: 1, minWidth: 160 }}
-          />
-          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flexShrink: 0 }}>
+          {/* Search input with icon */}
+          <div style={{ position: 'relative', flex: 1, minWidth: 160 }}>
+            <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-3)', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder="Buscar por nombre o email..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Status tabs */}
+          <div style={{ display: 'flex', gap: 3, overflowX: 'auto', flexShrink: 0, background: 'var(--color-bg)', borderRadius: 10, padding: 3 }}>
             {tabs.map(tab => (
               <button
                 key={tab.value}
                 onClick={() => setStatus(tab.value)}
                 style={{
-                  padding: '7px 13px', borderRadius: 8, fontSize: 13,
+                  padding: '6px 13px', borderRadius: 8, fontSize: 12.5,
                   fontWeight: status === tab.value ? 700 : 500,
                   cursor: 'pointer', border: 'none', whiteSpace: 'nowrap',
-                  background: status === tab.value ? '#6366F1' : 'var(--color-bg)',
+                  background: status === tab.value ? ACCENT : 'transparent',
                   color: status === tab.value ? '#fff' : 'var(--color-text-2)',
+                  transition: 'background 0.15s, color 0.15s',
                 }}
               >
                 {tab.label}
@@ -144,7 +169,7 @@ export function AthletesView() {
         </div>
 
         {isLoading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando...</div>
+          <TableSkeleton />
         ) : filtered.length === 0 ? (
           <EmptyState onAdd={() => setShowModal(true)} hasSearch={search.length > 0} />
         ) : isMobile ? (
@@ -160,9 +185,9 @@ export function AthletesView() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
-              {(page - 1) * PAGE_SIZE + 1}"“{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
             </span>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -180,9 +205,10 @@ export function AthletesView() {
                   onClick={() => setPage(p)}
                   style={{
                     padding: '6px 11px', border: '1px solid', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    borderColor: p === page ? '#6366F1' : 'var(--color-border)',
-                    background: p === page ? '#6366F1' : 'transparent',
+                    borderColor: p === page ? ACCENT : 'var(--color-border)',
+                    background: p === page ? ACCENT : 'transparent',
                     color: p === page ? '#fff' : 'var(--color-text-2)',
+                    transition: 'background 0.1s, color 0.1s',
                   }}
                 >
                   {p}
@@ -217,7 +243,7 @@ export function AthletesView() {
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DESKTOP TABLE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ─── DESKTOP TABLE ─── */
 function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (id: string) => void }) {
   return (
     <div>
@@ -231,7 +257,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
         <span>Deporte</span>
         <span>Nivel</span>
         <span>Estado</span>
-        <span></span>
+        <span />
       </div>
 
       {athletes.map((athlete, i) => {
@@ -242,17 +268,17 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             key={athlete.id}
             style={{
               display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
-              padding: '13px 20px', alignItems: 'center',
+              padding: '12px 20px', alignItems: 'center',
               borderBottom: i < athletes.length - 1 ? '1px solid var(--color-border)' : 'none',
               transition: 'background 0.1s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-2)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <Link href={`/dashboard/atletas/${athlete.id}`} style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
+                background: `linear-gradient(135deg, ${ACCENT} 0%, ${VIOLET} 100%)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
               }}>
@@ -269,15 +295,15 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             </Link>
 
             <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
-              {athlete.primary_sport ?? 'No definido'}
+              {athlete.primary_sport ?? '—'}
             </span>
 
             <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
-              {LEVEL_LABELS[athlete.sport_level ?? ''] ?? 'No definido'}
+              {LEVEL_LABELS[athlete.sport_level ?? ''] ?? '—'}
             </span>
 
             <span style={{
-              display: 'inline-block', fontSize: 12, fontWeight: 600,
+              display: 'inline-block', fontSize: 11.5, fontWeight: 700,
               padding: '3px 10px', borderRadius: 20,
               color: st.color, background: st.bg,
             }}>
@@ -303,7 +329,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MOBILE CARDS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ─── MOBILE CARDS ─── */
 function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (id: string) => void }) {
   return (
     <div>
@@ -321,7 +347,7 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
             <Link href={`/dashboard/atletas/${athlete.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, textDecoration: 'none', minWidth: 0 }}>
               <div style={{
                 width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
+                background: `linear-gradient(135deg, ${ACCENT} 0%, ${VIOLET} 100%)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 13, fontWeight: 800, color: '#fff',
               }}>
@@ -331,19 +357,13 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>
                   {athlete.first_name} {athlete.last_name}
                 </p>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {athlete.email && (
-                    <p style={{ fontSize: 12, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{athlete.email}</p>
-                  )}
-                </div>
+                {athlete.email && (
+                  <p style={{ fontSize: 12, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{athlete.email}</p>
+                )}
               </div>
             </Link>
 
-            <span style={{
-              fontSize: 11.5, fontWeight: 600, padding: '4px 10px',
-              borderRadius: 20, color: st.color, background: st.bg,
-              flexShrink: 0,
-            }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 20, color: st.color, background: st.bg, flexShrink: 0 }}>
               {st.label}
             </span>
 
@@ -360,23 +380,60 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EMPTY STATE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ─── SKELETON ─── */
+function TableSkeleton() {
+  return (
+    <div>
+      {[0, 1, 2, 3, 4].map(i => (
+        <div
+          key={i}
+          style={{
+            display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
+            padding: '14px 20px', alignItems: 'center',
+            borderBottom: i < 4 ? '1px solid var(--color-border)' : 'none',
+            gap: 12,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <div className="skeleton" style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0 }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div className="skeleton" style={{ height: 12, width: 120 }} />
+              <div className="skeleton" style={{ height: 10, width: 80 }} />
+            </div>
+          </div>
+          <div className="skeleton" style={{ height: 12, width: 80 }} />
+          <div className="skeleton" style={{ height: 12, width: 70 }} />
+          <div className="skeleton" style={{ height: 22, width: 65, borderRadius: 999 }} />
+          <div />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ─── EMPTY STATE ─── */
 function EmptyState({ onAdd, hasSearch }: { onAdd: () => void; hasSearch: boolean }) {
   return (
     <div style={{ padding: '56px 24px', textAlign: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-        <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-bg)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <UserRound size={22} color="var(--color-text-4)" />
-        </div>
+      <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+        <UserRound size={24} color={ACCENT} />
       </div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)', marginBottom: 8 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)', marginBottom: 8, letterSpacing: '-0.02em' }}>
         {hasSearch ? 'Sin resultados' : 'Aún no hay atletas'}
       </h3>
-      <p style={{ fontSize: 14, color: 'var(--color-text-3)', marginBottom: 22 }}>
-        {hasSearch ? 'Intenta con otro nombre o email.' : 'Comienza agregando tu primer atleta.'}
+      <p style={{ fontSize: 13.5, color: 'var(--color-text-3)', marginBottom: 22, maxWidth: 280, margin: '0 auto 22px', lineHeight: 1.6 }}>
+        {hasSearch ? 'Intenta con otro nombre o email.' : 'Comienza agregando tu primer atleta al box.'}
       </p>
       {!hasSearch && (
-        <button onClick={onAdd} style={{ background: '#6366F1', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
+        <button
+          onClick={onAdd}
+          style={{
+            background: `linear-gradient(135deg, ${ACCENT}, ${VIOLET})`,
+            color: '#fff', border: 'none', borderRadius: 10,
+            padding: '9px 22px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
+          }}
+        >
           Agregar atleta
         </button>
       )}
@@ -384,7 +441,7 @@ function EmptyState({ onAdd, hasSearch }: { onAdd: () => void; hasSearch: boolea
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• NEW ATHLETE MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ─── NEW ATHLETE MODAL ─── */
 function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', phone: '', primary_sport: '', sport_level: '', status: 'active' })
   const [loading, setLoading] = useState(false)
@@ -413,6 +470,14 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
     }
   }
 
+  const baseInput: React.CSSProperties = {
+    width: '100%', padding: '9px 12px',
+    border: '1px solid var(--color-border)', borderRadius: 9, fontSize: 13.5,
+    color: 'var(--color-text)', background: 'var(--color-bg)',
+    boxSizing: 'border-box', outline: 'none',
+    transition: 'border-color 0.15s',
+  }
+
   const fields: { label: string; key: keyof typeof form; type?: string; required?: boolean }[] = [
     { label: 'Nombre', key: 'first_name', required: true },
     { label: 'Apellido', key: 'last_name', required: true },
@@ -422,11 +487,17 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
   ]
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-      <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 480, boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', maxHeight: '90vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,11,16,0.70)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+      <div style={{ background: 'var(--color-surface)', borderRadius: 20, width: '100%', maxWidth: 480, boxShadow: '0 24px 64px rgba(0,0,0,0.40)', border: '1px solid var(--color-border)', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Nuevo atleta</h2>
-          <button onClick={onClose} style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
+          <div>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>Nuevo atleta</h2>
+            <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', marginTop: 2 }}>Completa la información básica</p>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}
+          >
             <X size={16} />
           </button>
         </div>
@@ -436,9 +507,9 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
             {fields.slice(0, 2).map(f => (
               <div key={f.key}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
-                  {f.label}{f.required && ' *'}
+                  {f.label}{f.required && <span style={{ color: ACCENT }}> *</span>}
                 </label>
-                <input type={f.type ?? 'text'} required={f.required} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} />
+                <input type={f.type ?? 'text'} required={f.required} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={baseInput} />
               </div>
             ))}
           </div>
@@ -448,29 +519,48 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
                 {f.label}
               </label>
-              <input type={f.type ?? 'text'} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} />
+              <input type={f.type ?? 'text'} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={baseInput} />
             </div>
           ))}
 
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>Nivel</label>
-            <select value={form.sport_level} onChange={e => setForm(p => ({ ...p, sport_level: e.target.value }))} style={{ ...inputStyle, appearance: 'none' as const }}>
+            <select
+              value={form.sport_level}
+              onChange={e => setForm(p => ({ ...p, sport_level: e.target.value }))}
+              style={{ ...baseInput, appearance: 'none' as const }}
+            >
               <option value="">Sin definir</option>
               {Object.entries(LEVEL_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
 
           {error && (
-            <div style={{ fontSize: 13, color: '#EF4444', background: '#FFF5F5', border: '1px solid #FEE2E2', padding: '8px 12px', borderRadius: 8 }}>
+            <div style={{ fontSize: 13, color: '#F87171', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', padding: '9px 12px', borderRadius: 9 }}>
               {error}
             </div>
           )}
 
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 10, fontSize: 13.5, cursor: 'pointer', background: 'transparent', color: 'var(--color-text-2)', fontWeight: 500 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 10, fontSize: 13.5, cursor: 'pointer', background: 'transparent', color: 'var(--color-text-2)', fontWeight: 500 }}
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={loading} style={{ flex: 1, padding: '10px', background: loading ? 'var(--color-surface-2)' : '#6366F1', color: loading ? 'var(--color-text-3)' : '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                flex: 1, padding: '10px',
+                background: loading ? 'var(--color-surface-2)' : `linear-gradient(135deg, ${ACCENT}, ${VIOLET})`,
+                color: loading ? 'var(--color-text-3)' : '#fff',
+                border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: loading ? 'none' : '0 4px 12px rgba(99,102,241,0.35)',
+              }}
+            >
               {loading ? 'Guardando...' : 'Guardar atleta'}
             </button>
           </div>

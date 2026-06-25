@@ -8,6 +8,7 @@ import { getWods } from '@/lib/queries/wods'
 import { getRoutines } from '@/lib/queries/routines'
 import { getGroups } from '@/lib/queries/team'
 import { ChevronLeft, ChevronRight, Plus, X, Zap, Dumbbell, Users } from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 
 const DAYS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const DAYS_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -38,6 +39,8 @@ function toDateStr(date: Date): string {
 }
 
 export function ProgramacionView() {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   const qc = useQueryClient()
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
@@ -170,7 +173,7 @@ export function ProgramacionView() {
                 alignItems: isMobile ? 'center' : 'center',
                 justifyContent: isMobile ? 'flex-start' : 'space-between',
                 gap: isMobile ? 10 : 0,
-                background: isToday ? '#FFF5F5' : 'transparent',
+                background: isToday ? (isLight ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.12)') : 'transparent',
                 flexShrink: 0,
                 minWidth: isMobile ? 72 : 'auto',
               }}>
@@ -187,7 +190,7 @@ export function ProgramacionView() {
                     onClick={() => openDay(dateStr, `${DAYS_FULL[i]} ${day.getDate()}`)}
                     style={{
                       width: 26, height: 26, borderRadius: 7,
-                      background: isToday ? '#FED7D7' : 'var(--color-surface-2)',
+                      background: isToday ? 'rgba(99,102,241,0.14)' : 'var(--color-surface-2)',
                       border: 'none', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: isToday ? '#6366F1' : 'var(--color-text-3)',
@@ -245,7 +248,7 @@ export function ProgramacionView() {
                         onClick={() => deleteMutation.mutate(entry.id)}
                         style={{
                           position: 'absolute', top: 4, right: 4,
-                          background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: 4,
+                          background: 'var(--color-surface)', border: 'none', borderRadius: 4,
                           cursor: 'pointer', padding: 2, opacity: 0, transition: 'opacity 0.15s',
                           display: 'flex', alignItems: 'center',
                         }}

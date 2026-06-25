@@ -126,7 +126,7 @@ export function ReportesView() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
               <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'var(--color-text-3)' }} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-3)' }} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }} />
               <RechartsLegend wrapperStyle={{ fontSize: 12 }} />
               <Line type="monotone" dataKey="Programadas" stroke="var(--color-border)" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="Completadas" stroke="var(--color-red)" strokeWidth={2.5} dot={{ r: 3, fill: 'var(--color-red)' }} />
@@ -149,7 +149,7 @@ export function ReportesView() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--color-text-3)' }} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-3)' }} allowDecimals={false} />
-              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--color-border)' }} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }} />
               <Bar dataKey="Sesiones" fill="var(--color-red)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
