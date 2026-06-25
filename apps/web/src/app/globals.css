@@ -78,18 +78,26 @@
 [data-theme="light"] {
   --color-bg:         #F4F5F8;
   --color-surface:    #FFFFFF;
-  --color-surface-2:  #F8F9FB;
-  --color-border:     #E8E9ED;
-  --color-border-2:   #D1D3DA;
+  --color-surface-2:  #F0F1F5;
+  --color-border:     #E2E4EB;
+  --color-border-2:   #CDD0DA;
   --color-text:       #0F1117;
   --color-text-2:     #3D3F4A;
   --color-text-3:     #858899;
   --color-text-4:     #C0C2CC;
+  --sidebar-bg:           #FFFFFF;
+  --sidebar-bg-hover:     rgba(99,102,241,0.06);
+  --sidebar-bg-active:    rgba(99,102,241,0.10);
+  --sidebar-border:       rgba(0,0,0,0.08);
+  --sidebar-text:         rgba(15,17,23,0.50);
+  --sidebar-text-active:  #0F1117;
+  --sidebar-label:        rgba(15,17,23,0.30);
   --shadow-xs:  0 1px 2px 0 rgb(0 0 0 / 0.04);
   --shadow-sm:  0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
   --shadow-md:  0 4px 8px -2px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg:  0 12px 24px -4px rgb(0 0 0 / 0.10), 0 4px 8px -4px rgb(0 0 0 / 0.06);
   --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-  --shadow-card-hover: 0 6px 16px -4px rgb(0 0 0 / 0.10), 0 2px 6px -2px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 8px 20px -4px rgb(0 0 0 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.06);
 }
 
 /* ============================================

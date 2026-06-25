@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Play, Pause, RotateCcw, Volume2, VolumeX, ChevronUp, ChevronDown } from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 
 type Mode = 'countdown' | 'stopwatch' | 'interval'
 type Phase = 'work' | 'rest'
@@ -37,17 +38,25 @@ function formatTime(s: number) {
   return `${pad(m)}:${pad(s % 60)}`
 }
 
-function NumberInput({ label, value, onChange, min = 0, max = 99 }: {
-  label: string; value: number; onChange: (v: number) => void; min?: number; max?: number
+function NumberInput({ label, value, onChange, min = 0, max = 99, isLight }: {
+  label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; isLight: boolean
 }) {
+  const labelColor  = isLight ? 'rgba(0,0,0,0.40)' : 'rgba(255,255,255,0.4)'
+  const btnBg       = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
+  const btnBorder   = isLight ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.12)'
+  const btnColor    = isLight ? 'rgba(0,0,0,0.70)' : 'rgba(255,255,255,0.7)'
+  const inputBg     = isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.07)'
+  const inputBorder = isLight ? '1px solid rgba(0,0,0,0.12)' : '1px solid rgba(255,255,255,0.15)'
+  const inputColor  = isLight ? '#0D1117' : '#ffffff'
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: labelColor, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
         {label}
       </span>
       <button
         onClick={() => onChange(Math.min(max, value + 1))}
-        style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, width: 40, height: 36, cursor: 'pointer', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ background: btnBg, border: btnBorder, borderRadius: 8, width: 40, height: 36, cursor: 'pointer', color: btnColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <ChevronUp size={18} />
       </button>
@@ -59,16 +68,16 @@ function NumberInput({ label, value, onChange, min = 0, max = 99 }: {
           onChange(Math.max(min, Math.min(max, v)))
         }}
         style={{
-          width: 72, textAlign: 'center', background: 'rgba(255,255,255,0.07)',
-          border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10,
-          color: '#fff', fontSize: 28, fontWeight: 700, padding: '8px 0',
+          width: 72, textAlign: 'center', background: inputBg,
+          border: inputBorder, borderRadius: 10,
+          color: inputColor, fontSize: 28, fontWeight: 700, padding: '8px 0',
           outline: 'none', fontVariantNumeric: 'tabular-nums',
           fontFamily: '"SF Mono", "Fira Code", monospace',
         }}
       />
       <button
         onClick={() => onChange(Math.max(min, value - 1))}
-        style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, width: 40, height: 36, cursor: 'pointer', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ background: btnBg, border: btnBorder, borderRadius: 8, width: 40, height: 36, cursor: 'pointer', color: btnColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <ChevronDown size={18} />
       </button>
@@ -77,6 +86,33 @@ function NumberInput({ label, value, onChange, min = 0, max = 99 }: {
 }
 
 export function TimerView() {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
+
+  // Theme tokens
+  const timerBg        = isLight ? '#F4F5F8' : '#000000'
+  const topBorder      = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.06)'
+  const tabActiveBg    = isLight ? '#0D1117' : '#ffffff'
+  const tabActiveColor = isLight ? '#ffffff' : '#000000'
+  const tabIdleBg      = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
+  const tabIdleColor   = isLight ? 'rgba(0,0,0,0.50)' : 'rgba(255,255,255,0.5)'
+  const muteBtnBg      = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
+  const muteBtnBorder  = isLight ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.12)'
+  const muteBtnColor   = isLight ? 'rgba(0,0,0,0.60)' : 'rgba(255,255,255,0.6)'
+  const configBg       = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)'
+  const configBorder   = isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.08)'
+  const colonColor     = isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.3)'
+  const labelMuted     = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.35)'
+  const labelDimmer    = isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)'
+  const progressBg     = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'
+  const elapsedColor   = isLight ? 'rgba(0,0,0,0.30)' : 'rgba(255,255,255,0.3)'
+  const hintColor      = isLight ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.2)'
+  const resetBg        = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)'
+  const resetBorder    = isLight ? '1px solid rgba(0,0,0,0.10)' : '1px solid rgba(255,255,255,0.12)'
+  const resetColor     = isLight ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.7)'
+  const resetHoverBg   = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.14)'
+  const defaultTimerColor = isLight ? '#0D1117' : '#ffffff'
+
   const [mode, setMode] = useState<Mode>('countdown')
   const [timerState, setTimerState] = useState<TimerState>('idle')
   const [muted, setMuted] = useState(false)
@@ -122,8 +158,8 @@ export function TimerView() {
   const isWarning = warningTime <= 10 && warningTime > 0 && timerState === 'running'
   const isFinished = timerState === 'finished'
   const timerColor = isFinished ? '#EF4444' : isWarning ? '#F97316' : mode === 'interval' && timerState !== 'idle'
-    ? (phase === 'work' ? '#C6FF00' : '#60A5FA')
-    : '#fff'
+    ? (phase === 'work' ? (isLight ? '#6366F1' : '#C6FF00') : '#60A5FA')
+    : defaultTimerColor
 
   const tick = useCallback(() => {
     setElapsed(prev => {
@@ -213,13 +249,12 @@ export function TimerView() {
   return (
     <div style={{
       position: 'fixed',
-      // On desktop: offset by sidebar width; on mobile: full screen via CSS
-      top: 0, right: 0, bottom: 0,
-      left: 'var(--sidebar-width)',
-      zIndex: 100,
-      background: '#000',
+      inset: 0,
+      zIndex: 35,
+      background: timerBg,
       display: 'flex',
       flexDirection: 'column',
+      transition: 'background 0.3s',
     }}
       className="eb-timer-fullscreen"
     >
@@ -227,7 +262,7 @@ export function TimerView() {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 28px', flexShrink: 0,
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: `1px solid ${topBorder}`,
       }}>
         {/* Mode tabs */}
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', WebkitOverflowScrolling: 'touch' as any, scrollbarWidth: 'none' as any }}>
@@ -240,8 +275,8 @@ export function TimerView() {
                 padding: '6px 14px', borderRadius: 20, border: 'none', flexShrink: 0,
                 fontSize: 12, fontWeight: 700, cursor: timerState === 'running' ? 'not-allowed' : 'pointer',
                 letterSpacing: '0.04em', textTransform: 'uppercase' as const,
-                background: mode === m ? '#fff' : 'rgba(255,255,255,0.08)',
-                color: mode === m ? '#000' : 'rgba(255,255,255,0.5)',
+                background: mode === m ? tabActiveBg : tabIdleBg,
+                color: mode === m ? tabActiveColor : tabIdleColor,
                 opacity: timerState === 'running' && mode !== m ? 0.4 : 1,
                 transition: 'all 0.15s',
               }}
@@ -253,7 +288,7 @@ export function TimerView() {
 
         <button
           onClick={() => setMuted(m => !m)}
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}
+          style={{ background: muteBtnBg, border: muteBtnBorder, borderRadius: 8, padding: '8px', cursor: 'pointer', color: muteBtnColor, display: 'flex', alignItems: 'center' }}
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
@@ -267,24 +302,24 @@ export function TimerView() {
           <div style={{
             display: 'flex', gap: 32, alignItems: 'flex-end', marginBottom: 48,
             padding: '24px 32px',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: configBg,
+            border: configBorder,
             borderRadius: 20,
           }}>
             {mode === 'countdown' && (
               <>
-                <NumberInput label="Minutos" value={cdMins} onChange={setCdMins} min={0} max={99} />
-                <div style={{ fontSize: 36, fontWeight: 700, color: 'rgba(255,255,255,0.3)', paddingBottom: 12 }}>:</div>
-                <NumberInput label="Segundos" value={cdSecs} onChange={setCdSecs} min={0} max={59} />
+                <NumberInput label="Minutos" value={cdMins} onChange={setCdMins} min={0} max={99} isLight={isLight} />
+                <div style={{ fontSize: 36, fontWeight: 700, color: colonColor, paddingBottom: 12 }}>:</div>
+                <NumberInput label="Segundos" value={cdSecs} onChange={setCdSecs} min={0} max={59} isLight={isLight} />
               </>
             )}
 
             {mode === 'stopwatch' && (
               <div style={{ textAlign: 'center', padding: '8px 16px' }}>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                <p style={{ fontSize: 13, color: labelMuted, margin: 0 }}>
                   El cronómetro contará hacia arriba sin límite.
                 </p>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 6 }}>
+                <p style={{ fontSize: 12, color: labelDimmer, marginTop: 6 }}>
                   Presiona espacio o el botón para iniciar.
                 </p>
               </div>
@@ -292,9 +327,9 @@ export function TimerView() {
 
             {mode === 'interval' && (
               <>
-                <NumberInput label="Trabajo (s)" value={workSecs} onChange={setWorkSecs} min={1} max={300} />
-                <NumberInput label="Descanso (s)" value={restSecs} onChange={setRestSecs} min={0} max={300} />
-                <NumberInput label="Rondas" value={totalRounds} onChange={setTotalRounds} min={1} max={99} />
+                <NumberInput label="Trabajo (s)" value={workSecs} onChange={setWorkSecs} min={1} max={300} isLight={isLight} />
+                <NumberInput label="Descanso (s)" value={restSecs} onChange={setRestSecs} min={0} max={300} isLight={isLight} />
+                <NumberInput label="Rondas" value={totalRounds} onChange={setTotalRounds} min={1} max={99} isLight={isLight} />
               </>
             )}
           </div>
@@ -305,8 +340,8 @@ export function TimerView() {
           <div style={{
             fontSize: 13, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' as const,
             color: mode === 'interval'
-              ? (phase === 'work' ? '#C6FF00' : '#60A5FA')
-              : 'rgba(255,255,255,0.35)',
+              ? (phase === 'work' ? (isLight ? '#6366F1' : '#C6FF00') : '#60A5FA')
+              : labelMuted,
             marginBottom: 12, minHeight: 20, textAlign: 'center',
           }}>
             {isFinished ? '¡TIEMPO!' : mode === 'interval'
@@ -319,7 +354,7 @@ export function TimerView() {
         )}
 
         {showConfig && mode === 'interval' && (
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 12, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+          <div style={{ fontSize: 12, color: labelMuted, marginBottom: 12, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
             {workSecs}s trabajo · {restSecs}s descanso · {totalRounds} rondas
           </div>
         )}
@@ -342,10 +377,10 @@ export function TimerView() {
 
         {/* Progress bar */}
         {progressPct > 0 && !showConfig && (
-          <div style={{ width: '100%', maxWidth: 480, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, marginTop: 28, overflow: 'hidden', padding: '0 40px', boxSizing: 'border-box' as const }}>
+          <div style={{ width: '100%', maxWidth: 480, height: 4, background: progressBg, borderRadius: 2, marginTop: 28, overflow: 'hidden', padding: '0 40px', boxSizing: 'border-box' as const }}>
             <div style={{
               height: '100%', borderRadius: 2,
-              background: isWarning ? '#F97316' : mode === 'interval' && phase === 'rest' ? '#60A5FA' : '#C6FF00',
+              background: isWarning ? '#F97316' : mode === 'interval' && phase === 'rest' ? '#60A5FA' : (isLight ? '#6366F1' : '#C6FF00'),
               width: `${progressPct}%`,
               transition: 'width 1s linear, background 0.4s',
             }} />
@@ -354,7 +389,7 @@ export function TimerView() {
 
         {/* Elapsed total for interval mode */}
         {mode === 'interval' && !showConfig && (
-          <div style={{ marginTop: 16, fontSize: 13, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em' }}>
+          <div style={{ marginTop: 16, fontSize: 13, color: elapsedColor, letterSpacing: '0.06em' }}>
             TOTAL {formatTime(elapsed)}
           </div>
         )}
@@ -365,13 +400,13 @@ export function TimerView() {
             onClick={reset}
             style={{
               width: 54, height: 54, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
-              cursor: 'pointer', color: 'rgba(255,255,255,0.7)',
+              background: resetBg, border: resetBorder,
+              cursor: 'pointer', color: resetColor,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'background 0.15s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.14)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
+            onMouseEnter={e => (e.currentTarget.style.background = resetHoverBg)}
+            onMouseLeave={e => (e.currentTarget.style.background = resetBg)}
           >
             <RotateCcw size={22} />
           </button>
@@ -382,13 +417,13 @@ export function TimerView() {
             style={{
               width: 88, height: 88, borderRadius: '50%',
               background: isFinished
-                ? 'rgba(255,255,255,0.05)'
+                ? (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)')
                 : timerState === 'running'
-                ? 'rgba(255,255,255,0.12)'
+                ? (isLight ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.12)')
                 : '#C6FF00',
               border: 'none',
               cursor: isFinished ? 'not-allowed' : 'pointer',
-              color: timerState === 'running' ? '#fff' : '#0D1117',
+              color: timerState === 'running' ? (isLight ? '#0D1117' : '#fff') : '#0D1117',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: isFinished || timerState === 'running'
                 ? 'none'
@@ -399,22 +434,21 @@ export function TimerView() {
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
           >
             {timerState === 'running'
-              ? <Pause size={34} fill="white" />
-              : <Play size={34} fill={isFinished ? 'rgba(255,255,255,0.3)' : '#0D1117'} style={{ marginLeft: 4 }} />
+              ? <Pause size={34} fill={isLight ? '#0D1117' : 'white'} />
+              : <Play size={34} fill={isFinished ? (isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)') : '#0D1117'} style={{ marginLeft: 4 }} />
             }
           </button>
 
-          {/* Spacer para centrar */}
           <div style={{ width: 54 }} />
         </div>
 
         {timerState === 'idle' && (
-          <p style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.06em' }}>
+          <p style={{ marginTop: 20, fontSize: 12, color: hintColor, letterSpacing: '0.06em' }}>
             ESPACIO para iniciar · R para reiniciar
           </p>
         )}
         {timerState === 'paused' && (
-          <p style={{ marginTop: 20, fontSize: 13, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
+          <p style={{ marginTop: 20, fontSize: 13, color: labelMuted, letterSpacing: '0.06em' }}>
             PAUSADO · Espacio para continuar
           </p>
         )}

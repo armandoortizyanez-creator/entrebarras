@@ -7,6 +7,7 @@ import { getLatestPRs, getPRHistory, savePR, deletePR, epley1RM, percentageTable
 import type { PersonalRecord } from '@/lib/queries/prs'
 import { useUser } from '@/hooks/useUser'
 import { Plus, Trash2, ChevronDown, ChevronUp, Calculator, Trophy, X } from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 
 const COMMON_MOVEMENTS = [
   'Back Squat', 'Front Squat', 'Overhead Squat',
@@ -17,7 +18,7 @@ const COMMON_MOVEMENTS = [
   'Bench Press', 'Thruster',
 ]
 
-const PCT_ZONE: Record<number, { bg: string; text: string; label: string }> = {
+const PCT_ZONE_LIGHT: Record<number, { bg: string; text: string; label: string }> = {
   50:  { bg: '#F0FDF4', text: '#15803D', label: 'Calentamiento' },
   55:  { bg: '#F0FDF4', text: '#15803D', label: '' },
   60:  { bg: '#F0FDF4', text: '#15803D', label: '' },
@@ -31,6 +32,20 @@ const PCT_ZONE: Record<number, { bg: string; text: string; label: string }> = {
   100: { bg: 'rgba(99,102,241,0.08)', text: '#6366F1', label: '1RM' },
   105: { bg: '#F5F3FF', text: '#6D28D9', label: 'Objetivo' },
 }
+const PCT_ZONE_DARK: Record<number, { bg: string; text: string; label: string }> = {
+  50:  { bg: 'rgba(74,222,128,0.08)',  text: '#4ADE80', label: 'Calentamiento' },
+  55:  { bg: 'rgba(74,222,128,0.08)',  text: '#4ADE80', label: '' },
+  60:  { bg: 'rgba(74,222,128,0.08)',  text: '#4ADE80', label: '' },
+  65:  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', label: 'Técnica' },
+  70:  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', label: '' },
+  75:  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', label: '' },
+  80:  { bg: 'rgba(251,146,60,0.08)',  text: '#FB923C', label: 'Fuerza' },
+  85:  { bg: 'rgba(251,146,60,0.08)',  text: '#FB923C', label: '' },
+  90:  { bg: 'rgba(239,68,68,0.08)',   text: '#F87171', label: 'Intensidad' },
+  95:  { bg: 'rgba(239,68,68,0.08)',   text: '#F87171', label: '' },
+  100: { bg: 'rgba(99,102,241,0.12)',  text: '#818CF8', label: '1RM' },
+  105: { bg: 'rgba(167,139,250,0.10)', text: '#A78BFA', label: 'Objetivo' },
+}
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 11px',
@@ -39,6 +54,9 @@ const inputStyle: React.CSSProperties = {
 }
 
 export function CalculadoraView() {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
+  const PCT_ZONE = isLight ? PCT_ZONE_LIGHT : PCT_ZONE_DARK
   const { role, isAthlete, loading } = useUser()
   const qc = useQueryClient()
 
@@ -198,8 +216,8 @@ export function CalculadoraView() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(99,102,241,0.08)', border: '1px solid #FED7D7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Trophy size={16} color="#C6FF00" />
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Trophy size={16} color={isLight ? '#4A5500' : '#C6FF00'} />
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>
@@ -314,7 +332,7 @@ export function CalculadoraView() {
                           style={{
                             padding: '14px 20px',
                             borderBottom: '1px solid var(--color-border)',
-                            background: isSelected ? '#FFFBFB' : '#fff',
+                            background: isSelected ? 'var(--color-surface-2)' : 'var(--color-surface)',
                             cursor: 'pointer',
                             transition: 'background 0.12s',
                             display: 'flex', alignItems: 'center', gap: 14,
@@ -327,7 +345,7 @@ export function CalculadoraView() {
                             setCalcReps('1')
                           }}
                           onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--color-bg)' }}
-                          onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = '#fff' }}
+                          onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)' }}
                         >
                           {/* Rank number */}
                           <div style={{
@@ -437,7 +455,7 @@ export function CalculadoraView() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
             }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Calculator size={16} color="#C6FF00" />
+                <Calculator size={16} color={isLight ? '#4A5500' : '#C6FF00'} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>Calculadora de %</span>
               </div>
 
@@ -565,7 +583,7 @@ export function CalculadoraView() {
                             ~{row.kg_rounded} kg
                           </span>
                           {zone?.label && (
-                            <span style={{ fontSize: 10, fontWeight: 600, color: zone.text, background: 'rgba(255,255,255,0.6)', padding: '1px 6px', borderRadius: 10 }}>
+                            <span style={{ fontSize: 10, fontWeight: 600, color: zone.text, background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.10)', padding: '1px 6px', borderRadius: 10 }}>
                               {zone.label}
                             </span>
                           )}
