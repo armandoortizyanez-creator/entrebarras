@@ -24,7 +24,10 @@ export const metadata: Metadata = {
   },
   description: 'La plataforma de entrenamiento para coaches y atletas de Latinoamérica.',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+    apple: '/favicon.png',
   },
 }
 
