@@ -78,7 +78,7 @@ export function Sidebar() {
   const sideBgActive   = isLight ? 'rgba(99,102,241,0.10)' : 'rgba(99,102,241,0.14)'
   const sideBgHover    = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'
   const sideLabel      = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.22)'
-  const logoSrc        = isLight ? '/logos/logo-light-v2.png' : '/logos/logo-dark-v2.png'
+  const logoSrc        = isLight ? '/logos/logo-light-v2.png' : '/logos/logo-dark-v3.png'
 
   async function handleSignOut() {
     const supabase = createClient()
