@@ -188,7 +188,7 @@ export default function HomePage() {
         <div style={{ margin:'12px 16px 0', pointerEvents:'auto', background: isDark ? 'rgba(13,17,23,0.88)' : 'rgba(255,255,255,0.92)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', border:`1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`, borderRadius:16, boxShadow:'0 4px 24px rgba(0,0,0,.12)', padding:'0 20px' }}>
           <div style={{ height:64, display:'flex', alignItems:'center', gap:6 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logos/logo-1.png" alt="THRYRA" style={{ height:46, width:'auto', marginRight:14, flexShrink:0 }} />
+            <img src={isDark ? '/logos/logo-dark-v3.png' : '/logos/logo-light-v2.png'} alt="THRYRA" style={{ height:46, width:'auto', marginRight:14, flexShrink:0 }} />
             {!isMobile && NAV_LINKS.map(l => (
               <a key={l} href={`#${l.toLowerCase()}`} className="nav-link" style={{ padding:'7px 11px', borderRadius:8, fontSize:13.5, fontWeight:500, color:C.txt2, transition:'color .15s' }}>{l}</a>
             ))}
@@ -767,7 +767,7 @@ export default function HomePage() {
           <div style={{ display:'grid', gridTemplateColumns:isMobile?'1fr':'2fr 1fr 1fr 1fr', gap:isMobile?28:40, marginBottom:40 }}>
             <div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logos/logo-1.png" alt="THRYRA" style={{ height:32, width:'auto', marginBottom:12 }}/>
+              <img src="/logos/logo-dark-v3.png" alt="THRYRA" style={{ height:32, width:'auto', marginBottom:12 }}/>
               <p style={{ fontSize:13, color:'rgba(255,255,255,0.35)', lineHeight:1.65, maxWidth:240 }}>La plataforma todo en uno para coaches y boxes CrossFit en Latinoamérica.</p>
             </div>
             {[

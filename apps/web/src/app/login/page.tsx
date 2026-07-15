@@ -55,11 +55,9 @@ export default function LoginPage() {
       }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 48 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>T</span>
-            </div>
-            <span style={{ fontWeight: 800, fontSize: 16, color: '#fff', letterSpacing: '0.04em', fontFamily: 'var(--font-montserrat, Montserrat, sans-serif)' }}>THRYRA</span>
+          <div style={{ marginBottom: 48 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logos/logo-dark-v3.png" alt="THRYRA" style={{ height: 32, width: 'auto' }} />
           </div>
 
           <h1 style={{ fontSize: 26, fontWeight: 800, color: '#EDF0F7', letterSpacing: '-0.04em', marginBottom: 6 }}>
