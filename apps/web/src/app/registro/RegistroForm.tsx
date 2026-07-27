@@ -40,7 +40,8 @@ export function RegistroForm() {
     })
 
     if (error) {
-      setError(typeof error.message === 'string' && error.message ? error.message : JSON.stringify(error))
+      const msg = error.message || (error as any).error_description || (error as any).code || 'Error al crear cuenta. Intenta de nuevo.'
+      setError(msg)
       setLoading(false)
       return
     }

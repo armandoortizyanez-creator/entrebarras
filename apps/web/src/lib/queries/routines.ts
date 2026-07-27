@@ -220,3 +220,63 @@ export async function deleteRoutine(id: string) {
     .eq('id', id)
   if (error) throw error
 }
+
+export interface AssignedRoutineSummary {
+  id: string
+  name: string
+  description: string | null
+  type: string | null
+  tags: string[]
+  blocks_count: number
+  assigned_at: string
+}
+
+export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // Find athlete record for current user
+  const { data: athlete } = await supabase
+    .from('athletes')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!athlete) return []
+
+  const { data, error } = await supabase
+    .from('athlete_routines')
+    .select('created_at, routine:routines(id, name, description, type, tags, deleted_at)')
+    .eq('athlete_id', athlete.id)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+
+  const rows = (data ?? []).filter(r => r.routine && !(r.routine as Record<string, unknown>).deleted_at)
+
+  // Fetch block counts in one query
+  const routineIds = rows.map(r => (r.routine as { id: string }).id)
+  let blockCounts: Record<string, number> = {}
+  if (routineIds.length > 0) {
+    const { data: blocks } = await supabase
+      .from('routine_blocks')
+      .select('routine_id')
+      .in('routine_id', routineIds)
+    ;(blocks ?? []).forEach(b => {
+      blockCounts[b.routine_id] = (blockCounts[b.routine_id] ?? 0) + 1
+    })
+  }
+
+  return rows.map(r => {
+    const rt = r.routine as { id: string; name: string; description: string | null; type: string | null; tags: string[] }
+    return {
+      id: rt.id,
+      name: rt.name,
+      description: rt.description,
+      type: rt.type,
+      tags: rt.tags ?? [],
+      blocks_count: blockCounts[rt.id] ?? 0,
+      assigned_at: r.created_at,
+    }
+  })
+}

@@ -6,8 +6,9 @@ import { getSessionsByAthlete } from '@/lib/queries/sessions'
 import { getLatestPRs } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
 import { getBoxScheduleRange } from '@/lib/queries/box-schedule'
+import { getMyAssignedRoutines } from '@/lib/queries/routines'
 import Link from 'next/link'
-import { Zap, Dumbbell, Trophy, ArrowRight, CheckCircle2, Target, Flame } from 'lucide-react'
+import { Zap, Dumbbell, Trophy, ArrowRight, CheckCircle2, Target, Flame, Layers } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 
 const ACCENT = '#6366F1'
@@ -69,6 +70,11 @@ export function AthleteHomeDashboard() {
     queryKey: ['my-wod-results', me?.id],
     queryFn: () => me ? getAthleteWodResults(me.id, 10) : Promise.resolve([]),
     enabled: !!me,
+  })
+
+  const { data: myRoutines = [] } = useQuery({
+    queryKey: ['my-assigned-routines'],
+    queryFn: getMyAssignedRoutines,
   })
 
   const completed  = sessions.filter(s => s.status === 'completed').length
@@ -226,7 +232,11 @@ export function AthleteHomeDashboard() {
               const bgMap = isLight ? WOD_TYPE_BG_LIGHT : WOD_TYPE_BG
               const accent = type ? (colorMap[type] ?? '#818CF8') : ACCENT
               const bg = type ? (bgMap[type] ?? 'rgba(99,102,241,0.08)') : 'rgba(99,102,241,0.08)'
-              const href = isWod && entry.wod_id ? `/dashboard/wods/${entry.wod_id}` : '#'
+              const href = isWod && entry.wod_id
+                ? `/dashboard/wods/${entry.wod_id}`
+                : entry.routine_id
+                ? `/dashboard/mis-rutinas/${entry.routine_id}`
+                : '#'
 
               return (
                 <Link
@@ -266,7 +276,7 @@ export function AthleteHomeDashboard() {
                     {entry.notes && <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>{entry.notes}</p>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: accent, fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
-                    Ver WOD <ArrowRight size={15} />
+                    {isWod ? 'Ver WOD' : 'Ver rutina'} <ArrowRight size={15} />
                   </div>
                 </Link>
               )
@@ -274,6 +284,69 @@ export function AthleteHomeDashboard() {
           </div>
         )}
       </div>
+
+      {/* ── Mis Rutinas preview ── */}
+      {myRoutines.length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ display: 'inline-block', width: 4, height: 18, borderRadius: 2, background: `linear-gradient(${ACCENT}, ${VIOLET})` }} />
+              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+                Mis Rutinas
+              </p>
+            </div>
+            <Link href="/dashboard/mis-rutinas" style={{ fontSize: 12, color: ACCENT, textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+              Ver todas <ArrowRight size={11} />
+            </Link>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {myRoutines.slice(0, 3).map(r => (
+              <Link
+                key={r.id}
+                href={`/dashboard/mis-rutinas/${r.id}`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, textDecoration: 'none',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderLeft: `4px solid ${ACCENT}`,
+                  borderRadius: 12, padding: '14px 18px',
+                  transition: 'box-shadow 0.15s, transform 0.15s',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.boxShadow = 'var(--shadow-card-hover)'
+                  el.style.transform = 'translateX(3px)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.boxShadow = 'none'
+                  el.style.transform = 'translateX(0)'
+                }}
+              >
+                <div style={{ width: 40, height: 40, borderRadius: 11, background: `${ACCENT}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Dumbbell size={18} color={ACCENT} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {r.name}
+                  </p>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 3, alignItems: 'center' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--color-text-3)' }}>
+                      <Layers size={10} />{r.blocks_count} bloque{r.blocks_count !== 1 ? 's' : ''}
+                    </span>
+                    {r.type && (
+                      <span style={{ fontSize: 10, fontWeight: 600, background: `${ACCENT}18`, color: ACCENT, padding: '1px 6px', borderRadius: 20 }}>
+                        {r.type}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <ArrowRight size={14} color="var(--color-text-3)" style={{ flexShrink: 0 }} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── KPIs personales — gradient cards ── */}
       <div>

@@ -30,12 +30,13 @@ const BASE_ITEMS: NavItem[] = [
 ]
 
 const ATHLETE_ITEMS: NavItem[] = [
-  { href: '/dashboard',              label: 'Mi Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/wods',         label: 'WODs',         icon: Zap },
-  { href: '/dashboard/timer',        label: 'Timer',        icon: Timer },
-  { href: '/dashboard/calculadora',  label: 'Mis PRs',      icon: Percent },
-  { href: '/dashboard/programacion', label: 'Programación', icon: ClipboardList },
-  { href: '/dashboard/calendario',   label: 'Calendario',   icon: CalendarDays },
+  { href: '/dashboard',               label: 'Mi Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/mis-rutinas',   label: 'Mis Rutinas',  icon: Dumbbell },
+  { href: '/dashboard/wods',          label: 'WODs',         icon: Zap },
+  { href: '/dashboard/timer',         label: 'Timer',        icon: Timer },
+  { href: '/dashboard/calculadora',   label: 'Mis PRs',      icon: Percent },
+  { href: '/dashboard/programacion',  label: 'Programación', icon: ClipboardList },
+  { href: '/dashboard/calendario',    label: 'Calendario',   icon: CalendarDays },
 ]
 
 const COACH_ITEMS: NavItem[] = [
