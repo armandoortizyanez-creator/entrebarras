@@ -252,11 +252,15 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  const rows = (data ?? []).filter(r => r.routine && !(r.routine as Record<string, unknown>).deleted_at)
+  type RoutineRow = { id: string; name: string; description: string | null; type: string | null; tags: string[]; deleted_at: string | null }
 
-  // Fetch block counts in one query
-  const routineIds = rows.map(r => (r.routine as { id: string }).id)
-  let blockCounts: Record<string, number> = {}
+  const rows = (data ?? []).filter(r => {
+    const rt = r.routine as unknown as RoutineRow | null
+    return rt && !rt.deleted_at
+  })
+
+  const routineIds = rows.map(r => (r.routine as unknown as RoutineRow).id)
+  const blockCounts: Record<string, number> = {}
   if (routineIds.length > 0) {
     const { data: blocks } = await supabase
       .from('routine_blocks')
@@ -268,7 +272,7 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
   }
 
   return rows.map(r => {
-    const rt = r.routine as { id: string; name: string; description: string | null; type: string | null; tags: string[] }
+    const rt = r.routine as unknown as RoutineRow
     return {
       id: rt.id,
       name: rt.name,
