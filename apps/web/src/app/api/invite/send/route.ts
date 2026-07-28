@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (error || !inv) return NextResponse.json({ error: 'Invitación no encontrada' }, { status: 404 })
     if (inv.accepted_at) return NextResponse.json({ sent: false, reason: 'Ya aceptada' })
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thryra.app'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thryra.com'
     const inviteUrl = `${appUrl}/invite/${inv.token}`
     const inviterName = (() => {
       const i = inv.inviter as { first_name?: string; last_name?: string } | null
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
         'Authorization': `Bearer ${resendKey}`,
       },
       body: JSON.stringify({
-        from: 'THRYRA <invitaciones@thryra.app>',
+        from: 'THRYRA <onboarding@resend.dev>',
         to: inv.email,
         subject: `${inviterName} te invita a THRYRA`,
         html,
@@ -103,8 +103,8 @@ export async function POST(req: NextRequest) {
     })
 
     if (!res.ok) {
-      const body = await res.text()
-      console.error('[invite/send] Resend error:', res.status, body)
+      const resBody = await res.text()
+      console.error('[invite/send] Resend error:', res.status, resBody)
       return NextResponse.json({ sent: false, reason: `Resend error: ${res.status}` })
     }
 

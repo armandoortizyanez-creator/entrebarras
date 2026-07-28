@@ -13,6 +13,7 @@ interface InvitationInfo {
   accepted_at: string | null
   tenant_name: string
   inviter_name: string
+  tenant_id: string
 }
 
 type PageState = 'loading' | 'ready' | 'expired' | 'accepted' | 'success' | 'error'
@@ -78,7 +79,12 @@ export function InviteView({ token }: { token: string }) {
       email: inv.email,
       password,
       options: {
-        data: { first_name: firstName.trim(), last_name: lastName.trim() },
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          tenant_id: inv.tenant_id,
+          role: inv.role,
+        },
       },
     })
 
@@ -88,18 +94,20 @@ export function InviteView({ token }: { token: string }) {
       return
     }
 
-    // Sign in immediately (trigger auto-confirms email)
+    // Sign in immediately
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: inv.email,
       password,
     })
 
     if (signInError) {
-      // Account created but login failed — redirect to login
       setState('success')
       setSubmitting(false)
       return
     }
+
+    // Mark invitation as accepted
+    await supabase.rpc('accept_invitation', { p_token: token })
 
     setState('success')
     setTimeout(() => router.push('/dashboard'), 1500)

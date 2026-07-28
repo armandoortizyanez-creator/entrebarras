@@ -236,11 +236,19 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // Find athlete record for current user
+  // Look up public user record to get the public user ID
+  const { data: pubUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .maybeSingle()
+  if (!pubUser) return []
+
+  // Find athlete record linked to the public user
   const { data: athlete } = await supabase
     .from('athletes')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('user_id', pubUser.id)
     .maybeSingle()
   if (!athlete) return []
 

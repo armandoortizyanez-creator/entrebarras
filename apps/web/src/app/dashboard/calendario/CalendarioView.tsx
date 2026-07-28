@@ -31,7 +31,8 @@ const TYPE_COLORS: Record<string, string> = {
   event: 'var(--color-warning)',
 }
 
-export function CalendarioView() {
+export function CalendarioView({ userRole = 'athlete' }: { userRole?: string }) {
+  const isCoach = userRole === 'super_admin' || userRole === 'coach'
   const today = new Date()
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth() + 1)
@@ -94,12 +95,14 @@ export function CalendarioView() {
         <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
           Calendario
         </h1>
-        <button
-          onClick={() => { setShowAssign(true) }}
-          style={{ background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', padding: isMobile ? '8px 12px' : '9px 18px', fontSize: isMobile ? 12 : 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
-        >
-          {isMobile ? '+ Asignar' : '+ Asignar entrenamiento'}
-        </button>
+        {isCoach && (
+          <button
+            onClick={() => { setShowAssign(true) }}
+            style={{ background: 'var(--color-red)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', padding: isMobile ? '8px 12px' : '9px 18px', fontSize: isMobile ? 12 : 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            {isMobile ? '+ Asignar' : '+ Asignar entrenamiento'}
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 320px', gap: 20, alignItems: 'start' }}>
