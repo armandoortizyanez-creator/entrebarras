@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getRoutines, createRoutine, deleteRoutine } from '@/lib/queries/routines'
+import { getRoutines, createRoutine, deleteRoutine, getMyAssignedRoutines } from '@/lib/queries/routines'
+import { useUser } from '@/hooks/useUser'
 import Link from 'next/link'
 import { Plus, X, ClipboardList, Layers } from 'lucide-react'
 
@@ -13,16 +14,22 @@ const ROUTINE_TYPES = [
   { value: 'cardio', label: 'Cardio' },
   { value: 'crossfit', label: 'CrossFit' },
   { value: 'rehab', label: 'Rehabilitación' },
+  { value: 'weightlifting', label: 'Halterofilia' },
+  { value: 'kinesiology', label: 'Kinesiología' },
   { value: 'general', label: 'General' },
+  { value: 'other', label: 'Otro' },
 ]
 
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  strength:    { bg: 'rgba(251,146,60,0.10)',  text: '#FB923C', border: 'rgba(251,146,60,0.20)' },
-  hypertrophy: { bg: 'rgba(99,102,241,0.10)',  text: '#818CF8', border: 'rgba(99,102,241,0.20)' },
-  cardio:      { bg: 'rgba(52,211,153,0.10)',  text: '#34D399', border: 'rgba(52,211,153,0.20)' },
-  crossfit:    { bg: 'rgba(244,114,182,0.10)', text: '#F472B6', border: 'rgba(244,114,182,0.20)' },
-  rehab:       { bg: 'rgba(251,191,36,0.10)',  text: '#FBBF24', border: 'rgba(251,191,36,0.20)' },
-  general:     { bg: 'rgba(138,147,168,0.10)', text: '#8A93A8', border: 'rgba(138,147,168,0.20)' },
+  strength:      { bg: 'rgba(251,146,60,0.10)',  text: '#FB923C', border: 'rgba(251,146,60,0.20)' },
+  hypertrophy:   { bg: 'rgba(99,102,241,0.10)',  text: '#818CF8', border: 'rgba(99,102,241,0.20)' },
+  cardio:        { bg: 'rgba(52,211,153,0.10)',  text: '#34D399', border: 'rgba(52,211,153,0.20)' },
+  crossfit:      { bg: 'rgba(244,114,182,0.10)', text: '#F472B6', border: 'rgba(244,114,182,0.20)' },
+  rehab:         { bg: 'rgba(251,191,36,0.10)',  text: '#FBBF24', border: 'rgba(251,191,36,0.20)' },
+  weightlifting: { bg: 'rgba(239,68,68,0.10)',   text: '#EF4444', border: 'rgba(239,68,68,0.20)' },
+  kinesiology:   { bg: 'rgba(20,184,166,0.10)',  text: '#14B8A6', border: 'rgba(20,184,166,0.20)' },
+  general:       { bg: 'rgba(138,147,168,0.10)', text: '#8A93A8', border: 'rgba(138,147,168,0.20)' },
+  other:         { bg: 'rgba(168,85,247,0.10)',  text: '#A855F7', border: 'rgba(168,85,247,0.20)' },
 }
 
 const inputStyle: React.CSSProperties = {
@@ -35,10 +42,12 @@ export function RutinasView() {
   const [showModal, setShowModal] = useState(false)
   const router = useRouter()
   const qc = useQueryClient()
+  const { user, isAthlete } = useUser()
 
   const { data: routines = [], isLoading } = useQuery({
-    queryKey: ['routines'],
-    queryFn: getRoutines,
+    queryKey: ['routines', isAthlete ? 'assigned' : 'all'],
+    queryFn: isAthlete ? getMyAssignedRoutines : getRoutines,
+    enabled: !!user,
   })
 
   const deleteMutation = useMutation({
@@ -56,18 +65,20 @@ export function RutinasView() {
             {routines.length} {routines.length === 1 ? 'rutina registrada' : 'rutinas registradas'}
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 7,
-            background: '#6366F1', color: '#fff', border: 'none',
-            borderRadius: 10, padding: '9px 18px',
-            fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
-          }}
-        >
-          <Plus size={15} />
-          Nueva rutina
-        </button>
+        {!isAthlete && (
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: '#6366F1', color: '#fff', border: 'none',
+              borderRadius: 10, padding: '9px 18px',
+              fontSize: 13.5, fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            <Plus size={15} />
+            Nueva rutina
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -77,7 +88,7 @@ export function RutinasView() {
           ))}
         </div>
       ) : routines.length === 0 ? (
-        <EmptyRoutines onAdd={() => setShowModal(true)} />
+        <EmptyRoutines onAdd={() => setShowModal(true)} canCreate={!isAthlete} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
           {routines.map((r: any) => (
@@ -88,7 +99,7 @@ export function RutinasView() {
         </div>
       )}
 
-      {showModal && (
+      {showModal && !isAthlete && (
         <NewRoutineModal
           onClose={() => setShowModal(false)}
           onSuccess={(id) => {
@@ -191,7 +202,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
   )
 }
 
-function EmptyRoutines({ onAdd }: { onAdd: () => void }) {
+function EmptyRoutines({ onAdd, canCreate }: { onAdd: () => void; canCreate: boolean }) {
   return (
     <div style={{
       background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16,
@@ -205,11 +216,15 @@ function EmptyRoutines({ onAdd }: { onAdd: () => void }) {
       </div>
       <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)', marginBottom: 8 }}>Sin rutinas todavía</h3>
       <p style={{ fontSize: 14, color: 'var(--color-text-3)', marginBottom: 22, maxWidth: 360, margin: '0 auto 22px' }}>
-        Crea planes de entrenamiento con bloques, series y ejercicios personalizados.
+        {canCreate
+          ? 'Crea planes de entrenamiento con bloques, series y ejercicios personalizados.'
+          : 'Tu coach aún no te ha asignado ninguna rutina.'}
       </p>
-      <button onClick={onAdd} style={{ background: '#C6FF00', color: '#0D1117', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
-        Crear primera rutina
-      </button>
+      {canCreate && (
+        <button onClick={onAdd} style={{ background: '#C6FF00', color: '#0D1117', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>
+          Crear primera rutina
+        </button>
+      )}
     </div>
   )
 }

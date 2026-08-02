@@ -34,9 +34,32 @@ export async function getAthlete(id: string) {
 
 export async function createAthlete(athlete: Partial<Athlete>) {
   const supabase = createClient()
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) throw new Error('No autenticado')
+
+  const tenantId = userRes.user.app_metadata?.tenant_id
+  if (!tenantId) throw new Error('Sin organización asignada')
+
+  const role = userRes.user.app_metadata?.role
+
+  let assignedCoachId: string | undefined
+  if (role === 'coach') {
+    const { data: publicUser, error: uErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_user_id', userRes.user.id)
+      .single()
+    if (uErr) throw uErr
+    assignedCoachId = publicUser.id
+  }
+
   const { data, error } = await supabase
     .from('athletes')
-    .insert(athlete)
+    .insert({
+      ...athlete,
+      tenant_id: tenantId,
+      ...(assignedCoachId ? { assigned_coach_id: assignedCoachId } : {}),
+    })
     .select()
     .single()
   if (error) throw error
@@ -70,10 +93,17 @@ export async function getMyAthlete(): Promise<Athlete | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  const { data: pubUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .maybeSingle()
+  if (!pubUser) return null
+
   const { data } = await supabase
     .from('athletes')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', pubUser.id)
     .maybeSingle()
 
   return data as Athlete | null

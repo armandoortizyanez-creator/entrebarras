@@ -53,11 +53,12 @@ export function AthletesView() {
   const { user, isCoach, isSuperAdmin, isPlatformAdmin } = useUser()
   const qc = useQueryClient()
 
-  const coachFilter = isCoach && !isSuperAdmin && !isPlatformAdmin ? user?.id : undefined
+  // RLS handles coach filtering automatically — no need to pass coach_id
+  const isMyAthletes = isCoach && !isSuperAdmin && !isPlatformAdmin
 
   const { data: athletes = [], isLoading } = useQuery({
-    queryKey: ['athletes', status, coachFilter],
-    queryFn: () => getAthletes({ status: status === 'all' ? undefined : status, coach_id: coachFilter }),
+    queryKey: ['athletes', status],
+    queryFn: () => getAthletes({ status: status === 'all' ? undefined : status }),
     enabled: !!user,
   })
 
@@ -91,11 +92,11 @@ export function AthletesView() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.04em' }}>
-            {coachFilter ? 'Mis atletas' : 'Atletas'}
+            {isMyAthletes ? 'Mis atletas' : 'Atletas'}
           </h1>
           <p style={{ fontSize: 13.5, color: 'var(--color-text-2)', marginTop: 4 }}>
             {athletes.length} {athletes.length === 1 ? 'atleta registrado' : 'atletas registrados'}
-            {coachFilter ? ' asignados a ti' : ''}
+            {isMyAthletes ? ' asignados a ti' : ''}
           </p>
         </div>
         <button
