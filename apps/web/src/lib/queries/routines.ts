@@ -39,6 +39,7 @@ export interface RoutineExerciseFull {
   rest_seconds: number | null
   rpe: number | null
   notes: string | null
+  equipment: string | null
   exercise: { id: string; name: string; muscle_group: string | null; gif_url: string | null }
 }
 
@@ -134,7 +135,7 @@ export async function addBlock(routineId: string, orderIndex: number, type = 'st
 }
 
 export async function addExerciseToBlock(blockId: string, exerciseId: string, orderIndex: number, params: {
-  sets?: number; reps?: string; weight_kg?: number; weight_percent?: number; rest_seconds?: number; rpe?: number; notes?: string
+  sets?: number; reps?: string; weight_kg?: number; weight_percent?: number; rest_seconds?: number; rpe?: number; notes?: string; equipment?: string
 }) {
   const supabase = createClient()
   const { data, error } = await supabase
@@ -147,7 +148,7 @@ export async function addExerciseToBlock(blockId: string, exerciseId: string, or
 }
 
 export async function updateRoutineExercise(id: string, updates: {
-  sets?: number; reps?: string; weight_kg?: number; weight_percent?: number; rest_seconds?: number; rpe?: number; notes?: string
+  sets?: number; reps?: string; weight_kg?: number; weight_percent?: number; rest_seconds?: number; rpe?: number; notes?: string; equipment?: string | null
 }) {
   const supabase = createClient()
   const { error } = await supabase

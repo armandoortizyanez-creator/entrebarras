@@ -60,6 +60,32 @@ const MUSCLE_GROUPS = [
   { value: 'full body', label: 'Full body' },
 ]
 
+const EQUIPMENT_OPTIONS = [
+  { value: '',                label: 'Sin especificar' },
+  { value: 'barbell',        label: 'Barra olímpica' },
+  { value: 'dumbbell',       label: 'Mancuerna' },
+  { value: 'kettlebell',     label: 'Kettlebell' },
+  { value: 'plate',          label: 'Disco' },
+  { value: 'medicine_ball',  label: 'Medicine Ball' },
+  { value: 'box',            label: 'Cajón / Box' },
+  { value: 'pull_up_bar',    label: 'Barra de dominadas' },
+  { value: 'rings',          label: 'Anillas' },
+  { value: 'trx',            label: 'TRX / Suspensión' },
+  { value: 'resistance_band',label: 'Banda elástica' },
+  { value: 'jump_rope',      label: 'Cuerda de salto' },
+  { value: 'rowing',         label: 'Remo (máquina)' },
+  { value: 'ski_erg',        label: 'Ski Erg' },
+  { value: 'assault_bike',   label: 'Assault / Echo Bike' },
+  { value: 'sandbag',        label: 'Saco / Sandbag' },
+  { value: 'weight_vest',    label: 'Chaleco con peso' },
+  { value: 'battle_rope',    label: 'Cuerda de batalla' },
+  { value: 'bodyweight',     label: 'Sin equipo (corporal)' },
+]
+
+const EQUIPMENT_LABELS: Record<string, string> = Object.fromEntries(
+  EQUIPMENT_OPTIONS.filter(e => e.value).map(e => [e.value, e.label])
+)
+
 const SOURCES = [
   { value: '', label: 'Todos' },
   { value: 'crossfit', label: 'CrossFit' },
@@ -594,6 +620,7 @@ function ExerciseRow({ exercise, index, isLast, blockType, onRemove, onUpdate }:
     rest_seconds: exercise.rest_seconds ?? 60,
     rpe: exercise.rpe ?? '',
     notes: exercise.notes ?? '',
+    equipment: exercise.equipment ?? '',
   })
 
   const isWodStyle = blockType === 'wod' || blockType === 'emom' || blockType === 'circuit'
@@ -607,6 +634,7 @@ function ExerciseRow({ exercise, index, isLast, blockType, onRemove, onUpdate }:
       rest_seconds: !isWodStyle ? (Number(local.rest_seconds) || undefined) : undefined,
       rpe: local.rpe ? Number(local.rpe) : undefined,
       notes: local.notes || undefined,
+      equipment: local.equipment || null,
     })
     setEditing(false)
   }
@@ -614,6 +642,7 @@ function ExerciseRow({ exercise, index, isLast, blockType, onRemove, onUpdate }:
   const specs = [
     !isWodStyle && exercise.sets && exercise.reps ? `${exercise.sets} × ${exercise.reps}` : null,
     isWodStyle && exercise.reps ? `${exercise.reps} reps` : null,
+    exercise.equipment ? EQUIPMENT_LABELS[exercise.equipment] ?? exercise.equipment : null,
     exercise.weight_percent ? `${exercise.weight_percent}% 1RM` : null,
     !exercise.weight_percent && exercise.weight_kg ? `${exercise.weight_kg} kg` : null,
     !isWodStyle && exercise.rest_seconds ? `${exercise.rest_seconds}s descanso` : null,
@@ -722,14 +751,28 @@ function ExerciseRow({ exercise, index, isLast, blockType, onRemove, onUpdate }:
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <div style={{ flex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+            <div>
+              <label style={labelStyle}>Implemento / Equipo</label>
+              <select
+                value={local.equipment}
+                onChange={e => setLocal(p => ({ ...p, equipment: e.target.value }))}
+                style={{ ...inputStyle, cursor: 'pointer' }}
+              >
+                {EQUIPMENT_OPTIONS.map(eq => (
+                  <option key={eq.value} value={eq.value}>{eq.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label style={labelStyle}>Notas</label>
               <input value={local.notes} onChange={e => setLocal(p => ({ ...p, notes: e.target.value }))} placeholder="Instrucciones adicionales..." style={inputStyle} />
             </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               onClick={save}
-              style={{ padding: '8px 18px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              style={{ padding: '8px 22px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
             >
               Guardar
             </button>
