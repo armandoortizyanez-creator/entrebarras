@@ -11,8 +11,8 @@ export type SportLevel = 'beginner' | 'intermediate' | 'advanced' | 'competitive
 export type AthleteStatus = 'active' | 'inactive' | 'prospect'
 export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say'
 export type ExerciseSource = 'exercisedb' | 'custom' | 'crossfit' | 'strength' | 'hyrox' | 'gymnastics'
-export type RoutineType = 'strength' | 'hypertrophy' | 'cardio' | 'crossfit' | 'rehab' | 'general'
-export type BlockType = 'standard' | 'superset' | 'circuit'
+export type RoutineType = 'strength' | 'hypertrophy' | 'cardio' | 'crossfit' | 'rehab' | 'general' | 'weightlifting' | 'kinesiology' | 'other'
+export type BlockType = 'standard' | 'superset' | 'circuit' | 'warmup' | 'strength' | 'wod' | 'emom' | 'cooldown' | 'accessory'
 export type WodType = 'amrap' | 'emom' | 'for_time' | 'tabata' | 'chipper' | 'intervals' | 'custom'
 export type SessionType = 'routine' | 'wod' | 'rest' | 'event'
 export type SessionStatus = 'scheduled' | 'started' | 'completed' | 'skipped'
@@ -144,6 +144,7 @@ export interface RoutineExerciseConfig {
   sets: number | null
   reps: string | null
   weight_kg: number | null
+  weight_percent: number | null
   time_seconds: number | null
   distance_meters: number | null
   rest_seconds: number | null
@@ -166,6 +167,11 @@ export interface RoutineBlock {
   type: BlockType
   name: string | null
   notes: string | null
+  wod_type: string | null
+  time_cap: number | null
+  interval_work_s: number | null
+  interval_rest_s: number | null
+  rounds: number | null
   exercises: RoutineExercise[]
 }
 

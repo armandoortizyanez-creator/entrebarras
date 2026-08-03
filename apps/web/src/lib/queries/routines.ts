@@ -18,6 +18,11 @@ export interface RoutineBlockFull {
   type: string
   name: string | null
   notes: string | null
+  wod_type: string | null
+  time_cap: number | null
+  interval_work_s: number | null
+  interval_rest_s: number | null
+  rounds: number | null
   exercises: RoutineExerciseFull[]
 }
 
@@ -29,6 +34,7 @@ export interface RoutineExerciseFull {
   sets: number | null
   reps: string | null
   weight_kg: number | null
+  weight_percent: number | null
   time_seconds: number | null
   rest_seconds: number | null
   rpe: number | null
@@ -114,11 +120,13 @@ export async function createRoutine(data: {
   return routine
 }
 
-export async function addBlock(routineId: string, orderIndex: number, type = 'standard') {
+export async function addBlock(routineId: string, orderIndex: number, type = 'standard', extra?: {
+  wod_type?: string; time_cap?: number; interval_work_s?: number; interval_rest_s?: number; rounds?: number; name?: string
+}) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('routine_blocks')
-    .insert({ routine_id: routineId, order_index: orderIndex, type })
+    .insert({ routine_id: routineId, order_index: orderIndex, type, ...extra })
     .select()
     .single()
   if (error) throw error
@@ -126,7 +134,7 @@ export async function addBlock(routineId: string, orderIndex: number, type = 'st
 }
 
 export async function addExerciseToBlock(blockId: string, exerciseId: string, orderIndex: number, params: {
-  sets?: number; reps?: string; weight_kg?: number; rest_seconds?: number; rpe?: number; notes?: string
+  sets?: number; reps?: string; weight_kg?: number; weight_percent?: number; rest_seconds?: number; rpe?: number; notes?: string
 }) {
   const supabase = createClient()
   const { data, error } = await supabase
@@ -139,7 +147,7 @@ export async function addExerciseToBlock(blockId: string, exerciseId: string, or
 }
 
 export async function updateRoutineExercise(id: string, updates: {
-  sets?: number; reps?: string; weight_kg?: number; rest_seconds?: number; rpe?: number; notes?: string
+  sets?: number; reps?: string; weight_kg?: number; weight_percent?: number; rest_seconds?: number; rpe?: number; notes?: string
 }) {
   const supabase = createClient()
   const { error } = await supabase
@@ -161,7 +169,11 @@ export async function deleteBlock(id: string) {
   if (error) throw error
 }
 
-export async function updateBlock(id: string, data: { name?: string; type?: string; notes?: string }) {
+export async function updateBlock(id: string, data: {
+  name?: string; type?: string; notes?: string
+  wod_type?: string | null; time_cap?: number | null
+  interval_work_s?: number | null; interval_rest_s?: number | null; rounds?: number | null
+}) {
   const supabase = createClient()
   const { error } = await supabase.from('routine_blocks').update(data).eq('id', id)
   if (error) throw error

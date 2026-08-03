@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -11,22 +11,40 @@ import {
 import { getExercises } from '@/lib/queries/exercises'
 import { getAthletes } from '@/lib/queries/athletes'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Trash2, Users, X, Dumbbell, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Users, X, Dumbbell, ChevronDown, ChevronUp, Timer, Zap, Flame } from 'lucide-react'
 
 const BLOCK_TYPES = [
-  { value: 'standard', label: 'Estándar' },
-  { value: 'superset', label: 'Superserie' },
-  { value: 'circuit', label: 'Circuito' },
-  { value: 'amrap', label: 'AMRAP' },
-  { value: 'emom', label: 'EMOM' },
+  { value: 'warmup',    label: 'Calentamiento' },
+  { value: 'strength',  label: 'Fuerza' },
+  { value: 'wod',       label: 'WOD' },
+  { value: 'emom',      label: 'EMOM / Intervalos' },
+  { value: 'standard',  label: 'Estándar' },
+  { value: 'superset',  label: 'Superserie' },
+  { value: 'circuit',   label: 'Circuito' },
+  { value: 'accessory', label: 'Accesorio' },
+  { value: 'cooldown',  label: 'Vuelta a la calma' },
+]
+
+const WOD_TYPES = [
+  { value: 'amrap',     label: 'AMRAP' },
+  { value: 'for_time',  label: 'For Time' },
+  { value: 'emom',      label: 'EMOM' },
+  { value: 'tabata',    label: 'Tabata' },
+  { value: 'chipper',   label: 'Chipper' },
+  { value: 'intervals', label: 'Intervalos' },
+  { value: 'custom',    label: 'Otro' },
 ]
 
 const BLOCK_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  standard:  { bg: '#F8FAFC', text: '#475569', border: '#E2E8F0' },
-  superset:  { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
-  circuit:   { bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA' },
-  amrap:     { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
+  warmup:    { bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA' },
+  strength:  { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
+  wod:       { bg: '#FFF1F2', text: '#BE123C', border: '#FECDD3' },
   emom:      { bg: '#F5F3FF', text: '#6D28D9', border: '#DDD6FE' },
+  standard:  { bg: '#F8FAFC', text: '#475569', border: '#E2E8F0' },
+  superset:  { bg: '#ECFDF5', text: '#065F46', border: '#A7F3D0' },
+  circuit:   { bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA' },
+  accessory: { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
+  cooldown:  { bg: '#F0F9FF', text: '#0369A1', border: '#BAE6FD' },
 }
 
 const MUSCLE_GROUPS = [
@@ -202,9 +220,10 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
           onSelect={async (exerciseId) => {
             const block = routine.blocks.find(b => b.id === showExPicker)
             const orderIndex = block?.exercises.length ?? 0
-            await addExerciseToBlock(showExPicker, exerciseId, orderIndex, {
-              sets: 3, reps: '10', rest_seconds: 60,
-            })
+            const isWod = block?.type === 'wod' || block?.type === 'emom' || block?.type === 'circuit'
+            await addExerciseToBlock(showExPicker, exerciseId, orderIndex,
+              isWod ? { reps: '10' } : { sets: 3, reps: '10', rest_seconds: 60 }
+            )
             qc.invalidateQueries({ queryKey: ['routine', routineId] })
             setShowExPicker(null)
           }}
@@ -240,14 +259,14 @@ function MetaChip({ label, icon }: { label: string; icon?: React.ReactNode }) {
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BLOCK CARD â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ══════════════════ BLOCK CARD ══════════════════ */
 function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpdateExercise, onUpdateBlock, onDeleteBlock }: {
   block: RoutineBlockFull
   blockNumber: number
   onAddExercise: () => void
   onRemoveExercise: (id: string) => void
   onUpdateExercise: (id: string, updates: Parameters<typeof updateRoutineExercise>[1]) => void
-  onUpdateBlock: (data: { name?: string; type?: string; notes?: string }) => void
+  onUpdateBlock: (data: Parameters<typeof updateBlock>[1]) => void
   onDeleteBlock: () => void
 }) {
   const [editingHeader, setEditingHeader] = useState(false)
@@ -261,6 +280,8 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
   const blockType = block.type ?? 'standard'
   const typeLabel = BLOCK_TYPES.find(t => t.value === blockType)?.label ?? blockType
   const colors = BLOCK_COLORS[blockType] ?? BLOCK_COLORS.standard
+  const isWodBlock = blockType === 'wod'
+  const isEmomBlock = blockType === 'emom'
 
   return (
     <div style={{
@@ -274,7 +295,7 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
         display: 'flex', alignItems: 'center', gap: 10,
         background: '#FAFBFC',
       }}>
-        {/* Block number circle */}
+        {/* Block number */}
         <div style={{
           width: 26, height: 26, borderRadius: '50%',
           background: 'var(--color-text)', color: 'var(--color-surface)',
@@ -301,7 +322,7 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
               {BLOCK_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
             <button onClick={saveHeader} style={{ padding: '6px 14px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>OK</button>
-            <button onClick={() => setEditingHeader(false)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12, color: 'var(--color-text-2)', cursor: 'pointer' }}>âœ•</button>
+            <button onClick={() => setEditingHeader(false)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12, color: 'var(--color-text-2)', cursor: 'pointer' }}>✕</button>
           </div>
         ) : (
           <>
@@ -311,8 +332,7 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
             <span style={{
               fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
               padding: '3px 8px', borderRadius: 20,
-              background: colors.bg, color: colors.text,
-              border: `1px solid ${colors.border}`,
+              background: colors.bg, color: colors.text, border: `1px solid ${colors.border}`,
             }}>
               {typeLabel}
             </span>
@@ -334,11 +354,21 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
         )}
       </div>
 
+      {/* WOD config panel */}
+      {isWodBlock && (
+        <WodConfigPanel block={block} onUpdate={onUpdateBlock} />
+      )}
+
+      {/* EMOM/Intervals config panel */}
+      {isEmomBlock && (
+        <EmomConfigPanel block={block} onUpdate={onUpdateBlock} />
+      )}
+
       {/* Exercises */}
       <div>
         {block.exercises.length === 0 ? (
-          <div style={{ padding: '32px 20px', textAlign: 'center' }}>
-            <Dumbbell size={24} color="var(--color-text-4)" style={{ margin: '0 auto 8px' }} />
+          <div style={{ padding: '28px 20px', textAlign: 'center' }}>
+            <Dumbbell size={22} color="var(--color-text-4)" style={{ margin: '0 auto 8px' }} />
             <p style={{ fontSize: 13.5, color: 'var(--color-text-3)' }}>Sin ejercicios. Agrega el primero.</p>
           </div>
         ) : (
@@ -348,6 +378,7 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
               exercise={ex}
               index={i + 1}
               isLast={i === block.exercises.length - 1}
+              blockType={blockType}
               onRemove={() => onRemoveExercise(ex.id)}
               onUpdate={(updates) => onUpdateExercise(ex.id, updates)}
             />
@@ -362,8 +393,8 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
             onClick={onAddExercise}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              fontSize: 13, color: '#6366F1', background: 'rgba(99,102,241,0.10)',
-              border: '1px solid #FED7D7', borderRadius: 8,
+              fontSize: 13, color: '#6366F1', background: 'rgba(99,102,241,0.08)',
+              border: '1px solid rgba(99,102,241,0.20)', borderRadius: 8,
               padding: '6px 12px', cursor: 'pointer', fontWeight: 600,
             }}
           >
@@ -376,11 +407,181 @@ function BlockCard({ block, blockNumber, onAddExercise, onRemoveExercise, onUpda
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EXERCISE ROW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
+/* ══════════════════ WOD CONFIG PANEL ══════════════════ */
+function WodConfigPanel({ block, onUpdate }: {
+  block: RoutineBlockFull
+  onUpdate: (data: Parameters<typeof updateBlock>[1]) => void
+}) {
+  const [form, setForm] = useState({
+    wod_type: block.wod_type ?? 'amrap',
+    time_cap: block.time_cap ?? '',
+    rounds: block.rounds ?? '',
+  })
+
+  function save(patch: Partial<typeof form>) {
+    const merged = { ...form, ...patch }
+    setForm(merged)
+    onUpdate({
+      wod_type: merged.wod_type || null,
+      time_cap: merged.time_cap ? Number(merged.time_cap) : null,
+      rounds: merged.rounds ? Number(merged.rounds) : null,
+    })
+  }
+
+  const showRounds = form.wod_type === 'amrap' || form.wod_type === 'emom'
+  const showTimeCap = form.wod_type !== 'custom'
+
+  return (
+    <div style={{
+      padding: '12px 18px', borderBottom: '1px solid var(--color-border)',
+      background: '#FFF1F2', display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap',
+    }}>
+      <Flame size={14} color="#BE123C" style={{ flexShrink: 0, marginBottom: 2 }} />
+
+      <div>
+        <label style={labelStyle}>Tipo de WOD</label>
+        <select
+          value={form.wod_type}
+          onChange={e => save({ wod_type: e.target.value })}
+          style={{
+            padding: '6px 10px', border: '1px solid #FECDD3', borderRadius: 8,
+            fontSize: 13, fontWeight: 700, color: '#BE123C', background: '#FFF1F2',
+            cursor: 'pointer', outline: 'none',
+          }}
+        >
+          {WOD_TYPES.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
+        </select>
+      </div>
+
+      {showTimeCap && (
+        <div>
+          <label style={labelStyle}>Time cap (min)</label>
+          <input
+            type="number"
+            value={form.time_cap}
+            onChange={e => setForm(p => ({ ...p, time_cap: e.target.value as any }))}
+            onBlur={e => save({ time_cap: e.target.value as any })}
+            placeholder="—"
+            min={1}
+            style={{ width: 80, padding: '6px 10px', border: '1px solid #FECDD3', borderRadius: 8, fontSize: 13, color: '#BE123C', background: '#FFF1F2', outline: 'none' }}
+          />
+        </div>
+      )}
+
+      {showRounds && (
+        <div>
+          <label style={labelStyle}>Rondas</label>
+          <input
+            type="number"
+            value={form.rounds}
+            onChange={e => setForm(p => ({ ...p, rounds: e.target.value as any }))}
+            onBlur={e => save({ rounds: e.target.value as any })}
+            placeholder="—"
+            min={1}
+            style={{ width: 80, padding: '6px 10px', border: '1px solid #FECDD3', borderRadius: 8, fontSize: 13, color: '#BE123C', background: '#FFF1F2', outline: 'none' }}
+          />
+        </div>
+      )}
+
+      {form.wod_type && (
+        <span style={{ fontSize: 12, color: '#BE123C', fontWeight: 600, paddingBottom: 2 }}>
+          {form.wod_type === 'amrap' && form.time_cap ? `AMRAP ${form.time_cap} min` : ''}
+          {form.wod_type === 'for_time' && form.time_cap ? `For Time — cap ${form.time_cap} min` : ''}
+          {form.wod_type === 'emom' && form.time_cap ? `EMOM ${form.time_cap} min` : ''}
+          {form.wod_type === 'tabata' ? 'Tabata · 20s trabajo / 10s descanso × 8' : ''}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════ EMOM CONFIG PANEL ══════════════════ */
+function EmomConfigPanel({ block, onUpdate }: {
+  block: RoutineBlockFull
+  onUpdate: (data: Parameters<typeof updateBlock>[1]) => void
+}) {
+  const [form, setForm] = useState({
+    interval_work_s: block.interval_work_s ?? '',
+    interval_rest_s: block.interval_rest_s ?? '',
+    rounds: block.rounds ?? '',
+  })
+
+  function save(patch: Partial<typeof form>) {
+    const merged = { ...form, ...patch }
+    setForm(merged)
+    onUpdate({
+      interval_work_s: merged.interval_work_s ? Number(merged.interval_work_s) : null,
+      interval_rest_s: merged.interval_rest_s ? Number(merged.interval_rest_s) : null,
+      rounds: merged.rounds ? Number(merged.rounds) : null,
+    })
+  }
+
+  const workSec = Number(form.interval_work_s) || 0
+  const restSec = Number(form.interval_rest_s) || 0
+  const rounds = Number(form.rounds) || 0
+  const totalMin = rounds ? Math.round(((workSec + restSec) * rounds) / 60) : null
+
+  return (
+    <div style={{
+      padding: '12px 18px', borderBottom: '1px solid var(--color-border)',
+      background: '#F5F3FF', display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap',
+    }}>
+      <Timer size={14} color="#6D28D9" style={{ flexShrink: 0, marginBottom: 2 }} />
+
+      <div>
+        <label style={labelStyle}>Trabajo (seg)</label>
+        <input
+          type="number"
+          value={form.interval_work_s}
+          onChange={e => setForm(p => ({ ...p, interval_work_s: e.target.value as any }))}
+          onBlur={e => save({ interval_work_s: e.target.value as any })}
+          placeholder="40"
+          min={1}
+          style={{ width: 90, padding: '6px 10px', border: '1px solid #DDD6FE', borderRadius: 8, fontSize: 13, color: '#6D28D9', background: '#F5F3FF', outline: 'none' }}
+        />
+      </div>
+
+      <div>
+        <label style={labelStyle}>Descanso (seg)</label>
+        <input
+          type="number"
+          value={form.interval_rest_s}
+          onChange={e => setForm(p => ({ ...p, interval_rest_s: e.target.value as any }))}
+          onBlur={e => save({ interval_rest_s: e.target.value as any })}
+          placeholder="20"
+          min={0}
+          style={{ width: 90, padding: '6px 10px', border: '1px solid #DDD6FE', borderRadius: 8, fontSize: 13, color: '#6D28D9', background: '#F5F3FF', outline: 'none' }}
+        />
+      </div>
+
+      <div>
+        <label style={labelStyle}>Rondas</label>
+        <input
+          type="number"
+          value={form.rounds}
+          onChange={e => setForm(p => ({ ...p, rounds: e.target.value as any }))}
+          onBlur={e => save({ rounds: e.target.value as any })}
+          placeholder="—"
+          min={1}
+          style={{ width: 80, padding: '6px 10px', border: '1px solid #DDD6FE', borderRadius: 8, fontSize: 13, color: '#6D28D9', background: '#F5F3FF', outline: 'none' }}
+        />
+      </div>
+
+      {totalMin !== null && (
+        <span style={{ fontSize: 12, color: '#6D28D9', fontWeight: 600, paddingBottom: 2 }}>
+          ≈ {totalMin} min total
+        </span>
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════ EXERCISE ROW ══════════════════ */
+function ExerciseRow({ exercise, index, isLast, blockType, onRemove, onUpdate }: {
   exercise: RoutineExerciseFull
   index: number
   isLast: boolean
+  blockType: string
   onRemove: () => void
   onUpdate: (updates: Parameters<typeof updateRoutineExercise>[1]) => void
 }) {
@@ -389,17 +590,21 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
     sets: exercise.sets ?? 3,
     reps: exercise.reps ?? '10',
     weight_kg: exercise.weight_kg ?? '',
+    weight_percent: exercise.weight_percent ?? '',
     rest_seconds: exercise.rest_seconds ?? 60,
     rpe: exercise.rpe ?? '',
     notes: exercise.notes ?? '',
   })
 
+  const isWodStyle = blockType === 'wod' || blockType === 'emom' || blockType === 'circuit'
+
   function save() {
     onUpdate({
-      sets: Number(local.sets) || undefined,
+      sets: !isWodStyle ? (Number(local.sets) || undefined) : undefined,
       reps: local.reps || undefined,
       weight_kg: local.weight_kg ? Number(local.weight_kg) : undefined,
-      rest_seconds: Number(local.rest_seconds) || undefined,
+      weight_percent: local.weight_percent ? Number(local.weight_percent) : undefined,
+      rest_seconds: !isWodStyle ? (Number(local.rest_seconds) || undefined) : undefined,
       rpe: local.rpe ? Number(local.rpe) : undefined,
       notes: local.notes || undefined,
     })
@@ -407,16 +612,18 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
   }
 
   const specs = [
-    exercise.sets && exercise.reps ? `${exercise.sets} Í— ${exercise.reps}` : null,
-    exercise.weight_kg ? `${exercise.weight_kg} kg` : null,
-    exercise.rest_seconds ? `${exercise.rest_seconds}s descanso` : null,
+    !isWodStyle && exercise.sets && exercise.reps ? `${exercise.sets} × ${exercise.reps}` : null,
+    isWodStyle && exercise.reps ? `${exercise.reps} reps` : null,
+    exercise.weight_percent ? `${exercise.weight_percent}% 1RM` : null,
+    !exercise.weight_percent && exercise.weight_kg ? `${exercise.weight_kg} kg` : null,
+    !isWodStyle && exercise.rest_seconds ? `${exercise.rest_seconds}s descanso` : null,
     exercise.rpe ? `RPE ${exercise.rpe}` : null,
   ].filter(Boolean)
 
   return (
     <div style={{ borderBottom: isLast ? 'none' : '1px solid var(--color-border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px' }}>
-        {/* Index circle */}
+        {/* Index */}
         <div style={{
           width: 26, height: 26, borderRadius: '50%',
           background: 'var(--color-surface-2)', color: 'var(--color-text-2)',
@@ -426,7 +633,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
           {index}
         </div>
 
-        {/* Exercise thumbnail */}
+        {/* Thumbnail */}
         <div style={{
           width: 40, height: 40, borderRadius: 8,
           background: 'var(--color-surface-2)', flexShrink: 0, overflow: 'hidden',
@@ -445,7 +652,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
           </p>
           {specs.length > 0 && (
             <p style={{ fontSize: 12, color: 'var(--color-text-2)' }}>
-              {specs.join(' Â· ')}
+              {specs.join(' · ')}
             </p>
           )}
           {exercise.notes && (
@@ -472,7 +679,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
             style={{
               padding: '5px 8px', border: '1px solid var(--color-border)',
               borderRadius: 7, cursor: 'pointer', background: 'transparent',
-              color: 'var(--color-border)', display: 'flex', alignItems: 'center',
+              color: 'var(--color-text-4)', display: 'flex', alignItems: 'center',
               transition: 'color 0.1s, border-color 0.1s',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#EF4444'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#FEE2E2' }}
@@ -485,15 +692,36 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
 
       {editing && (
         <div style={{ padding: '0 18px 14px 18px', background: 'var(--color-surface-2)', borderTop: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10, paddingTop: 12 }}>
-            <NumField label="Series" value={local.sets} onChange={v => setLocal(p => ({ ...p, sets: v }))} />
-            <div>
-              <label style={labelStyle}>Reps</label>
-              <input value={local.reps} onChange={e => setLocal(p => ({ ...p, reps: e.target.value }))} placeholder="10 / 8-12 / MAX" style={inputStyle} />
+
+          {/* Strength-style: sets × reps × weight × rest */}
+          {!isWodStyle ? (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10, paddingTop: 12 }}>
+                <NumField label="Series" value={local.sets} onChange={v => setLocal(p => ({ ...p, sets: v }))} />
+                <div>
+                  <label style={labelStyle}>Reps</label>
+                  <input value={local.reps} onChange={e => setLocal(p => ({ ...p, reps: e.target.value }))} placeholder="10 / 8-12 / MAX" style={inputStyle} />
+                </div>
+                <NumField label="Peso (kg)" value={local.weight_kg} onChange={v => setLocal(p => ({ ...p, weight_kg: v }))} placeholder="—" />
+                <NumField label="% 1RM" value={local.weight_percent} onChange={v => setLocal(p => ({ ...p, weight_percent: v }))} placeholder="75" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                <NumField label="Descanso (s)" value={local.rest_seconds} onChange={v => setLocal(p => ({ ...p, rest_seconds: v }))} />
+                <NumField label="RPE (1-10)" value={local.rpe} onChange={v => setLocal(p => ({ ...p, rpe: v }))} placeholder="—" />
+              </div>
+            </>
+          ) : (
+            /* WOD-style: reps + weight + % 1RM */
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10, paddingTop: 12 }}>
+              <div>
+                <label style={labelStyle}>Reps / Distancia</label>
+                <input value={local.reps} onChange={e => setLocal(p => ({ ...p, reps: e.target.value }))} placeholder="21 / 400m / MAX" style={inputStyle} />
+              </div>
+              <NumField label="Peso (kg)" value={local.weight_kg} onChange={v => setLocal(p => ({ ...p, weight_kg: v }))} placeholder="—" />
+              <NumField label="% 1RM" value={local.weight_percent} onChange={v => setLocal(p => ({ ...p, weight_percent: v }))} placeholder="65" />
             </div>
-            <NumField label="Peso (kg)" value={local.weight_kg} onChange={v => setLocal(p => ({ ...p, weight_kg: v }))} placeholder="—" />
-            <NumField label="Descanso (s)" value={local.rest_seconds} onChange={v => setLocal(p => ({ ...p, rest_seconds: v }))} />
-          </div>
+          )}
+
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>Notas</label>
@@ -512,7 +740,7 @@ function ExerciseRow({ exercise, index, isLast, onRemove, onUpdate }: {
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EXERCISE PICKER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ══════════════════ EXERCISE PICKER ══════════════════ */
 function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: (id: string) => void }) {
   const [search, setSearch] = useState('')
   const [muscle, setMuscle] = useState('')
@@ -532,7 +760,6 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
       <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 600, height: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)' }}>
 
-        {/* Modal header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Seleccionar ejercicio</h2>
           <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
@@ -540,7 +767,6 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
           </button>
         </div>
 
-        {/* Filters */}
         <div style={{ padding: '14px 22px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <input
             autoFocus
@@ -562,7 +788,6 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
           </div>
         </div>
 
-        {/* Results */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {isLoading ? (
             <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando ejercicios...</div>
@@ -616,7 +841,7 @@ function ExercisePicker({ onClose, onSelect }: { onClose: () => void; onSelect: 
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ASSIGN MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ══════════════════ ASSIGN MODAL ══════════════════ */
 function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   routineId: string
   currentAssignments: string[]
@@ -692,7 +917,6 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
                     borderBottom: '1px solid var(--color-border)', transition: 'background 0.1s',
                   }}
                 >
-                  {/* Checkbox */}
                   <div style={{
                     width: 20, height: 20, borderRadius: 6,
                     border: `2px solid ${checked ? '#6366F1' : 'var(--color-text-4)'}`,
@@ -700,9 +924,8 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, transition: 'all 0.12s',
                   }}>
-                    {checked && <span style={{ color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1 }}>âœ“</span>}
+                    {checked && <span style={{ color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1 }}>✓</span>}
                   </div>
-                  {/* Athlete initials */}
                   <div style={{
                     width: 34, height: 34, borderRadius: '50%',
                     background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
@@ -746,7 +969,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   )
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• UTILS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ══════════════════ UTILS ══════════════════ */
 function NumField({ label, value, onChange, placeholder }: { label: string; value: any; onChange: (v: any) => void; placeholder?: string }) {
   return (
     <div>
@@ -787,4 +1010,7 @@ function SkeletonLoader() {
   )
 }
 
-const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-3)',
+  textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4,
+}
