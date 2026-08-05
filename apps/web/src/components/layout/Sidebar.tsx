@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Dumbbell, Zap,
   BookOpen, CalendarDays, BarChart2, Settings,
   UserCog, Mail, UsersRound, Building2, Shield, X, Percent, ClipboardList, Timer, LogOut,
-  Sun, Moon,
+  Sun, Moon, HelpCircle,
 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 import { useTheme } from '@/hooks/useTheme'
@@ -214,6 +214,29 @@ export function Sidebar() {
 
         {/* Bottom: Configuración + Cerrar sesión */}
         <div style={{ padding: '10px', borderTop: `1px solid ${sideBorder}`, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Link
+            href="/dashboard/ayuda"
+            onClick={handleNavClick}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 9,
+              padding: '7.5px 10px', borderRadius: 8,
+              textDecoration: 'none', fontSize: 13.5,
+              color: pathname.startsWith('/dashboard/ayuda') ? sideTextActive : sideText,
+              background: pathname.startsWith('/dashboard/ayuda') ? sideBgActive : 'transparent',
+              transition: 'background 0.12s, color 0.12s',
+            }}
+            onMouseEnter={e => {
+              if (!pathname.startsWith('/dashboard/ayuda'))
+                (e.currentTarget as HTMLElement).style.background = sideBgHover
+            }}
+            onMouseLeave={e => {
+              if (!pathname.startsWith('/dashboard/ayuda'))
+                (e.currentTarget as HTMLElement).style.background = 'transparent'
+            }}
+          >
+            <HelpCircle size={15.5} strokeWidth={1.75} style={{ opacity: 0.55 }} />
+            Centro de ayuda
+          </Link>
           <Link
             href="/dashboard/configuracion"
             onClick={handleNavClick}
