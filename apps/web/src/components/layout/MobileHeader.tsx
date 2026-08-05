@@ -29,9 +29,9 @@ export function MobileHeader() {
       </button>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={isLight ? '/logos/logo-light-v2.png' : '/logos/logo-dark-v2.png'}
+        src={isLight ? '/logos/logo-light-v2.png' : '/logos/logo-dark-v3.png'}
         alt="THRYRA"
-        style={{ height: 30, width: 'auto' }}
+        style={{ height: 38, width: 'auto' }}
       />
       <button
         onClick={toggleTheme}

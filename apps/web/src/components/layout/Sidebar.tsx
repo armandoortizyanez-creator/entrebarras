@@ -124,7 +124,7 @@ export function Sidebar() {
             <img
               src={logoSrc}
               alt="THRYRA"
-              style={{ height: 28, width: 'auto' }}
+              style={{ height: 42, width: 'auto' }}
             />
             {roleLabel && badge && (
               <span style={{

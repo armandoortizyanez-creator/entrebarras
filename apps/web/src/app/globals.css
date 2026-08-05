@@ -126,9 +126,13 @@ h1, h2 {
   font-family: var(--font-montserrat, 'Montserrat'), system-ui, sans-serif;
 }
 
-/* Smooth page entry */
+/* Smooth page entry.
+   IMPORTANTE: solo opacidad — nunca transform. Con animation-fill-mode: both
+   el transform final persiste, y un ancestro con transform se convierte en el
+   bloque contenedor de sus descendientes position:fixed, lo que recorta todos
+   los modales y overlays a la caja del <main> en vez del viewport. */
 main, .eb-main-content > * {
-  animation: fade-in 0.18s var(--ease-out) both;
+  animation: fade-in-opacity 0.18s var(--ease-out) both;
 }
 
 /* Focus visible — buttons, links, etc. */
@@ -170,6 +174,12 @@ textarea:focus {
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Variante sin transform — segura para contenedores que envuelven modales */
+@keyframes fade-in-opacity {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes spin {
