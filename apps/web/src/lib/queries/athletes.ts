@@ -21,6 +21,59 @@ export async function getAthletes(filters?: {
   return data as Athlete[]
 }
 
+export interface AthleteGroupRef {
+  id: string
+  name: string
+}
+
+export interface AthleteWithGroups {
+  id: string
+  first_name: string
+  last_name: string | null
+  email: string | null
+  groups: AthleteGroupRef[]
+}
+
+/**
+ * Atletas activos con los grupos a los que pertenecen.
+ * Un atleta puede estar en varios grupos, o en ninguno (se muestra como S/E).
+ */
+export async function getAthletesWithGroups(): Promise<AthleteWithGroups[]> {
+  const supabase = createClient()
+
+  const { data: athletes, error } = await supabase
+    .from('athletes')
+    .select('id, first_name, last_name, email')
+    .is('deleted_at', null)
+    .eq('status', 'active')
+    .order('first_name')
+  if (error) throw error
+  if (!athletes || athletes.length === 0) return []
+
+  const { data: memberships, error: mErr } = await supabase
+    .from('group_athletes')
+    .select('athlete_id, group:groups(id, name)')
+    .in('athlete_id', athletes.map(a => a.id))
+  if (mErr) throw mErr
+
+  const byAthlete = new Map<string, AthleteGroupRef[]>()
+  for (const m of memberships ?? []) {
+    const g = m.group as unknown as AthleteGroupRef | null
+    if (!g) continue
+    const list = byAthlete.get(m.athlete_id as string) ?? []
+    list.push(g)
+    byAthlete.set(m.athlete_id as string, list)
+  }
+
+  return athletes.map(a => ({
+    id: a.id as string,
+    first_name: a.first_name as string,
+    last_name: a.last_name as string | null,
+    email: a.email as string | null,
+    groups: byAthlete.get(a.id as string) ?? [],
+  }))
+}
+
 export async function getAthlete(id: string) {
   const supabase = createClient()
   const { data, error } = await supabase

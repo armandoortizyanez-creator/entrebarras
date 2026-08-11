@@ -1,16 +1,20 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getRoutine, addBlock, deleteBlock, updateBlock,
-  assignRoutineToAthletes, getRoutineAssignments,
+  assignRoutineToAthletes, getRoutineAssignments, removeRoutineAssignment,
   type RoutineBlockFull,
 } from '@/lib/queries/routines'
-import { getAthletes } from '@/lib/queries/athletes'
-import { isSafeUrl, normalizeLinks, BlockLinkList, type BlockLink } from '@/components/routines/BlockContent'
+import { getAthletesWithGroups } from '@/lib/queries/athletes'
+import { isSafeUrl, normalizeLinks, type BlockLink } from '@/components/routines/BlockContent'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play, UsersRound, Minus } from 'lucide-react'
+
+/** Etiqueta para atletas que no pertenecen a ningún grupo. */
+const SIN_EQUIPO = 'S/E'
+const BUCKET_SIN_EQUIPO = '__sin_equipo__'
 
 const BLOCK_TYPES = [
   { value: 'warmup',    label: 'Calentamiento' },
@@ -495,9 +499,27 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   const [error, setError] = useState<string | null>(null)
 
   const { data: athletes = [], isLoading } = useQuery({
-    queryKey: ['athletes'],
-    queryFn: () => getAthletes({ status: 'active' }),
+    queryKey: ['athletes-with-groups'],
+    queryFn: getAthletesWithGroups,
   })
+
+  /** Grupos derivados de los atletas, más el bucket de los que no tienen. */
+  const groups = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; members: string[] }>()
+    for (const a of athletes) {
+      for (const g of a.groups) {
+        const entry = map.get(g.id) ?? { id: g.id, name: g.name, members: [] }
+        entry.members.push(a.id)
+        map.set(g.id, entry)
+      }
+    }
+    const list = [...map.values()].sort((x, y) => x.name.localeCompare(y.name, 'es'))
+    const huerfanos = athletes.filter(a => a.groups.length === 0).map(a => a.id)
+    if (huerfanos.length > 0) {
+      list.push({ id: BUCKET_SIN_EQUIPO, name: `Sin equipo (${SIN_EQUIPO})`, members: huerfanos })
+    }
+    return list
+  }, [athletes])
 
   function toggle(id: string) {
     setSelected(prev => {
@@ -507,13 +529,34 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
     })
   }
 
+  /** none = ninguno, some = algunos, all = todos los miembros del grupo. */
+  function groupState(members: string[]): 'none' | 'some' | 'all' {
+    const n = members.filter(id => selected.has(id)).length
+    if (n === 0) return 'none'
+    return n === members.length ? 'all' : 'some'
+  }
+
+  /** Selecciona el grupo completo; si ya estaba completo, lo deselecciona. */
+  function toggleGroup(members: string[]) {
+    const estaCompleto = groupState(members) === 'all'
+    setSelected(prev => {
+      const next = new Set(prev)
+      for (const id of members) estaCompleto ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
   async function save() {
     setSaving(true)
     setError(null)
     try {
-      if (selected.size > 0) {
-        await assignRoutineToAthletes(routineId, Array.from(selected))
-      }
+      const aAgregar = [...selected].filter(id => !currentAssignments.includes(id))
+      const aQuitar  = currentAssignments.filter(id => !selected.has(id))
+
+      if (aAgregar.length > 0) await assignRoutineToAthletes(routineId, aAgregar)
+      // Deseleccionar tambien debe surtir efecto: antes solo se agregaba.
+      await Promise.all(aQuitar.map(id => removeRoutineAssignment(id, routineId)))
+
       onSaved()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar')
@@ -538,60 +581,135 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
           {isLoading ? (
             <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando atletas...</div>
           ) : athletes.length === 0 ? (
             <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>No hay atletas activos</div>
           ) : (
-            athletes.map(a => {
-              const checked = selected.has(a.id)
-              const initials = `${a.first_name[0]}${(a.last_name ?? '')[0] ?? ''}`.toUpperCase()
-              return (
-                <button
-                  key={a.id}
-                  onClick={() => toggle(a.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                    padding: '11px 22px',
-                    background: checked ? 'rgba(99,102,241,0.10)' : 'transparent',
-                    border: 'none', cursor: 'pointer', textAlign: 'left',
-                    borderBottom: '1px solid var(--color-border)', transition: 'background 0.1s',
-                  }}
-                >
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 6,
-                    border: `2px solid ${checked ? '#6366F1' : 'var(--color-text-4)'}`,
-                    background: checked ? '#6366F1' : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, transition: 'all 0.12s',
-                  }}>
-                    {checked && <Check size={12} color="#fff" strokeWidth={3} />}
+            <>
+              {/* ── Asignación por grupo ── */}
+              {groups.length > 0 && (
+                <>
+                  <SectionLabel text="Asignar a un grupo completo" />
+                  <div style={{ padding: '0 22px 12px', display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {groups.map(g => {
+                      const estado = groupState(g.members)
+                      const activo = estado !== 'none'
+                      return (
+                        <button
+                          key={g.id}
+                          onClick={() => toggleGroup(g.members)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 7,
+                            padding: '7px 12px', borderRadius: 20, cursor: 'pointer',
+                            fontSize: 12.5, fontWeight: 700,
+                            background: activo ? 'rgba(99,102,241,0.12)' : 'transparent',
+                            border: `1px solid ${activo ? '#6366F1' : 'var(--color-border)'}`,
+                            color: activo ? '#6366F1' : 'var(--color-text-2)',
+                            transition: 'all 0.12s',
+                          }}
+                        >
+                          <span style={{
+                            width: 15, height: 15, borderRadius: 4, flexShrink: 0,
+                            border: `2px solid ${activo ? '#6366F1' : 'var(--color-text-4)'}`,
+                            background: estado === 'all' ? '#6366F1' : 'transparent',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            {estado === 'all'  && <Check size={9} color="#fff" strokeWidth={4} />}
+                            {estado === 'some' && <Minus size={9} color="#6366F1" strokeWidth={4} />}
+                          </span>
+                          {g.id === BUCKET_SIN_EQUIPO ? <Users size={12} /> : <UsersRound size={12} />}
+                          {g.name}
+                          <span style={{ opacity: 0.65, fontWeight: 600 }}>{g.members.length}</span>
+                        </button>
+                      )
+                    })}
                   </div>
-                  <div style={{
-                    width: 34, height: 34, borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
-                  }}>
-                    {initials}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                      {a.first_name} {a.last_name ?? ''}
-                    </p>
-                    {a.email && (
-                      <p style={{ fontSize: 12, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email}</p>
+                </>
+              )}
+
+              {/* ── Atletas individuales ── */}
+              <SectionLabel text="O elegir atletas uno por uno" />
+              {athletes.map(a => {
+                const checked = selected.has(a.id)
+                const initials = `${a.first_name[0]}${(a.last_name ?? '')[0] ?? ''}`.toUpperCase()
+                const sinEquipo = a.groups.length === 0
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => toggle(a.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                      padding: '11px 22px',
+                      background: checked ? 'rgba(99,102,241,0.10)' : 'transparent',
+                      border: 'none', cursor: 'pointer', textAlign: 'left',
+                      borderBottom: '1px solid var(--color-border)', transition: 'background 0.1s',
+                    }}
+                  >
+                    <div style={{
+                      width: 20, height: 20, borderRadius: 6,
+                      border: `2px solid ${checked ? '#6366F1' : 'var(--color-text-4)'}`,
+                      background: checked ? '#6366F1' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, transition: 'all 0.12s',
+                    }}>
+                      {checked && <Check size={12} color="#fff" strokeWidth={3} />}
+                    </div>
+                    <div style={{
+                      width: 34, height: 34, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
+                    }}>
+                      {initials}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
+                        {a.first_name} {a.last_name ?? ''}
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', marginTop: 2 }}>
+                        {sinEquipo ? (
+                          <span
+                            title="Sin equipo"
+                            style={{
+                              fontSize: 10.5, fontWeight: 700, padding: '1.5px 7px', borderRadius: 20,
+                              background: 'var(--color-surface-2)', color: 'var(--color-text-3)',
+                              border: '1px solid var(--color-border)',
+                            }}
+                          >
+                            {SIN_EQUIPO}
+                          </span>
+                        ) : (
+                          a.groups.map(g => (
+                            <span
+                              key={g.id}
+                              style={{
+                                fontSize: 10.5, fontWeight: 700, padding: '1.5px 7px', borderRadius: 20,
+                                background: 'rgba(99,102,241,0.10)', color: '#6366F1',
+                                border: '1px solid rgba(99,102,241,0.22)',
+                              }}
+                            >
+                              {g.name}
+                            </span>
+                          ))
+                        )}
+                        {a.email && (
+                          <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {a.email}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {currentAssignments.includes(a.id) && (
+                      <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: 'rgba(34,197,94,0.12)', color: '#22C55E', fontWeight: 600, flexShrink: 0 }}>
+                        Asignada
+                      </span>
                     )}
-                  </div>
-                  {currentAssignments.includes(a.id) && (
-                    <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: 'rgba(99,102,241,0.10)', color: '#6366F1', fontWeight: 600, flexShrink: 0 }}>
-                      Asignada
-                    </span>
-                  )}
-                </button>
-              )
-            })
+                  </button>
+                )
+              })}
+            </>
           )}
         </div>
 
@@ -602,12 +720,28 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
               Cancelar
             </button>
             <button onClick={save} disabled={saving} style={{ flex: 1, padding: '10px', background: saving ? 'var(--color-surface-2)' : '#6366F1', color: saving ? 'var(--color-text-3)' : '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer' }}>
-              {saving ? 'Guardando...' : `Asignar a ${selected.size} atleta${selected.size !== 1 ? 's' : ''}`}
+              {saving
+                ? 'Guardando...'
+                : selected.size === 0
+                ? 'Quitar todas las asignaciones'
+                : `Asignar a ${selected.size} atleta${selected.size !== 1 ? 's' : ''}`}
             </button>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <p style={{
+      fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)',
+      textTransform: 'uppercase', letterSpacing: '0.07em',
+      padding: '14px 22px 8px',
+    }}>
+      {text}
+    </p>
   )
 }
 
