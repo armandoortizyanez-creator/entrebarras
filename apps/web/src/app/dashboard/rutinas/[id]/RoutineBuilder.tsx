@@ -286,11 +286,12 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
         <input
           value={name}
           onChange={e => { dirty.current = true; setName(e.target.value) }}
-          placeholder={`Bloque ${blockNumber}`}
+          placeholder="Nombre del bloque (ej. CONDITION, WOD, FUERZA)"
           style={{
-            flex: 1, minWidth: 120, padding: '5px 8px',
+            flex: 1, minWidth: 140, padding: '6px 9px',
             border: '1px solid transparent', borderRadius: 7,
-            fontSize: 14, fontWeight: 700, color: 'var(--color-text)',
+            fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em',
+            color: 'var(--color-text)',
             background: 'transparent', outline: 'none',
           }}
           onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-surface-2)' }}

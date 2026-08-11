@@ -132,8 +132,11 @@ function BlockCard({ block, index }: { block: any; index: number }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>
-              {block.name ?? BLOCK_TYPE_LABELS[block.type] ?? 'Bloque'}
+            <p style={{
+              fontSize: 17, fontWeight: 900, letterSpacing: '-0.02em',
+              color: 'var(--color-text)',
+            }}>
+              {block.name || BLOCK_TYPE_LABELS[block.type] || 'Bloque'}
             </p>
             <span style={{
               fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
