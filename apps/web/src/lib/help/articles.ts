@@ -202,40 +202,41 @@ export const HELP_ARTICLES: HelpArticle[] = [
 
   {
     id: 'armar-bloques',
-    title: 'Armar los bloques de una rutina',
-    summary: 'Calentamiento, fuerza, WOD, EMOM: cómo se configura cada tipo de bloque.',
+    title: 'Escribir los bloques de una rutina',
+    summary: 'Cada bloque es una hoja en blanco: escribe o pega tu rutina tal como la tienes.',
     category: 'rutinas',
     roles: ['coach', 'admin'],
-    keywords: ['bloques', 'wod', 'emom', 'amrap', 'calentamiento', 'fuerza', 'estructura', 'partes'],
+    keywords: ['bloques', 'escribir', 'pegar', 'excel', 'texto', 'wod', 'emom', 'calentamiento', 'fuerza', 'partes', 'videos'],
     steps: [
       {
         title: 'Cada bloque es una parte del entrenamiento',
-        body: 'Una clase típica de CrossFit se divide en partes: primero calentamiento, después trabajo de fuerza, después el WOD. Cada una de esas partes es un bloque en Thryra, y se ejecutan en el orden en que las agregas.',
+        body: 'Una clase típica se divide en partes: primero calentamiento, después trabajo de fuerza, después el WOD. Cada una de esas partes es un bloque, y se ejecutan en el orden en que las agregas. Puedes tener 3 bloques o 8 — presiona "Agregar bloque" las veces que necesites.',
       },
       {
-        title: 'Elige el tipo de bloque',
-        body: 'Presiona "Editar" en la cabecera del bloque y elige entre: Calentamiento, Fuerza, WOD, EMOM/Intervalos, Estándar, Superserie, Circuito, Accesorio o Vuelta a la calma. También puedes darle un nombre propio como "Parte A" o "Técnica de snatch".',
+        title: 'Escribe libremente dentro del bloque',
+        body: 'No hay campos que rellenar uno por uno. El bloque es un área de texto donde escribes la prescripción tal como la piensas: "4 SET 55-65% / 2 HANG POWER CLEAN / 1 PUSH JERK". Los saltos de línea y el formato se respetan exactamente como los escribes.',
       },
       {
-        title: 'Bloques de Fuerza y Calentamiento',
-        body: 'Cada ejercicio se configura con series, repeticiones, peso en kilos, porcentaje de 1RM, descanso entre series y RPE. Usa el % de 1RM cuando quieras que la carga se adapte al nivel de cada atleta en lugar de fijar un peso absoluto.',
+        title: 'Copia y pega desde Excel',
+        body: 'Si ya tienes tus rutinas en una planilla, selecciona las celdas, copia y pega directo en el bloque. El texto entra con su estructura de líneas intacta, sin tener que rearmar nada.',
       },
       {
-        title: 'Bloques de WOD',
-        body: 'Al elegir tipo WOD aparece un panel donde defines el formato: AMRAP, For Time, EMOM, Tabata, Chipper, Intervalos u Otro. Además fijas el time cap en minutos y, si aplica, la cantidad de rondas. Los ejercicios dentro del WOD se configuran solo con repeticiones o distancia, peso y % de 1RM.',
+        title: 'Ponle nombre y tipo al bloque',
+        body: 'Escribe el nombre arriba del bloque ("LIFT", "Parte A", "Metcon") y elige el tipo en el selector de la derecha: Calentamiento, Fuerza, WOD, EMOM, Superserie, Circuito, Accesorio, Vuelta a la calma o General. El tipo define el color de la etiqueta con la que tu atleta identifica el bloque de un vistazo.',
       },
       {
-        title: 'Bloques EMOM / Intervalos',
-        body: 'Configuras segundos de trabajo, segundos de descanso y número de rondas. Thryra te calcula automáticamente el tiempo total del bloque para que sepas cuánto va a durar esa parte de la clase.',
+        title: 'Agrega videos de referencia',
+        body: 'Tienes dos formas. La primera: pega la URL dentro del texto y queda clicable automáticamente. La segunda: usa el botón "Agregar video de referencia" para sumar un enlace con nombre propio (por ejemplo "Técnica de snatch"), que aparece como una etiqueta aparte al final del bloque.',
       },
       {
-        title: 'Especifica el implemento de cada ejercicio',
-        body: 'Al editar un ejercicio encontrarás el selector "Implemento / Equipo": barra olímpica, mancuerna, kettlebell, disco, medicine ball, cajón, anillas, TRX, banda, cuerda, remo, ski erg, assault bike, sandbag, chaleco y más. Queda visible en el resumen del ejercicio para que el atleta sepa exactamente con qué trabajar.',
+        title: 'Se guarda solo',
+        body: 'No hay botón de guardar. Mientras escribes, Thryra guarda automáticamente y te muestra "Guardando" y luego "Guardado" arriba a la derecha del bloque.',
       },
     ],
     tips: [
-      'Ejemplo de clase completa — Bloque 1 Calentamiento: 3 rondas de 10 inchworms + 200m trote. Bloque 2 Fuerza: Clean & Jerk 5×3 al 75% con barra. Bloque 3 WOD tipo AMRAP 12 min: 3 Clean & Jerk + 6 Bar Muscle-ups + 9 Box Jumps.',
-      'Puedes eliminar un bloque con el ícono de basurero, pero se borran también todos sus ejercicios.',
+      'Ejemplo de clase completa — Bloque 1 "Calentamiento": 3 rondas de 10 inchworms + 200m trote. Bloque 2 "LIFT" tipo Fuerza: 5×3 Clean & Jerk al 75%. Bloque 3 "Metcon" tipo WOD: AMRAP 12 min de 3 Clean & Jerk + 6 Bar Muscle-ups + 9 Box Jumps.',
+      'Como escribes libremente, puedes anotar el time cap, el implemento o las notas de la forma que tu box ya usa. No hay un formato obligatorio.',
+      'Eliminar un bloque con el ícono de basurero borra también su contenido y sus enlaces.',
     ],
   },
 
@@ -253,7 +254,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       },
       {
         title: 'Abre la rutina para ver el detalle',
-        body: 'Verás los bloques en orden, con los ejercicios de cada uno: series, repeticiones, peso o porcentaje, descanso e implemento a usar. Si un bloque es un WOD, verás el formato y el time cap.',
+        body: 'Verás los bloques en orden, cada uno con la prescripción tal como la escribió tu coach. Si incluyó links de video, aparecen como enlaces clicables dentro del texto o como etiquetas al final del bloque.',
       },
       {
         title: 'Registra tu sesión mientras entrenas',

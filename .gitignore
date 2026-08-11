@@ -54,6 +54,10 @@ supabase/.temp
 # Playwright
 test-results/
 playwright-report/
-e2e/.auth/
+# Estados de sesion de Playwright: contienen tokens de acceso reales.
+# El patron debe ser recursivo — `e2e/.auth/` solo cubria la raiz del repo
+# y dejaba expuesto apps/web/e2e/.auth/.
+**/e2e/.auth/
+**/.auth/
 
 .vercel

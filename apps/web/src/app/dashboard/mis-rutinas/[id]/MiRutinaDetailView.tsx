@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme'
 import Link from 'next/link'
 import { ArrowLeft, Dumbbell, Tag, Layers, ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
+import { AutoLinkedText, BlockLinkList, normalizeLinks } from '@/components/routines/BlockContent'
 
 const ACCENT = '#6366F1'
 const VIOLET = '#7C3AED'
@@ -16,19 +17,24 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const BLOCK_TYPE_LABELS: Record<string, string> = {
-  standard: 'Bloque', amrap: 'AMRAP', emom: 'EMOM', for_time: 'For Time',
-  superset: 'Superserie', circuit: 'Circuito', warmup: 'Calentamiento', cooldown: 'Enfriamiento',
+  standard: 'General', warmup: 'Calentamiento', strength: 'Fuerza', wod: 'WOD',
+  emom: 'EMOM', superset: 'Superserie', circuit: 'Circuito',
+  accessory: 'Accesorio', cooldown: 'Vuelta a la calma',
+  amrap: 'AMRAP', for_time: 'For Time',
 }
 
 const BLOCK_COLORS: Record<string, { border: string; bg: string; badge: string }> = {
-  standard:  { border: ACCENT,    bg: `${ACCENT}10`,    badge: ACCENT },
+  standard:  { border: '#64748B', bg: 'rgba(100,116,139,0.10)', badge: '#94A3B8' },
+  warmup:    { border: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  badge: '#FBBF24' },
+  strength:  { border: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  badge: '#60A5FA' },
+  wod:       { border: '#F43F5E', bg: 'rgba(244,63,94,0.10)',   badge: '#FB7185' },
+  emom:      { border: '#8B5CF6', bg: 'rgba(139,92,246,0.10)',  badge: '#A78BFA' },
+  superset:  { border: '#10B981', bg: 'rgba(16,185,129,0.10)',  badge: '#34D399' },
+  circuit:   { border: '#F97316', bg: 'rgba(249,115,22,0.10)',  badge: '#FB923C' },
+  accessory: { border: '#22C55E', bg: 'rgba(34,197,94,0.10)',   badge: '#4ADE80' },
+  cooldown:  { border: '#0EA5E9', bg: 'rgba(14,165,233,0.10)',  badge: '#38BDF8' },
   amrap:     { border: '#818CF8', bg: 'rgba(129,140,248,0.10)', badge: '#818CF8' },
-  emom:      { border: '#A78BFA', bg: 'rgba(167,139,250,0.10)', badge: '#A78BFA' },
-  for_time:  { border: '#C6FF00', bg: 'rgba(198,255,0,0.08)',   badge: '#4A5500' },
-  superset:  { border: '#F472B6', bg: 'rgba(244,114,182,0.10)', badge: '#F472B6' },
-  circuit:   { border: '#34D399', bg: 'rgba(52,211,153,0.10)',  badge: '#34D399' },
-  warmup:    { border: '#FBBF24', bg: 'rgba(251,191,36,0.10)',  badge: '#FBBF24' },
-  cooldown:  { border: '#60A5FA', bg: 'rgba(96,165,250,0.10)',  badge: '#60A5FA' },
+  for_time:  { border: '#C6FF00', bg: 'rgba(198,255,0,0.08)',   badge: '#A3B800' },
 }
 
 function ExerciseRow({ ex, isLast }: { ex: any; isLast: boolean }) {
@@ -95,6 +101,12 @@ function BlockCard({ block, index }: { block: any; index: number }) {
   const [open, setOpen] = useState(true)
   const colors = BLOCK_COLORS[block.type] ?? BLOCK_COLORS.standard
 
+  const content: string = (block.content ?? '').trim()
+  const links = normalizeLinks(block.links)
+  const hasText = content.length > 0
+  // Rutinas creadas antes del cuaderno libre siguen mostrando sus ejercicios
+  const legacyExercises = !hasText && block.exercises?.length > 0
+
   return (
     <div style={{
       background: 'var(--color-surface)',
@@ -131,9 +143,11 @@ function BlockCard({ block, index }: { block: any; index: number }) {
             }}>
               {BLOCK_TYPE_LABELS[block.type] ?? block.type}
             </span>
-            <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
-              {block.exercises.length} ejercicio{block.exercises.length !== 1 ? 's' : ''}
-            </span>
+            {legacyExercises && (
+              <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
+                {block.exercises.length} ejercicio{block.exercises.length !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
           {block.notes && (
             <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 3 }}>{block.notes}</p>
@@ -145,7 +159,20 @@ function BlockCard({ block, index }: { block: any; index: number }) {
         }
       </button>
 
-      {open && block.exercises.length > 0 && (
+      {open && hasText && (
+        <div style={{ borderTop: '1px solid var(--color-border)', padding: '16px 20px' }}>
+          <AutoLinkedText text={content} />
+          <BlockLinkList links={links} />
+        </div>
+      )}
+
+      {open && !hasText && links.length > 0 && (
+        <div style={{ borderTop: '1px solid var(--color-border)', padding: '14px 20px' }}>
+          <BlockLinkList links={links} />
+        </div>
+      )}
+
+      {open && legacyExercises && (
         <div style={{ borderTop: '1px solid var(--color-border)' }}>
           {block.exercises.map((ex: any, i: number) => (
             <ExerciseRow key={ex.id} ex={ex} isLast={i === block.exercises.length - 1} />
@@ -238,9 +265,6 @@ export function MiRutinaDetailView({ id }: { id: string }) {
               }}>
                 <Layers size={12} />
                 {routine.blocks.length} bloque{routine.blocks.length !== 1 ? 's' : ''}
-              </span>
-              <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
-                {routine.blocks.reduce((sum: number, b: any) => sum + b.exercises.length, 0)} ejercicios en total
               </span>
             </div>
             {routine.description && (

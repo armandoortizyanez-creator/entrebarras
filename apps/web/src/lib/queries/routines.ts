@@ -11,6 +11,11 @@ export interface RoutineWithBlocks {
   blocks: RoutineBlockFull[]
 }
 
+export interface BlockLink {
+  label: string
+  url: string
+}
+
 export interface RoutineBlockFull {
   id: string
   routine_id: string
@@ -18,6 +23,8 @@ export interface RoutineBlockFull {
   type: string
   name: string | null
   notes: string | null
+  content: string | null
+  links: BlockLink[]
   wod_type: string | null
   time_cap: number | null
   interval_work_s: number | null
@@ -103,14 +110,24 @@ export async function createRoutine(data: {
   if (!userRes.user) throw new Error('No autenticado')
 
   const tenantId = userRes.user.app_metadata?.tenant_id
-  if (!tenantId) throw new Error('Sin organización asignada')
+  if (!tenantId) throw new Error('Tu cuenta no tiene organización asignada. Contacta al administrador de tu box.')
 
+  const role = userRes.user.app_metadata?.role
+  if (role !== 'coach' && role !== 'super_admin' && role !== 'platform_admin') {
+    throw new Error('Tu cuenta no tiene permisos para crear rutinas.')
+  }
+
+  // maybeSingle: si la cuenta de auth no tiene ficha en `users`, .single() lanzaba
+  // un error opaco de PostgREST en vez de decir qué pasa realmente.
   const { data: publicUser, error: uErr } = await supabase
     .from('users')
     .select('id')
     .eq('auth_user_id', userRes.user.id)
-    .single()
+    .maybeSingle()
   if (uErr) throw uErr
+  if (!publicUser) {
+    throw new Error('Tu cuenta de acceso no está vinculada a un perfil de usuario. Contacta al administrador de tu box.')
+  }
 
   const { data: routine, error } = await supabase
     .from('routines')
@@ -171,7 +188,8 @@ export async function deleteBlock(id: string) {
 }
 
 export async function updateBlock(id: string, data: {
-  name?: string; type?: string; notes?: string
+  name?: string | null; type?: string; notes?: string
+  content?: string | null; links?: BlockLink[]
   wod_type?: string | null; time_cap?: number | null
   interval_work_s?: number | null; interval_rest_s?: number | null; rounds?: number | null
 }) {

@@ -160,6 +160,11 @@ export interface RoutineExercise extends RoutineExerciseConfig {
   exercise?: Exercise
 }
 
+export interface BlockLink {
+  label: string
+  url: string
+}
+
 export interface RoutineBlock {
   id: string
   routine_id: string
@@ -167,6 +172,10 @@ export interface RoutineBlock {
   type: BlockType
   name: string | null
   notes: string | null
+  /** Contenido libre del bloque escrito por el coach. */
+  content: string | null
+  /** Referencias en video del bloque. */
+  links: BlockLink[]
   wod_type: string | null
   time_cap: number | null
   interval_work_s: number | null
