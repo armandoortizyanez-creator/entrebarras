@@ -8,6 +8,7 @@ import { getMeasurements, addMeasurement, deleteMeasurement } from '@/lib/querie
 import { getLatestPRs, getPRHistory } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
 import type { Athlete } from '@entrebarras/types'
+import { CommentsPanel } from '@/components/comments/CommentsPanel'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Phone, Calendar, CheckCircle2, Trash2, Plus, Scale, Ruler, Activity, Percent, Trophy, Dumbbell, Play, ChevronRight } from 'lucide-react'
 
@@ -47,7 +48,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 export function AthleteDetail({ athleteId }: { athleteId: string }) {
-  const [tab, setTab] = useState<'perfil' | 'sesiones' | 'mediciones' | 'prs' | 'wods'>('perfil')
+  const [tab, setTab] = useState<'perfil' | 'comentarios' | 'sesiones' | 'mediciones' | 'prs' | 'wods'>('perfil')
 
   const { data: athlete, isLoading } = useQuery({
     queryKey: ['athlete', athleteId],
@@ -64,11 +65,12 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
   const lc = athlete.sport_level ? LEVEL_COLORS[athlete.sport_level] : null
 
   const tabs = [
-    { id: 'perfil' as const,     label: 'Perfil' },
-    { id: 'sesiones' as const,   label: 'Historial' },
-    { id: 'mediciones' as const, label: 'Mediciones' },
-    { id: 'prs' as const,        label: 'PRs' },
-    { id: 'wods' as const,       label: 'WODs' },
+    { id: 'perfil' as const,      label: 'Perfil' },
+    { id: 'comentarios' as const, label: 'Comentarios' },
+    { id: 'sesiones' as const,    label: 'Historial' },
+    { id: 'mediciones' as const,  label: 'Mediciones' },
+    { id: 'prs' as const,         label: 'PRs' },
+    { id: 'wods' as const,        label: 'WODs' },
   ]
 
   return (
@@ -174,6 +176,18 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
       </div>
 
       {tab === 'perfil'     && <PerfilTab athlete={athlete} />}
+      {tab === 'comentarios' && (
+        <div style={{
+          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+          borderRadius: 16, padding: '20px 22px',
+        }}>
+          <CommentsPanel
+            entityType="athlete"
+            entityId={athleteId}
+            subjectLabel={athlete.first_name}
+          />
+        </div>
+      )}
       {tab === 'sesiones'   && <SesionesTab athleteId={athleteId} />}
       {tab === 'mediciones' && <MedicionesTab athleteId={athleteId} />}
       {tab === 'prs'        && <PRsTab athleteId={athleteId} />}

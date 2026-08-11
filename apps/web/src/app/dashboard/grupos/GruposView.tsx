@@ -7,7 +7,10 @@ import {
   type GroupRow,
 } from '@/lib/queries/team'
 import { useUser } from '@/hooks/useUser'
-import { UsersRound, Clock, Plus, Trash2, Globe, Lock } from 'lucide-react'
+import { getAthletesWithGroups } from '@/lib/queries/athletes'
+import { CommentsPanel } from '@/components/comments/CommentsPanel'
+import Link from 'next/link'
+import { UsersRound, Clock, Plus, Trash2, Globe, Lock, X } from 'lucide-react'
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const GROUP_TYPES = [
@@ -42,6 +45,7 @@ export function GruposView() {
   const [form, setForm] = useState<NewGroup>(DEFAULT_FORM)
   const [filterGlobal, setFilterGlobal] = useState<'all' | 'global' | 'mine'>('all')
   const [formError, setFormError] = useState('')
+  const [revisando, setRevisando] = useState<GroupRow | null>(null)
 
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ['groups'],
@@ -289,7 +293,13 @@ export function GruposView() {
       ) : (
         <div style={s.grid}>
           {filtered.map(g => (
-            <div key={g.id} style={s.card}>
+            <div
+              key={g.id}
+              style={{ ...s.card, cursor: 'pointer' }}
+              onClick={() => setRevisando(g)}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-red)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+            >
               {/* Header */}
               <div style={s.cardHead}>
                 <div>
@@ -305,7 +315,11 @@ export function GruposView() {
                   </div>
                 </div>
                 <button
-                  onClick={() => remove.mutate(g.id)}
+                  onClick={e => {
+                    e.stopPropagation()   // la tarjeta abre el panel; el basurero no debe hacerlo
+                    if (confirm(`¿Eliminar el grupo "${g.name}"?`)) remove.mutate(g.id)
+                  }}
+                  aria-label={`Eliminar grupo ${g.name}`}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: 4 }}
                 >
                   <Trash2 size={14} />
@@ -347,6 +361,155 @@ export function GruposView() {
           ))}
         </div>
       )}
+
+      {revisando && (
+        <GroupPanel group={revisando} onClose={() => setRevisando(null)} />
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════ PANEL DE REVISIÓN DEL EQUIPO ══════════════════ */
+function GroupPanel({ group, onClose }: { group: GroupRow; onClose: () => void }) {
+  const { data: todos = [], isLoading } = useQuery({
+    queryKey: ['athletes-with-groups'],
+    queryFn: getAthletesWithGroups,
+  })
+
+  const integrantes = todos.filter(a => a.groups.some(g => g.id === group.id))
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)',
+        zIndex: 1000, display: 'flex', justifyContent: 'flex-end',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 480, height: '100%',
+          background: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '-8px 0 40px rgba(0,0,0,0.25)',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '18px 22px', borderBottom: '1px solid var(--color-border)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexShrink: 0,
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+              {group.name}
+            </h2>
+            <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', marginTop: 3 }}>
+              {GROUP_TYPES.find(t => t.value === group.type)?.label ?? group.type}
+              {group.sport && ` · ${group.sport}`}
+              {` · ${integrantes.length} integrante${integrantes.length !== 1 ? 's' : ''}`}
+            </p>
+            {group.description && (
+              <p style={{ fontSize: 13, color: 'var(--color-text-2)', marginTop: 8, lineHeight: 1.55 }}>
+                {group.description}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            style={{
+              background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
+              borderRadius: 8, cursor: 'pointer', padding: 6, display: 'flex',
+              alignItems: 'center', color: 'var(--color-text-2)', flexShrink: 0,
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Contenido */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '18px 22px' }}>
+          {/* Integrantes */}
+          <div style={{ marginBottom: 26 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <UsersRound size={15} color="var(--color-text-3)" />
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>Integrantes</h3>
+            </div>
+
+            {isLoading ? (
+              <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Cargando...</p>
+            ) : integrantes.length === 0 ? (
+              <div style={{
+                border: '1.5px dashed var(--color-border)', borderRadius: 12,
+                padding: '24px 20px', textAlign: 'center',
+              }}>
+                <p style={{ fontSize: 13.5, color: 'var(--color-text-3)' }}>
+                  Este equipo aún no tiene atletas.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {integrantes.map(a => {
+                  const iniciales = `${a.first_name[0]}${(a.last_name ?? '')[0] ?? ''}`.toUpperCase()
+                  const otros = a.groups.filter(g => g.id !== group.id)
+                  return (
+                    <Link
+                      key={a.id}
+                      href={`/dashboard/atletas/${a.id}`}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 11,
+                        padding: '9px 10px', borderRadius: 10, textDecoration: 'none',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-2)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <div style={{
+                        width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                        background: 'linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 800, color: '#fff',
+                      }}>
+                        {iniciales}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--color-text)' }}>
+                          {a.first_name} {a.last_name ?? ''}
+                        </p>
+                        {a.email && (
+                          <p style={{ fontSize: 11.5, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {a.email}
+                          </p>
+                        )}
+                      </div>
+                      {otros.length > 0 && (
+                        <span
+                          title={`También en: ${otros.map(o => o.name).join(', ')}`}
+                          style={{
+                            fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+                            background: 'var(--color-surface-2)', color: 'var(--color-text-3)',
+                            border: '1px solid var(--color-border)', flexShrink: 0,
+                          }}
+                        >
+                          +{otros.length}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Comentarios del equipo */}
+          <CommentsPanel
+            entityType="group"
+            entityId={group.id}
+            subjectLabel="los integrantes del equipo"
+          />
+        </div>
+      </div>
     </div>
   )
 }

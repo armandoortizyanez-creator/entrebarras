@@ -164,6 +164,41 @@ export const HELP_ARTICLES: HelpArticle[] = [
     ],
   },
 
+  {
+    id: 'comentarios',
+    title: 'Dejar comentarios sobre atletas y equipos',
+    summary: 'Notas de seguimiento, internas o compartidas con el atleta.',
+    category: 'atletas',
+    roles: ['coach', 'admin'],
+    keywords: ['comentarios', 'notas', 'seguimiento', 'feedback', 'privado', 'interno', 'compartir'],
+    steps: [
+      {
+        title: 'En un atleta: pestaña "Comentarios"',
+        body: 'Entra a la ficha del atleta y abre la pestaña Comentarios. Ahí queda el historial de notas que tú y el resto del staff han dejado sobre esa persona.',
+      },
+      {
+        title: 'En un equipo: toca la tarjeta del grupo',
+        body: 'En Grupos, haz clic sobre cualquier tarjeta. Se abre un panel lateral con los integrantes del equipo y los comentarios del grupo.',
+      },
+      {
+        title: 'Decide quién puede leerlo antes de escribir',
+        body: 'Cada comentario se marca como Interno o Compartido. Interno significa que solo lo ven coaches y administradores del box: es donde anotas con franqueza sobre actitud, lesiones o rendimiento. Compartido significa que el atleta también lo lee.',
+      },
+      {
+        title: 'Puedes cambiar de opinión después',
+        body: 'Cada comentario tiene un botón para pasarlo de interno a compartido o al revés. Un comentario nace como Interno por defecto, así que no se filtra nada por descuido.',
+      },
+      {
+        title: 'Los comentarios de un equipo llegan a sus integrantes',
+        body: 'Si marcas como compartido un comentario en un grupo, lo leen todos los atletas que pertenecen a ese equipo.',
+      },
+    ],
+    tips: [
+      'Los atletas nunca pueden escribir comentarios ni ver los internos: solo leen los que marcaste como compartidos.',
+      'Un atleta puede pertenecer a varios equipos, así que verá los comentarios compartidos de todos ellos.',
+    ],
+  },
+
   /* ─────────────── RUTINAS ─────────────── */
 
   {

@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAthletes, createAthlete, deleteAthlete } from '@/lib/queries/athletes'
+import {
+  getAthletes, createAthlete, deleteAthlete, getAthletesWithGroups,
+  type AthleteGroupRef,
+} from '@/lib/queries/athletes'
 import { useUser } from '@/hooks/useUser'
 import type { Athlete } from '@entrebarras/types'
 import Link from 'next/link'
@@ -61,6 +64,20 @@ export function AthletesView() {
     queryFn: () => getAthletes({ status: status === 'all' ? undefined : status }),
     enabled: !!user,
   })
+
+  // Los equipos viven en group_athletes (many-to-many), asi que se resuelven
+  // aparte y se cruzan por id para pintar la columna.
+  const { data: conGrupos = [] } = useQuery({
+    queryKey: ['athletes-with-groups'],
+    queryFn: getAthletesWithGroups,
+    enabled: !!user,
+  })
+
+  const gruposPorAtleta = useMemo(() => {
+    const m = new Map<string, AthleteGroupRef[]>()
+    for (const a of conGrupos) m.set(a.id, a.groups)
+    return m
+  }, [conGrupos])
 
   const filtered = athletes.filter(a =>
     search === '' ||
@@ -174,9 +191,9 @@ export function AthletesView() {
         ) : filtered.length === 0 ? (
           <EmptyState onAdd={() => setShowModal(true)} hasSearch={search.length > 0} />
         ) : isMobile ? (
-          <AthleteCards athletes={paginated} onDelete={id => { if (confirm('¿Eliminar este atleta?')) deleteMutation.mutate(id) }} />
+          <AthleteCards athletes={paginated} gruposPorAtleta={gruposPorAtleta} onDelete={id => { if (confirm('¿Eliminar este atleta?')) deleteMutation.mutate(id) }} />
         ) : (
-          <AthleteTable athletes={paginated} onDelete={id => { if (confirm('¿Eliminar este atleta?')) deleteMutation.mutate(id) }} />
+          <AthleteTable athletes={paginated} gruposPorAtleta={gruposPorAtleta} onDelete={id => { if (confirm('¿Eliminar este atleta?')) deleteMutation.mutate(id) }} />
         )}
 
         {/* Pagination */}
@@ -244,17 +261,60 @@ export function AthletesView() {
   )
 }
 
+/** Etiqueta de equipo, o S/E cuando el atleta no pertenece a ninguno. */
+export function GroupBadges({ groups }: { groups: AthleteGroupRef[] }) {
+  if (groups.length === 0) {
+    return (
+      <span
+        title="Sin equipo"
+        style={{
+          fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+          background: 'var(--color-surface-2)', color: 'var(--color-text-3)',
+          border: '1px solid var(--color-border)', whiteSpace: 'nowrap',
+        }}
+      >
+        S/E
+      </span>
+    )
+  }
+  return (
+    <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 4 }}>
+      {groups.map(g => (
+        <span
+          key={g.id}
+          title={g.name}
+          style={{
+            fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+            background: 'rgba(99,102,241,0.10)', color: '#6366F1',
+            border: '1px solid rgba(99,102,241,0.22)',
+            maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}
+        >
+          {g.name}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+const GRID_COLS = '1fr 140px 130px 100px 100px 48px'
+
 /* ─── DESKTOP TABLE ─── */
-function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (id: string) => void }) {
+function AthleteTable({ athletes, gruposPorAtleta, onDelete }: {
+  athletes: Athlete[]
+  gruposPorAtleta: Map<string, AthleteGroupRef[]>
+  onDelete: (id: string) => void
+}) {
   return (
     <div>
       <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
+        display: 'grid', gridTemplateColumns: GRID_COLS,
         padding: '10px 20px', borderBottom: '1px solid var(--color-border)',
         fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)',
         textTransform: 'uppercase', letterSpacing: '0.07em',
       }}>
         <span>Atleta</span>
+        <span>Equipo</span>
         <span>Deporte</span>
         <span>Nivel</span>
         <span>Estado</span>
@@ -268,7 +328,7 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
           <div
             key={athlete.id}
             style={{
-              display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
+              display: 'grid', gridTemplateColumns: GRID_COLS,
               padding: '12px 20px', alignItems: 'center',
               borderBottom: i < athletes.length - 1 ? '1px solid var(--color-border)' : 'none',
               transition: 'background 0.1s',
@@ -294,6 +354,8 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
                 )}
               </div>
             </Link>
+
+            <span><GroupBadges groups={gruposPorAtleta.get(athlete.id) ?? []} /></span>
 
             <span style={{ fontSize: 13, color: 'var(--color-text-2)' }}>
               {athlete.primary_sport ?? '—'}
@@ -331,7 +393,11 @@ function AthleteTable({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
 }
 
 /* ─── MOBILE CARDS ─── */
-function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (id: string) => void }) {
+function AthleteCards({ athletes, gruposPorAtleta, onDelete }: {
+  athletes: Athlete[]
+  gruposPorAtleta: Map<string, AthleteGroupRef[]>
+  onDelete: (id: string) => void
+}) {
   return (
     <div>
       {athletes.map((athlete, i) => {
@@ -355,12 +421,15 @@ function AthleteCards({ athletes, onDelete }: { athletes: Athlete[]; onDelete: (
                 {initials}
               </div>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)', marginBottom: 3 }}>
                   {athlete.first_name} {athlete.last_name}
                 </p>
-                {athlete.email && (
-                  <p style={{ fontSize: 12, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{athlete.email}</p>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <GroupBadges groups={gruposPorAtleta.get(athlete.id) ?? []} />
+                  {athlete.email && (
+                    <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 150 }}>{athlete.email}</span>
+                  )}
+                </div>
               </div>
             </Link>
 
@@ -389,7 +458,7 @@ function TableSkeleton() {
         <div
           key={i}
           style={{
-            display: 'grid', gridTemplateColumns: '1fr 160px 110px 110px 48px',
+            display: 'grid', gridTemplateColumns: GRID_COLS,
             padding: '14px 20px', alignItems: 'center',
             borderBottom: i < 4 ? '1px solid var(--color-border)' : 'none',
             gap: 12,
