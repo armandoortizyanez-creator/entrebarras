@@ -199,12 +199,28 @@ export async function updateBlock(id: string, data: {
 }
 
 export async function assignRoutineToAthletes(routineId: string, athleteIds: string[]) {
+  if (athleteIds.length === 0) return
+
   const supabase = createClient()
   const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) throw new Error('No autenticado')
+
+  // athlete_routines.assigned_by referencia users.id (el id publico), NO el id
+  // de auth. Pasar auth.user.id rompia el insert con foreign_key_violation.
+  const { data: publicUser, error: uErr } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', userRes.user.id)
+    .maybeSingle()
+  if (uErr) throw uErr
+  if (!publicUser) {
+    throw new Error('Tu cuenta de acceso no está vinculada a un perfil de usuario. Contacta al administrador de tu box.')
+  }
+
   const rows = athleteIds.map(aid => ({
     athlete_id: aid,
     routine_id: routineId,
-    assigned_by: userRes.user?.id,
+    assigned_by: publicUser.id,
     is_active: true,
   }))
   const { error } = await supabase

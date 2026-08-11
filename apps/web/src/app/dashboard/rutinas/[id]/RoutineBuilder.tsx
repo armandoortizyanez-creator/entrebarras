@@ -16,6 +16,20 @@ import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play, UsersRo
 const SIN_EQUIPO = 'S/E'
 const BUCKET_SIN_EQUIPO = '__sin_equipo__'
 
+/**
+ * Los errores de Supabase son objetos planos, no instancias de Error, asi que
+ * `err instanceof Error` los descartaba y solo se veia "Error al guardar".
+ */
+function mensajeDeError(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (err && typeof err === 'object') {
+    const e = err as { message?: string; details?: string; hint?: string }
+    const partes = [e.message, e.details, e.hint].filter(Boolean)
+    if (partes.length > 0) return partes.join(' — ')
+  }
+  return 'Error al guardar'
+}
+
 const BLOCK_TYPES = [
   { value: 'warmup',    label: 'Calentamiento' },
   { value: 'strength',  label: 'Fuerza' },
@@ -559,7 +573,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
 
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar')
+      setError(mensajeDeError(err))
     } finally {
       setSaving(false)
     }
