@@ -516,6 +516,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   const [fechas, setFechas] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const angosto = useEsAngosto()
 
   const { data: athletes = [], isLoading } = useQuery({
     queryKey: ['athletes-with-groups'],
@@ -613,23 +614,44 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
     }
   }
 
+  const resumen = [
+    `${selected.size} atleta${selected.size !== 1 ? 's' : ''}`,
+    fechas.length > 0 ? `${fechas.length} día${fechas.length !== 1 ? 's' : ''}` : 'sin fecha',
+  ].join(' · ')
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-      <div style={{ background: 'var(--color-surface)', borderRadius: 18, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)' }}>
+      <div style={{
+        background: 'var(--color-surface)', borderRadius: 18, width: '100%',
+        maxWidth: angosto ? 480 : 820, maxHeight: '86vh',
+        display: 'flex', flexDirection: 'column',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)',
+      }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Asignar a atletas</h2>
-            <p style={{ fontSize: 13, color: 'var(--color-text-2)', marginTop: 2 }}>
-              {selected.size} seleccionado{selected.size !== 1 ? 's' : ''}
-            </p>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Asignar rutina</h2>
+            <p style={{ fontSize: 13, color: 'var(--color-text-2)', marginTop: 2 }}>{resumen}</p>
           </div>
           <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        {/* Dos paneles: a quién (izquierda) y cuándo (derecha).
+            Antes el calendario iba al final del scroll, debajo de toda la lista
+            de atletas, y quedaba invisible. */}
+        <div style={{
+          flex: 1, minHeight: 0, display: 'flex',
+          flexDirection: angosto ? 'column' : 'row',
+          overflowY: angosto ? 'auto' : 'hidden',
+        }}>
+
+        <div style={{
+          flex: 1, minWidth: 0,
+          overflowY: angosto ? 'visible' : 'auto',
+          borderRight: angosto ? 'none' : '1px solid var(--color-border)',
+        }}>
           {isLoading ? (
             <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando atletas...</div>
           ) : athletes.length === 0 ? (
@@ -639,7 +661,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
               {/* ── Asignación por grupo ── */}
               {groups.length > 0 && (
                 <>
-                  <SectionLabel text="Asignar a un grupo completo" />
+                  <SectionLabel text="A quién · equipo completo" />
                   <div style={{ padding: '0 22px 12px', display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                     {groups.map(g => {
                       const estado = groupState(g.members)
@@ -678,7 +700,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
               )}
 
               {/* ── Atletas individuales ── */}
-              <SectionLabel text="O elegir atletas uno por uno" />
+              <SectionLabel text="O atletas uno por uno" />
               {athletes.map(a => {
                 const checked = selected.has(a.id)
                 const initials = `${a.first_name[0]}${(a.last_name ?? '')[0] ?? ''}`.toUpperCase()
@@ -758,36 +780,62 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
                 )
               })}
 
-              {/* ── Agendar en días (opcional) ── */}
-              <SectionLabel text="Agendar en días (opcional)" />
-              <div style={{ padding: '0 22px 20px' }}>
-                <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', lineHeight: 1.55, marginBottom: 12 }}>
-                  Sin fecha, la rutina queda disponible en <strong style={{ color: 'var(--color-text-2)' }}>Mis Rutinas</strong> para
-                  que la hagan cuando quieran. Si marcas días, además aparece en su calendario como sesión programada.
-                </p>
-
-                {diasYaAgendados.length > 0 && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap',
-                    padding: '8px 11px', marginBottom: 12, borderRadius: 9,
-                    background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
-                  }}>
-                    <CalendarDays size={12} color="var(--color-text-3)" />
-                    <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', fontWeight: 600 }}>
-                      Ya agendada:
-                    </span>
-                    {diasYaAgendados.map(d => (
-                      <span key={d} style={{ fontSize: 11.5, color: 'var(--color-text-2)', fontWeight: 700 }}>
-                        {formatoCorto(d)}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <MultiDatePicker value={fechas} onChange={setFechas} />
-              </div>
             </>
           )}
+        </div>
+
+        {/* ── Panel derecho: cuándo ── */}
+        <div style={{
+          width: angosto ? '100%' : 320, flexShrink: 0,
+          overflowY: angosto ? 'visible' : 'auto',
+          borderTop: angosto ? '1px solid var(--color-border)' : 'none',
+          background: angosto ? 'transparent' : 'var(--color-surface-2)',
+        }}>
+          <div style={{ padding: '14px 20px 8px', display: 'flex', alignItems: 'center', gap: 7 }}>
+            <CalendarDays size={14} color="#6366F1" />
+            <span style={{
+              fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)',
+              textTransform: 'uppercase', letterSpacing: '0.07em',
+            }}>
+              Agendar en días
+            </span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20,
+              background: 'var(--color-surface)', color: 'var(--color-text-3)',
+              border: '1px solid var(--color-border)',
+            }}>
+              opcional
+            </span>
+          </div>
+
+          <div style={{ padding: '0 20px 20px' }}>
+            <p style={{ fontSize: 12, color: 'var(--color-text-3)', lineHeight: 1.55, marginBottom: 12 }}>
+              Sin fecha queda disponible en <strong style={{ color: 'var(--color-text-2)' }}>Mis Rutinas</strong> para
+              hacerla cuando puedan. Con fechas aparece en su calendario.
+            </p>
+
+            {diasYaAgendados.length > 0 && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+                padding: '8px 11px', marginBottom: 12, borderRadius: 9,
+                background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+              }}>
+                <Check size={11} color="#22C55E" />
+                <span style={{ fontSize: 11, color: 'var(--color-text-3)', fontWeight: 600 }}>
+                  Ya agendada:
+                </span>
+                {diasYaAgendados.map(d => (
+                  <span key={d} style={{ fontSize: 11, color: '#22C55E', fontWeight: 700 }}>
+                    {formatoCorto(d)}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <MultiDatePicker value={fechas} onChange={setFechas} />
+          </div>
+        </div>
+
         </div>
 
         <div style={{ padding: '16px 22px', borderTop: '1px solid var(--color-border)', flexShrink: 0 }}>
@@ -810,6 +858,18 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
       </div>
     </div>
   )
+}
+
+/** Bajo 860px los dos paneles del modal no caben lado a lado. */
+function useEsAngosto() {
+  const [angosto, setAngosto] = useState(false)
+  useEffect(() => {
+    const check = () => setAngosto(window.innerWidth < 860)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return angosto
 }
 
 function SectionLabel({ text }: { text: string }) {
