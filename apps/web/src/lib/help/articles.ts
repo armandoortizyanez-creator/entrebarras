@@ -227,11 +227,17 @@ export const HELP_ARTICLES: HelpArticle[] = [
       },
       {
         title: 'Asigna la rutina a tus atletas',
-        body: 'Con el botón "Asignar atletas" arriba a la derecha eliges a quién le llega. Puedes seleccionar varios a la vez. Ellos la verán en su sección "Mis Rutinas".',
+        body: 'Con el botón "Asignar atletas" arriba a la derecha eliges a quién le llega. Puedes marcar un equipo completo de una vez, o ir atleta por atleta. Al lado de cada nombre ves a qué equipo pertenece, o "S/E" si no tiene ninguno.',
+      },
+      {
+        title: 'Agenda los días, si quieres',
+        body: 'En el mismo panel, más abajo, hay un calendario donde marcas los días. Es opcional: sin fecha la rutina queda disponible en "Mis Rutinas" para que la hagan cuando puedan; con fechas además aparece en su calendario como sesión programada y cuenta para los reportes de adherencia.',
       },
     ],
     tips: [
       'Los atletas solo ven las rutinas que les asignaste explícitamente, no todas las de tu box.',
+      'Puedes marcar varios días de una vez: útil cuando la misma rutina se repite en la semana.',
+      'Programación (en el menú lateral) es distinto: ahí defines lo que hace el box completo cada día. El calendario dentro de la rutina agenda a atletas concretos.',
     ],
   },
 

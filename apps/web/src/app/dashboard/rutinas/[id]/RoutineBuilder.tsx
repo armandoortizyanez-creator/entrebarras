@@ -8,9 +8,11 @@ import {
   type RoutineBlockFull,
 } from '@/lib/queries/routines'
 import { getAthletesWithGroups } from '@/lib/queries/athletes'
+import { bulkAssign, getRoutineSchedule } from '@/lib/queries/sessions'
 import { isSafeUrl, normalizeLinks, type BlockLink } from '@/components/routines/BlockContent'
+import { MultiDatePicker, formatoCorto } from '@/components/routines/DatePicker'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play, UsersRound, Minus } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play, UsersRound, Minus, CalendarDays } from 'lucide-react'
 
 /** Etiqueta para atletas que no pertenecen a ningún grupo. */
 const SIN_EQUIPO = 'S/E'
@@ -198,6 +200,8 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
           onClose={() => setShowAssign(false)}
           onSaved={() => {
             qc.invalidateQueries({ queryKey: ['routine-assignments', routineId] })
+            qc.invalidateQueries({ queryKey: ['routine-schedule', routineId] })
+            qc.invalidateQueries({ queryKey: ['sessions'] })
             setShowAssign(false)
           }}
         />
@@ -509,6 +513,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   onSaved: () => void
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set(currentAssignments))
+  const [fechas, setFechas] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -516,6 +521,17 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
     queryKey: ['athletes-with-groups'],
     queryFn: getAthletesWithGroups,
   })
+
+  // Lo que ya esta en el calendario para esta rutina, para no re-agendar a ciegas.
+  const { data: agendaActual = [] } = useQuery({
+    queryKey: ['routine-schedule', routineId],
+    queryFn: () => getRoutineSchedule(routineId),
+  })
+
+  const diasYaAgendados = useMemo(
+    () => [...new Set(agendaActual.map(s => s.scheduled_date))].sort(),
+    [agendaActual]
+  )
 
   /** Grupos derivados de los atletas, más el bucket de los que no tienen. */
   const groups = useMemo(() => {
@@ -570,6 +586,24 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
       if (aAgregar.length > 0) await assignRoutineToAthletes(routineId, aAgregar)
       // Deseleccionar tambien debe surtir efecto: antes solo se agregaba.
       await Promise.all(aQuitar.map(id => removeRoutineAssignment(id, routineId)))
+
+      // Las fechas son opcionales: sin ellas solo se da acceso a la rutina.
+      if (fechas.length > 0 && selected.size > 0) {
+        const yaExiste = new Set(agendaActual.map(s => `${s.athlete_id}|${s.scheduled_date}`))
+        const nuevas = fechas.filter(f =>
+          [...selected].some(aid => !yaExiste.has(`${aid}|${f}`))
+        )
+        if (nuevas.length > 0) {
+          await bulkAssign({
+            athlete_ids: [...selected].filter(aid =>
+              nuevas.some(f => !yaExiste.has(`${aid}|${f}`))
+            ),
+            type: 'routine',
+            routine_id: routineId,
+            dates: nuevas,
+          })
+        }
+      }
 
       onSaved()
     } catch (err) {
@@ -723,6 +757,35 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
                   </button>
                 )
               })}
+
+              {/* ── Agendar en días (opcional) ── */}
+              <SectionLabel text="Agendar en días (opcional)" />
+              <div style={{ padding: '0 22px 20px' }}>
+                <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', lineHeight: 1.55, marginBottom: 12 }}>
+                  Sin fecha, la rutina queda disponible en <strong style={{ color: 'var(--color-text-2)' }}>Mis Rutinas</strong> para
+                  que la hagan cuando quieran. Si marcas días, además aparece en su calendario como sesión programada.
+                </p>
+
+                {diasYaAgendados.length > 0 && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap',
+                    padding: '8px 11px', marginBottom: 12, borderRadius: 9,
+                    background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
+                  }}>
+                    <CalendarDays size={12} color="var(--color-text-3)" />
+                    <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', fontWeight: 600 }}>
+                      Ya agendada:
+                    </span>
+                    {diasYaAgendados.map(d => (
+                      <span key={d} style={{ fontSize: 11.5, color: 'var(--color-text-2)', fontWeight: 700 }}>
+                        {formatoCorto(d)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <MultiDatePicker value={fechas} onChange={setFechas} />
+              </div>
             </>
           )}
         </div>
@@ -738,6 +801,8 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
                 ? 'Guardando...'
                 : selected.size === 0
                 ? 'Quitar todas las asignaciones'
+                : fechas.length > 0
+                ? `Asignar a ${selected.size} y agendar ${fechas.length} día${fechas.length !== 1 ? 's' : ''}`
                 : `Asignar a ${selected.size} atleta${selected.size !== 1 ? 's' : ''}`}
             </button>
           </div>

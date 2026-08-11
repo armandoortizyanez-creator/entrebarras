@@ -34,9 +34,21 @@ export async function upsertBoxSchedule(payload: {
   notes?: string
 }): Promise<BoxScheduleEntry> {
   const supabase = createClient()
+
+  // box_schedule.tenant_id es NOT NULL y no tiene default: omitirlo hacia que
+  // cada guardado muriera con violacion de RLS, sin mensaje visible.
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) throw new Error('No autenticado')
+
+  const tenantId = userRes.user.app_metadata?.tenant_id as string | undefined
+  if (!tenantId) throw new Error('Tu cuenta no tiene organización asignada.')
+
   const { data, error } = await supabase
     .from('box_schedule')
-    .upsert(payload, { onConflict: 'tenant_id,scheduled_date,group_id' })
+    .upsert(
+      { ...payload, tenant_id: tenantId },
+      { onConflict: 'tenant_id,scheduled_date,group_id' }
+    )
     .select('*, wod:wod_id(id,name,type), routine:routine_id(id,name), group:group_id(id,name)')
     .single()
 

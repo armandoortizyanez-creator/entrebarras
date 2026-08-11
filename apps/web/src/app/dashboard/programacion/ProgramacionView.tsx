@@ -67,12 +67,21 @@ export function ProgramacionView() {
   const { data: routines = [] } = useQuery({ queryKey: ['routines'], queryFn: getRoutines })
   const { data: groups = [] } = useQuery({ queryKey: ['groups'], queryFn: getGroups })
 
+  const [saveError, setSaveError] = useState('')
+
   const saveMutation = useMutation({
     mutationFn: upsertBoxSchedule,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['box-schedule'] })
       setSelected(null)
+      setSaveError('')
       setForm({ wod_id: '', routine_id: '', group_id: '', notes: '', type: 'wod' })
+    },
+    // Sin esto el fallo era invisible: el modal quedaba abierto sin explicar nada.
+    onError: (err: unknown) => {
+      const e = err as { message?: string; details?: string; hint?: string } | null
+      const partes = [e?.message, e?.details, e?.hint].filter(Boolean)
+      setSaveError(partes.length > 0 ? partes.join(' — ') : 'No se pudo programar')
     },
   })
 
@@ -92,6 +101,7 @@ export function ProgramacionView() {
 
   function handleSave() {
     if (!selected) return
+    setSaveError('')
     saveMutation.mutate({
       scheduled_date: selected.date,
       wod_id: form.type === 'wod' && form.wod_id ? form.wod_id : null,
@@ -371,8 +381,14 @@ export function ProgramacionView() {
               </div>
             </div>
 
+            {saveError && (
+              <p style={{ fontSize: 12.5, color: '#EF4444', marginBottom: 10, lineHeight: 1.5 }}>
+                {saveError}
+              </p>
+            )}
+
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setSelected(null)}
+              <button onClick={() => { setSelected(null); setSaveError('') }}
                 style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 10, fontSize: 13, fontWeight: 500, background: 'var(--color-surface)', color: 'var(--color-text-2)', cursor: 'pointer' }}>
                 Cancelar
               </button>
@@ -385,7 +401,7 @@ export function ProgramacionView() {
                   background: saveMutation.isPending ? 'var(--color-text-3)' : '#6366F1',
                   cursor: saveMutation.isPending ? 'not-allowed' : 'pointer',
                 }}>
-                {saveMutation.isPending ? 'Guardando...' : 'âœ“ Programar'}
+                {saveMutation.isPending ? 'Guardando...' : 'Programar'}
               </button>
             </div>
           </div>

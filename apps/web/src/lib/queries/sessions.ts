@@ -57,6 +57,32 @@ export async function getSessionsByAthlete(athleteId: string, from?: string, to?
   return data as TrainingSession[]
 }
 
+/**
+ * training_sessions.tenant_id es NOT NULL y no tiene default ni trigger, y
+ * coach_id referencia users.id (el id publico, no el de auth). Omitirlos hacia
+ * que todo insert muriera con violacion de RLS.
+ */
+async function resolverContexto() {
+  const supabase = createClient()
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) throw new Error('No autenticado')
+
+  const tenantId = userRes.user.app_metadata?.tenant_id as string | undefined
+  if (!tenantId) throw new Error('Tu cuenta no tiene organización asignada.')
+
+  const { data: publicUser, error } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', userRes.user.id)
+    .maybeSingle()
+  if (error) throw error
+  if (!publicUser) {
+    throw new Error('Tu cuenta de acceso no está vinculada a un perfil de usuario.')
+  }
+
+  return { supabase, tenantId, coachId: publicUser.id as string }
+}
+
 export async function createSession(session: {
   athlete_id: string
   type: 'routine' | 'wod' | 'rest' | 'event'
@@ -66,10 +92,10 @@ export async function createSession(session: {
   wod_id?: string
   notes?: string
 }) {
-  const supabase = createClient()
+  const { supabase, tenantId, coachId } = await resolverContexto()
   const { data, error } = await supabase
     .from('training_sessions')
-    .insert(session)
+    .insert({ ...session, tenant_id: tenantId, coach_id: coachId })
     .select()
     .single()
   if (error) throw error
@@ -103,15 +129,21 @@ export async function bulkAssign(params: {
   dates: string[]
   scheduled_time?: string
 }) {
-  const supabase = createClient()
+  if (params.athlete_ids.length === 0 || params.dates.length === 0) return []
+
+  const { supabase, tenantId, coachId } = await resolverContexto()
+
   const rows = params.athlete_ids.flatMap(athlete_id =>
     params.dates.map(scheduled_date => ({
+      tenant_id: tenantId,
+      coach_id: coachId,
       athlete_id,
       type: params.type,
       scheduled_date,
       scheduled_time: params.scheduled_time ?? null,
       routine_id: params.routine_id ?? null,
       wod_id: params.wod_id ?? null,
+      status: 'scheduled',
     }))
   )
 
@@ -121,4 +153,33 @@ export async function bulkAssign(params: {
     .select()
   if (error) throw error
   return data
+}
+
+/** Sesiones ya agendadas de una rutina, para no duplicarlas al reasignar. */
+export async function getRoutineSchedule(routineId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('training_sessions')
+    .select('id, athlete_id, scheduled_date, status')
+    .eq('routine_id', routineId)
+    .order('scheduled_date')
+  if (error) throw error
+  return (data ?? []) as {
+    id: string
+    athlete_id: string
+    scheduled_date: string
+    status: TrainingSession['status']
+  }[]
+}
+
+/** Quita del calendario las sesiones aun no realizadas de una rutina. */
+export async function unscheduleRoutine(routineId: string, sessionIds: string[]) {
+  if (sessionIds.length === 0) return
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('training_sessions')
+    .delete()
+    .eq('routine_id', routineId)
+    .in('id', sessionIds)
+  if (error) throw error
 }
