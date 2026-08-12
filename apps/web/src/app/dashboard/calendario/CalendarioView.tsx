@@ -4,12 +4,28 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import {
-  getSessionsByMonth, createSession, deleteSession, updateSessionStatus,
+  getSessionsByMonth, createSession, bulkAssign, deleteSession, updateSessionStatus,
   type TrainingSession,
 } from '@/lib/queries/sessions'
-import { getAthletes } from '@/lib/queries/athletes'
 import { getRoutines } from '@/lib/queries/routines'
 import { getWods } from '@/lib/queries/wods'
+import { AthleteGroupSelector } from '@/components/routines/AthleteGroupSelector'
+
+/**
+ * Construye la fecha en hora local. `new Date('2026-08-11')` la interpreta como
+ * UTC medianoche, que en Chile cae el día anterior.
+ */
+function aFechaLocal(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+/** YYYY-MM-DD local, sin pasar por UTC. */
+function aIso(d: Date): string {
+  const mes = String(d.getMonth() + 1).padStart(2, '0')
+  const dia = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mes}-${dia}`
+}
 
 const DAYS_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const MONTHS_ES = [
@@ -347,8 +363,8 @@ function SessionItem({ session, isLast, onDelete, onStatusChange }: {
 function AssignModal({ defaultDate, onClose, onSuccess }: {
   defaultDate: string; onClose: () => void; onSuccess: () => void
 }) {
+  const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set())
   const [form, setForm] = useState({
-    athlete_id: '',
     type: 'routine' as 'routine' | 'wod' | 'rest' | 'event',
     routine_id: '',
     wod_id: '',
@@ -362,13 +378,12 @@ function AssignModal({ defaultDate, onClose, onSuccess }: {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { data: athletes = [] } = useQuery({ queryKey: ['athletes'], queryFn: () => getAthletes() })
   const { data: routines = [] } = useQuery({ queryKey: ['routines'], queryFn: getRoutines })
   const { data: wods = [] } = useQuery({ queryKey: ['wods'], queryFn: getWods })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.athlete_id) return setError('Selecciona un atleta')
+    if (seleccionados.size === 0) return setError('Selecciona al menos un atleta')
     if (form.type === 'routine' && !form.routine_id) return setError('Selecciona una rutina')
     if (form.type === 'wod' && !form.wod_id) return setError('Selecciona un WOD')
 
@@ -378,32 +393,46 @@ function AssignModal({ defaultDate, onClose, onSuccess }: {
       const dates: string[] = [form.scheduled_date]
 
       if (form.repeat && form.repeatUntil && form.repeatDays.length > 0) {
-        const end = new Date(form.repeatUntil)
-        const cur = new Date(form.scheduled_date)
+        const end = aFechaLocal(form.repeatUntil)
+        const cur = aFechaLocal(form.scheduled_date)
         cur.setDate(cur.getDate() + 1)
         while (cur <= end) {
-          const dow = cur.getDay().toString()
-          if (form.repeatDays.includes(dow)) {
-            dates.push(cur.toISOString().split('T')[0])
+          if (form.repeatDays.includes(cur.getDay().toString())) {
+            // toISOString() convierte a UTC y en Chile corría el día uno atrás.
+            dates.push(aIso(cur))
           }
           cur.setDate(cur.getDate() + 1)
         }
       }
 
-      for (const date of dates) {
-        await createSession({
-          athlete_id: form.athlete_id,
+      if (form.type === 'routine' || form.type === 'wod') {
+        await bulkAssign({
+          athlete_ids: [...seleccionados],
           type: form.type,
-          scheduled_date: date,
-          scheduled_time: form.scheduled_time || undefined,
           routine_id: form.type === 'routine' ? form.routine_id : undefined,
           wod_id: form.type === 'wod' ? form.wod_id : undefined,
-          notes: form.notes || undefined,
+          dates,
+          scheduled_time: form.scheduled_time || undefined,
         })
+      } else {
+        // Descanso y evento no tienen rutina ni WOD asociado.
+        for (const athlete_id of seleccionados) {
+          for (const date of dates) {
+            await createSession({
+              athlete_id,
+              type: form.type,
+              scheduled_date: date,
+              scheduled_time: form.scheduled_time || undefined,
+              notes: form.notes || undefined,
+            })
+          }
+        }
       }
       onSuccess()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al asignar')
+      const e2 = err as { message?: string; details?: string; hint?: string } | null
+      const partes = [e2?.message, e2?.details, e2?.hint].filter(Boolean)
+      setError(partes.length > 0 ? partes.join(' — ') : 'Error al asignar')
     } finally {
       setLoading(false)
     }
@@ -429,19 +458,16 @@ function AssignModal({ defaultDate, onClose, onSuccess }: {
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--color-text-3)' }}>✕</button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <FormSelect
-            label="Atleta"
-            value={form.athlete_id}
-            onChange={v => setForm(p => ({ ...p, athlete_id: v }))}
-            required
-          >
-            <option value="">Seleccionar atleta...</option>
-            {athletes.map((a: any) => (
-              <option key={a.id} value={a.id}>{a.first_name} {a.last_name}</option>
-            ))}
-          </FormSelect>
+        {/* Mismo selector que en Rutinas: equipos completos o atletas sueltos */}
+        <div style={{
+          borderBottom: '1px solid var(--color-border)',
+          maxHeight: 300, overflowY: 'auto',
+          margin: '0 -24px',
+        }}>
+          <AthleteGroupSelector selected={seleccionados} onChange={setSeleccionados} />
+        </div>
 
+        <form onSubmit={handleSubmit} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-2)', marginBottom: 8 }}>Tipo de sesión</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
@@ -525,7 +551,11 @@ function AssignModal({ defaultDate, onClose, onSuccess }: {
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
             <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontSize: 14, cursor: 'pointer', background: 'transparent', color: 'var(--color-text)' }}>Cancelar</button>
             <button type="submit" disabled={loading} style={{ flex: 2, padding: '10px', background: loading ? 'var(--color-border)' : 'var(--color-red)', color: loading ? 'var(--color-text-3)' : '#fff', border: 'none', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
-              {loading ? 'Asignando...' : 'Asignar entrenamiento'}
+              {loading
+                ? 'Asignando...'
+                : seleccionados.size === 0
+                ? 'Asignar entrenamiento'
+                : `Asignar a ${seleccionados.size} atleta${seleccionados.size !== 1 ? 's' : ''}`}
             </button>
           </div>
         </form>

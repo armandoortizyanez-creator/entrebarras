@@ -7,16 +7,12 @@ import {
   assignRoutineToAthletes, getRoutineAssignments, removeRoutineAssignment,
   type RoutineBlockFull,
 } from '@/lib/queries/routines'
-import { getAthletesWithGroups } from '@/lib/queries/athletes'
+import { AthleteGroupSelector } from '@/components/routines/AthleteGroupSelector'
 import { bulkAssign, getRoutineSchedule } from '@/lib/queries/sessions'
 import { isSafeUrl, normalizeLinks, type BlockLink } from '@/components/routines/BlockContent'
 import { MultiDatePicker, formatoCorto } from '@/components/routines/DatePicker'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play, UsersRound, Minus, CalendarDays } from 'lucide-react'
-
-/** Etiqueta para atletas que no pertenecen a ningún grupo. */
-const SIN_EQUIPO = 'S/E'
-const BUCKET_SIN_EQUIPO = '__sin_equipo__'
+import { ArrowLeft, Plus, Trash2, Users, X, Check, Loader2, Link2, Play, CalendarDays } from 'lucide-react'
 
 /**
  * Los errores de Supabase son objetos planos, no instancias de Error, asi que
@@ -518,11 +514,6 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
   const [error, setError] = useState<string | null>(null)
   const angosto = useEsAngosto()
 
-  const { data: athletes = [], isLoading } = useQuery({
-    queryKey: ['athletes-with-groups'],
-    queryFn: getAthletesWithGroups,
-  })
-
   // Lo que ya esta en el calendario para esta rutina, para no re-agendar a ciegas.
   const { data: agendaActual = [] } = useQuery({
     queryKey: ['routine-schedule', routineId],
@@ -533,49 +524,6 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
     () => [...new Set(agendaActual.map(s => s.scheduled_date))].sort(),
     [agendaActual]
   )
-
-  /** Grupos derivados de los atletas, más el bucket de los que no tienen. */
-  const groups = useMemo(() => {
-    const map = new Map<string, { id: string; name: string; members: string[] }>()
-    for (const a of athletes) {
-      for (const g of a.groups) {
-        const entry = map.get(g.id) ?? { id: g.id, name: g.name, members: [] }
-        entry.members.push(a.id)
-        map.set(g.id, entry)
-      }
-    }
-    const list = [...map.values()].sort((x, y) => x.name.localeCompare(y.name, 'es'))
-    const huerfanos = athletes.filter(a => a.groups.length === 0).map(a => a.id)
-    if (huerfanos.length > 0) {
-      list.push({ id: BUCKET_SIN_EQUIPO, name: `Sin equipo (${SIN_EQUIPO})`, members: huerfanos })
-    }
-    return list
-  }, [athletes])
-
-  function toggle(id: string) {
-    setSelected(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
-  /** none = ninguno, some = algunos, all = todos los miembros del grupo. */
-  function groupState(members: string[]): 'none' | 'some' | 'all' {
-    const n = members.filter(id => selected.has(id)).length
-    if (n === 0) return 'none'
-    return n === members.length ? 'all' : 'some'
-  }
-
-  /** Selecciona el grupo completo; si ya estaba completo, lo deselecciona. */
-  function toggleGroup(members: string[]) {
-    const estaCompleto = groupState(members) === 'all'
-    setSelected(prev => {
-      const next = new Set(prev)
-      for (const id of members) estaCompleto ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
 
   async function save() {
     setSaving(true)
@@ -652,136 +600,11 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
           overflowY: angosto ? 'visible' : 'auto',
           borderRight: angosto ? 'none' : '1px solid var(--color-border)',
         }}>
-          {isLoading ? (
-            <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>Cargando atletas...</div>
-          ) : athletes.length === 0 ? (
-            <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-3)', fontSize: 14 }}>No hay atletas activos</div>
-          ) : (
-            <>
-              {/* ── Asignación por grupo ── */}
-              {groups.length > 0 && (
-                <>
-                  <SectionLabel text="A quién · equipo completo" />
-                  <div style={{ padding: '0 22px 12px', display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {groups.map(g => {
-                      const estado = groupState(g.members)
-                      const activo = estado !== 'none'
-                      return (
-                        <button
-                          key={g.id}
-                          onClick={() => toggleGroup(g.members)}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 7,
-                            padding: '7px 12px', borderRadius: 20, cursor: 'pointer',
-                            fontSize: 12.5, fontWeight: 700,
-                            background: activo ? 'rgba(99,102,241,0.12)' : 'transparent',
-                            border: `1px solid ${activo ? '#6366F1' : 'var(--color-border)'}`,
-                            color: activo ? '#6366F1' : 'var(--color-text-2)',
-                            transition: 'all 0.12s',
-                          }}
-                        >
-                          <span style={{
-                            width: 15, height: 15, borderRadius: 4, flexShrink: 0,
-                            border: `2px solid ${activo ? '#6366F1' : 'var(--color-text-4)'}`,
-                            background: estado === 'all' ? '#6366F1' : 'transparent',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            {estado === 'all'  && <Check size={9} color="#fff" strokeWidth={4} />}
-                            {estado === 'some' && <Minus size={9} color="#6366F1" strokeWidth={4} />}
-                          </span>
-                          {g.id === BUCKET_SIN_EQUIPO ? <Users size={12} /> : <UsersRound size={12} />}
-                          {g.name}
-                          <span style={{ opacity: 0.65, fontWeight: 600 }}>{g.members.length}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </>
-              )}
-
-              {/* ── Atletas individuales ── */}
-              <SectionLabel text="O atletas uno por uno" />
-              {athletes.map(a => {
-                const checked = selected.has(a.id)
-                const initials = `${a.first_name[0]}${(a.last_name ?? '')[0] ?? ''}`.toUpperCase()
-                const sinEquipo = a.groups.length === 0
-                return (
-                  <button
-                    key={a.id}
-                    onClick={() => toggle(a.id)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                      padding: '11px 22px',
-                      background: checked ? 'rgba(99,102,241,0.10)' : 'transparent',
-                      border: 'none', cursor: 'pointer', textAlign: 'left',
-                      borderBottom: '1px solid var(--color-border)', transition: 'background 0.1s',
-                    }}
-                  >
-                    <div style={{
-                      width: 20, height: 20, borderRadius: 6,
-                      border: `2px solid ${checked ? '#6366F1' : 'var(--color-text-4)'}`,
-                      background: checked ? '#6366F1' : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0, transition: 'all 0.12s',
-                    }}>
-                      {checked && <Check size={12} color="#fff" strokeWidth={3} />}
-                    </div>
-                    <div style={{
-                      width: 34, height: 34, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #6366F1 0%, #4F52D4 100%)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
-                    }}>
-                      {initials}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                        {a.first_name} {a.last_name ?? ''}
-                      </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', marginTop: 2 }}>
-                        {sinEquipo ? (
-                          <span
-                            title="Sin equipo"
-                            style={{
-                              fontSize: 10.5, fontWeight: 700, padding: '1.5px 7px', borderRadius: 20,
-                              background: 'var(--color-surface-2)', color: 'var(--color-text-3)',
-                              border: '1px solid var(--color-border)',
-                            }}
-                          >
-                            {SIN_EQUIPO}
-                          </span>
-                        ) : (
-                          a.groups.map(g => (
-                            <span
-                              key={g.id}
-                              style={{
-                                fontSize: 10.5, fontWeight: 700, padding: '1.5px 7px', borderRadius: 20,
-                                background: 'rgba(99,102,241,0.10)', color: '#6366F1',
-                                border: '1px solid rgba(99,102,241,0.22)',
-                              }}
-                            >
-                              {g.name}
-                            </span>
-                          ))
-                        )}
-                        {a.email && (
-                          <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {a.email}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {currentAssignments.includes(a.id) && (
-                      <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 20, background: 'rgba(34,197,94,0.12)', color: '#22C55E', fontWeight: 600, flexShrink: 0 }}>
-                        Asignada
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-
-            </>
-          )}
+          <AthleteGroupSelector
+            selected={selected}
+            onChange={setSelected}
+            alreadyAssigned={currentAssignments}
+          />
         </div>
 
         {/* ── Panel derecho: cuándo ── */}
@@ -870,18 +693,6 @@ function useEsAngosto() {
     return () => window.removeEventListener('resize', check)
   }, [])
   return angosto
-}
-
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <p style={{
-      fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)',
-      textTransform: 'uppercase', letterSpacing: '0.07em',
-      padding: '14px 22px 8px',
-    }}>
-      {text}
-    </p>
-  )
 }
 
 function SkeletonLoader() {

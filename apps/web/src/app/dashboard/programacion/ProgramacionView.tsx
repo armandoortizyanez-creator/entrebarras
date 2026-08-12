@@ -7,7 +7,7 @@ import type { BoxScheduleEntry } from '@/lib/queries/box-schedule'
 import { getWods } from '@/lib/queries/wods'
 import { getRoutines } from '@/lib/queries/routines'
 import { getGroups } from '@/lib/queries/team'
-import { ChevronLeft, ChevronRight, Plus, X, Zap, Dumbbell, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, X, Zap, Dumbbell, Users, Check } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 
 const DAYS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -34,8 +34,15 @@ function addDays(date: Date, n: number): Date {
   return d
 }
 
+/**
+ * YYYY-MM-DD en hora local. `toISOString()` convierte a UTC y en Chile (UTC-4)
+ * devolvia el dia anterior para cualquier hora antes de las 20:00 o 21:00, asi
+ * que la semana se programaba corrida un dia.
+ */
 function toDateStr(date: Date): string {
-  return date.toISOString().split('T')[0]
+  const mes = String(date.getMonth() + 1).padStart(2, '0')
+  const dia = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${mes}-${dia}`
 }
 
 export function ProgramacionView() {
@@ -52,7 +59,7 @@ export function ProgramacionView() {
 
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
   const [selected, setSelected] = useState<{ date: string; dayLabel: string } | null>(null)
-  const [form, setForm] = useState({ wod_id: '', routine_id: '', group_id: '', notes: '', type: 'wod' as 'wod' | 'routine' })
+  const [form, setForm] = useState({ wod_id: '', routine_id: '', group_ids: [] as string[], notes: '', type: 'wod' as 'wod' | 'routine' })
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
   const from = toDateStr(weekStart)
@@ -70,12 +77,13 @@ export function ProgramacionView() {
   const [saveError, setSaveError] = useState('')
 
   const saveMutation = useMutation({
-    mutationFn: upsertBoxSchedule,
+    mutationFn: (filas: Parameters<typeof upsertBoxSchedule>[0][]) =>
+      Promise.all(filas.map(upsertBoxSchedule)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['box-schedule'] })
       setSelected(null)
       setSaveError('')
-      setForm({ wod_id: '', routine_id: '', group_id: '', notes: '', type: 'wod' })
+      setForm({ wod_id: '', routine_id: '', group_ids: [], notes: '', type: 'wod' })
     },
     // Sin esto el fallo era invisible: el modal quedaba abierto sin explicar nada.
     onError: (err: unknown) => {
@@ -96,19 +104,22 @@ export function ProgramacionView() {
 
   function openDay(dateStr: string, label: string) {
     setSelected({ date: dateStr, dayLabel: label })
-    setForm({ wod_id: '', routine_id: '', group_id: '', notes: '', type: 'wod' })
+    setForm({ wod_id: '', routine_id: '', group_ids: [], notes: '', type: 'wod' })
   }
 
   function handleSave() {
     if (!selected) return
     setSaveError('')
-    saveMutation.mutate({
+    // box_schedule guarda una fila por (fecha, grupo). Sin equipos marcados va
+    // una sola fila con group_id null, que significa "todo el box".
+    const equipos: (string | null)[] = form.group_ids.length > 0 ? form.group_ids : [null]
+    saveMutation.mutate(equipos.map(group_id => ({
       scheduled_date: selected.date,
       wod_id: form.type === 'wod' && form.wod_id ? form.wod_id : null,
       routine_id: form.type === 'routine' && form.routine_id ? form.routine_id : null,
-      group_id: form.group_id || null,
+      group_id,
       notes: form.notes || undefined,
-    })
+    })))
   }
 
   const monthYear = (() => {
@@ -364,12 +375,31 @@ export function ProgramacionView() {
               )}
 
               <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Grupo (opcional)</label>
-                <select value={form.group_id} onChange={e => setForm(f => ({ ...f, group_id: e.target.value }))}
-                  style={{ width: '100%', padding: '9px 11px', border: '1px solid var(--color-border)', borderRadius: 9, fontSize: 13, color: 'var(--color-text)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }}>
-                  <option value="">Todos los grupos</option>
-                  {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                  Equipos
+                </label>
+                {/* Mismos chips que en Rutinas. Sin ninguno marcado aplica a todo el box. */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  <ChipEquipo
+                    label="Todo el box"
+                    activo={form.group_ids.length === 0}
+                    onClick={() => setForm(f => ({ ...f, group_ids: [] }))}
+                  />
+                  {groups.map((g: any) => (
+                    <ChipEquipo
+                      key={g.id}
+                      label={g.name}
+                      count={g.athlete_count ?? undefined}
+                      activo={form.group_ids.includes(g.id)}
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        group_ids: f.group_ids.includes(g.id)
+                          ? f.group_ids.filter(x => x !== g.id)
+                          : [...f.group_ids, g.id],
+                      }))}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -408,5 +438,37 @@ export function ProgramacionView() {
         </div>
       )}
     </div>
+  )
+}
+
+/** Chip de equipo, con el mismo lenguaje visual que el selector de Rutinas. */
+function ChipEquipo({ label, count, activo, onClick }: {
+  label: string; count?: number; activo: boolean; onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '6px 11px', borderRadius: 20, cursor: 'pointer',
+        fontSize: 12, fontWeight: 700,
+        background: activo ? 'rgba(99,102,241,0.12)' : 'transparent',
+        border: `1px solid ${activo ? '#6366F1' : 'var(--color-border)'}`,
+        color: activo ? '#6366F1' : 'var(--color-text-2)',
+        transition: 'all 0.12s',
+      }}
+    >
+      <span style={{
+        width: 13, height: 13, borderRadius: 4, flexShrink: 0,
+        border: `2px solid ${activo ? '#6366F1' : 'var(--color-text-4)'}`,
+        background: activo ? '#6366F1' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {activo && <Check size={8} color="#fff" strokeWidth={4} />}
+      </span>
+      {label}
+      {count !== undefined && <span style={{ opacity: 0.65, fontWeight: 600 }}>{count}</span>}
+    </button>
   )
 }
