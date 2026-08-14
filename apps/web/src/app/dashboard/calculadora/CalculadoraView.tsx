@@ -179,7 +179,7 @@ export function CalculadoraView() {
   const selectedAthlete = athletes.find(a => a.id === selectedAthleteId)
 
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 1100 }}>
+    <div className="eb-page" style={{ maxWidth: 1100 }}>
 
       {/* Page header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
@@ -425,7 +425,7 @@ export function CalculadoraView() {
                                         Â· {h.notes}
                                       </span>
                                     )}
-                                    <button
+                                    <button className="eb-tap"
                                       onClick={() => { if (confirm('¿Eliminar este registro?')) deleteMutation.mutate(h.id) }}
                                       style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: '2px', display: 'flex', alignItems: 'center' }}
                                       onMouseEnter={e => (e.currentTarget.style.color = '#EF4444')}
@@ -635,7 +635,7 @@ export function CalculadoraView() {
                 </div>
                 <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Registrar PR</h2>
               </div>
-              <button onClick={() => setShowAddModal(false)} style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', color: 'var(--color-text-2)' }}>
+              <button className="eb-tap" onClick={() => setShowAddModal(false)} style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', color: 'var(--color-text-2)' }}>
                 <X size={16} />
               </button>
             </div>

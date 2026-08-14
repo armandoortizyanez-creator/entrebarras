@@ -185,7 +185,7 @@ export function CommentsPanel({ entityType, entityId, subjectLabel }: {
                       >
                         {compartido ? 'Hacer interno' : 'Compartir'}
                       </button>
-                      <button
+                      <button className="eb-tap"
                         onClick={() => { if (confirm('¿Eliminar este comentario?')) remove.mutate(c.id) }}
                         aria-label="Eliminar comentario"
                         style={{

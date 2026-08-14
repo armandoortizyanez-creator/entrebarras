@@ -139,7 +139,7 @@ export function Sidebar() {
           </Link>
           {/* Close button — only visible on mobile */}
           <button
-            className="eb-sidebar-close"
+            className="eb-tap eb-sidebar-close"
             onClick={close}
             aria-label="Cerrar menú"
             style={{ color: sideText }}

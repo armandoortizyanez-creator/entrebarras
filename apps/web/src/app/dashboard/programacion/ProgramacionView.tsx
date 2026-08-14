@@ -265,7 +265,7 @@ export function ProgramacionView() {
                         <p style={{ fontSize: 10, color: 'var(--color-text-3)', marginTop: 1 }}>{entry.notes}</p>
                       )}
                       <button
-                        className="del-btn"
+                        className="eb-tap del-btn"
                         onClick={() => deleteMutation.mutate(entry.id)}
                         style={{
                           position: 'absolute', top: 4, right: 4,
@@ -331,7 +331,7 @@ export function ProgramacionView() {
                   {selected.dayLabel}
                 </h3>
               </div>
-              <button onClick={() => setSelected(null)} style={{ background: 'var(--color-surface-2)', border: 'none', borderRadius: 9, padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <button className="eb-tap" onClick={() => setSelected(null)} style={{ background: 'var(--color-surface-2)', border: 'none', borderRadius: 9, padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                 <X size={16} color="var(--color-text-2)" />
               </button>
             </div>

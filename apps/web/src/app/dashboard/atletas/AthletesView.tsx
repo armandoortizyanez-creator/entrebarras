@@ -373,7 +373,7 @@ function AthleteTable({ athletes, gruposPorAtleta, onDelete }: {
               {st.label}
             </span>
 
-            <button
+            <button className="eb-tap"
               onClick={() => onDelete(athlete.id)}
               style={{
                 background: 'transparent', border: 'none', cursor: 'pointer',
@@ -437,7 +437,7 @@ function AthleteCards({ athletes, gruposPorAtleta, onDelete }: {
               {st.label}
             </span>
 
-            <button
+            <button className="eb-tap"
               onClick={() => onDelete(athlete.id)}
               style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: 4, display: 'flex', alignItems: 'center' }}
             >
@@ -564,7 +564,7 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
             <h2 style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>Nuevo atleta</h2>
             <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', marginTop: 2 }}>Completa la información básica</p>
           </div>
-          <button
+          <button className="eb-tap"
             onClick={onClose}
             style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}
           >

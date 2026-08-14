@@ -83,7 +83,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
   ].filter(Boolean) as { icon: React.ReactNode; label: string; value: string }[]
 
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 760 }}>
+    <div className="eb-page" style={{ maxWidth: 760 }}>
 
       {/* Back */}
       <Link href="/dashboard/wods" style={{
@@ -507,7 +507,7 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
           >
             {editing ? 'Cerrar' : 'Editar'}
           </button>
-          <button
+          <button className="eb-tap"
             onClick={onRemove}
             style={{
               padding: '5px 8px', border: '1px solid var(--color-border)',

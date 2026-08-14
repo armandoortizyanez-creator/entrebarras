@@ -51,7 +51,7 @@ export function AyudaView() {
 
   /* ─── Index ─── */
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 900 }}>
+    <div className="eb-page" style={{ maxWidth: 900 }}>
 
       {/* Hero */}
       <div style={{ marginBottom: 26 }}>
@@ -92,7 +92,7 @@ export function AyudaView() {
           }}
         />
         {search && (
-          <button
+          <button className="eb-tap"
             onClick={() => setSearch('')}
             aria-label="Limpiar búsqueda"
             style={{
@@ -205,7 +205,7 @@ function ArticleDetail({ article, onBack }: { article: HelpArticle; onBack: () =
   const accent = CATEGORY_ACCENT[article.category]
 
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 760 }}>
+    <div className="eb-page" style={{ maxWidth: 760 }}>
       <button
         onClick={onBack}
         style={{
@@ -323,7 +323,7 @@ function ArticleDetail({ article, onBack }: { article: HelpArticle; onBack: () =
 
 function SkeletonLoader() {
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 900 }}>
+    <div className="eb-page" style={{ maxWidth: 900 }}>
       <div style={{ height: 30, width: 240, background: 'var(--color-surface-2)', borderRadius: 8, marginBottom: 14 }} />
       <div style={{ height: 44, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, marginBottom: 26 }} />
       {[...Array(3)].map((_, i) => (

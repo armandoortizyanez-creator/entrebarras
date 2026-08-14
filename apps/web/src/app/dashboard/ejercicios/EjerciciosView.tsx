@@ -358,7 +358,7 @@ function ExerciseDetailModal({ exercise, onClose }: { exercise: WgerExercise; on
           {imgSrc
             ? <img src={imgSrc} alt={name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }} />
             : <Dumbbell size={48} color="var(--color-text-4)" strokeWidth={1} />}
-          <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%', background: 'rgba(0,0,0,0.35)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', zIndex: 2 }}>
+          <button className="eb-tap" onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%', background: 'rgba(0,0,0,0.35)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', zIndex: 2 }}>
             <X size={15} strokeWidth={2.5} />
           </button>
         </div>
@@ -482,7 +482,7 @@ function NewExerciseModal({ onClose, onSuccess }: { onClose: () => void; onSucce
       <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg)', width: '100%', maxWidth: 440, boxShadow: 'var(--shadow-xl)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--color-border)' }}>
           <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)' }}>Nuevo ejercicio personalizado</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)' }}><X size={18} /></button>
+          <button className="eb-tap" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)' }}><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Field label="Nombre" value={form.name} onChange={v => setForm(p => ({ ...p, name: v }))} required />

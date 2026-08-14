@@ -108,7 +108,7 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
   if (!routine) return <div style={{ padding: 48, color: '#EF4444', fontSize: 14 }}>Rutina no encontrada</div>
 
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 820 }}>
+    <div className="eb-page" style={{ maxWidth: 820 }}>
       <Link href="/dashboard/rutinas" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         fontSize: 13, color: 'var(--color-text-2)', textDecoration: 'none',
@@ -334,7 +334,7 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
           {BLOCK_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
 
-        <button
+        <button className="eb-tap"
           onClick={onDelete}
           aria-label="Eliminar bloque"
           style={{
@@ -390,7 +390,7 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
                 >
                   {l.label}
                 </a>
-                <button
+                <button className="eb-tap"
                   onClick={() => persistLinks(links.filter((_, j) => j !== i))}
                   aria-label={`Quitar ${l.label}`}
                   style={{
@@ -581,7 +581,7 @@ function AssignModal({ routineId, currentAssignments, onClose, onSaved }: {
             <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Asignar rutina</h2>
             <p style={{ fontSize: 13, color: 'var(--color-text-2)', marginTop: 2 }}>{resumen}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
+          <button className="eb-tap" onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>
@@ -697,7 +697,7 @@ function useEsAngosto() {
 
 function SkeletonLoader() {
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 820 }}>
+    <div className="eb-page" style={{ maxWidth: 820 }}>
       <div style={{ height: 20, width: 120, background: 'var(--color-surface-2)', borderRadius: 6, marginBottom: 24 }} />
       <div style={{ height: 72, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 16, marginBottom: 20 }} />
       {[...Array(2)].map((_, i) => (

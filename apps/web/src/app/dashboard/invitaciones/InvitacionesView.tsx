@@ -236,7 +236,7 @@ export function InvitacionesView() {
                 </div>
               </div>
               {st !== 'accepted' && (
-                <button
+                <button className="eb-tap"
                   onClick={() => remove.mutate(inv.id)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: 4 }}
                   title="Eliminar invitación"

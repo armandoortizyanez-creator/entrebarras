@@ -124,7 +124,7 @@ function SetRow({
             PR
           </span>
         )}
-        <button
+        <button className="eb-tap"
           onClick={() => onDelete(set.id)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: 4, display: 'flex', alignItems: 'center' }}
         >

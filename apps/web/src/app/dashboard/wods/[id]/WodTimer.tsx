@@ -303,7 +303,7 @@ export function WodTimer({ wod, wodId, athletes, onClose, onResultSaved }: {
           >
             {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </button>
-          <button
+          <button className="eb-tap"
             onClick={onClose}
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '8px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center' }}
           >

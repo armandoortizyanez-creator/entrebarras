@@ -75,7 +75,7 @@ export function AthleteDetail({ athleteId }: { athleteId: string }) {
   ]
 
   return (
-    <div style={{ padding: '36px 40px', maxWidth: 860 }}>
+    <div className="eb-page" style={{ maxWidth: 860 }}>
       {/* Back */}
       <Link href="/dashboard/atletas" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -661,7 +661,7 @@ function MedicionesTab({ athleteId }: { athleteId: string }) {
                 {m.muscle_mass_kg && <StatVal label="Músculo" value={`${m.muscle_mass_kg} kg`} />}
                 {(m as any).bmi && <StatVal label="IMC" value={String((m as any).bmi)} />}
               </div>
-              <button
+              <button className="eb-tap"
                 onClick={() => { if (confirm('¿Eliminar esta medición?')) deleteMutation.mutate(m.id) }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: 4, display: 'flex', alignItems: 'center' }}
               >

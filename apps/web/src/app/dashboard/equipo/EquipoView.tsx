@@ -60,7 +60,8 @@ export function EquipoView() {
   const totalAthletes = members.reduce((s, m) => s + (m.athlete_count ?? 0), 0)
 
   const s = {
-    page:      { padding: '32px 40px', maxWidth: 1200 },
+    // El padding lo pone la clase .eb-page, que baja a 16px bajo 768px
+    page:      { maxWidth: 1200 },
     header:    { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 },
     title:     { fontSize: 22, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' },
     sub:       { fontSize: 14, color: 'var(--color-text-3)', marginTop: 4 },
@@ -92,7 +93,7 @@ export function EquipoView() {
   }
 
   return (
-    <div style={s.page}>
+    <div className="eb-page" style={s.page}>
       <div style={s.header}>
         <div>
           <h1 style={s.title}>Mi Equipo</h1>

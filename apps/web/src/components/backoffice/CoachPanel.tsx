@@ -59,7 +59,7 @@ export function CoachPanel({ coachId, coachName, coachRole, onClose }: {
               {` · ${grupos.length} equipo${grupos.length !== 1 ? 's' : ''}`}
             </p>
           </div>
-          <button
+          <button className="eb-tap"
             onClick={onClose}
             aria-label="Cerrar"
             style={{
@@ -276,7 +276,7 @@ function GestionarAtletasModal({ coachId, coachName, asignadosActuales, onClose,
               {selected.size} seleccionado{selected.size !== 1 ? 's' : ''}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: 6, display: 'flex', color: 'var(--color-text-2)' }}>
+          <button className="eb-tap" onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: 6, display: 'flex', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>

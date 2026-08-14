@@ -314,7 +314,7 @@ export function GruposView() {
                     {g.sport && ` Â· ${g.sport}`}
                   </div>
                 </div>
-                <button
+                <button className="eb-tap"
                   onClick={e => {
                     e.stopPropagation()   // la tarjeta abre el panel; el basurero no debe hacerlo
                     if (confirm(`¿Eliminar el grupo "${g.name}"?`)) remove.mutate(g.id)
@@ -415,7 +415,7 @@ function GroupPanel({ group, onClose }: { group: GroupRow; onClose: () => void }
               </p>
             )}
           </div>
-          <button
+          <button className="eb-tap"
             onClick={onClose}
             aria-label="Cerrar"
             style={{

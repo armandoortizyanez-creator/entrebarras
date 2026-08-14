@@ -182,7 +182,7 @@ function RoutineCard({ routine, onDelete }: { routine: any; onDelete: () => void
           >
             Editar
           </Link>
-          <button
+          <button className="eb-tap"
             onClick={onDelete}
             style={{
               padding: '8px 12px', background: 'transparent',
@@ -263,7 +263,7 @@ function NewRoutineModal({ onClose, onSuccess }: { onClose: () => void; onSucces
             </div>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>Nueva rutina</h2>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
+          <button className="eb-tap" onClick={onClose} style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 8, cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', color: 'var(--color-text-2)' }}>
             <X size={16} />
           </button>
         </div>

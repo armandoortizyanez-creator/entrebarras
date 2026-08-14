@@ -486,6 +486,37 @@ textarea:focus {
   padding: 32px 40px;
 }
 
+/* ============================================
+   ÁREA TÁCTIL — .eb-tap
+   ============================================
+
+   Los botones de solo ícono miden ~26px, muy por debajo de los 44px que
+   recomienda WCAG para tocar con el dedo. Varios son destructivos (eliminar,
+   quitar), y un blanco chico pegado a otro control es como se borra algo sin
+   querer.
+
+   En vez de agrandar el botón —que rompería el diseño en escritorio— se
+   extiende el área sensible con un pseudo-elemento centrado de 44x44. El
+   tamaño visual no cambia. Solo aplica en pantallas táctiles, así que el
+   ratón no ve ninguna diferencia. */
+
+.eb-tap {
+  position: relative;
+}
+
+@media (pointer: coarse) {
+  .eb-tap::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    /* Solo amplía el blanco: no pinta nada ni tapa lo que hay debajo */
+  }
+}
+
 @media (max-width: 767px) {
   .eb-page {
     padding: 16px 16px 80px !important;

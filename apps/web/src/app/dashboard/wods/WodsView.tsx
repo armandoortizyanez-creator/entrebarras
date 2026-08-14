@@ -168,7 +168,7 @@ function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
           }}>
             {typeInfo?.label ?? wod.type}
           </span>
-          <button
+          <button className="eb-tap"
             onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',

@@ -144,7 +144,7 @@ export function MultiDatePicker({ value, onChange }: {
               }}
             >
               {formatoCorto(iso)}
-              <button
+              <button className="eb-tap"
                 type="button"
                 onClick={() => alternar(iso)}
                 aria-label={`Quitar ${formatoCorto(iso)}`}
