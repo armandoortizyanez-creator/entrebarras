@@ -59,6 +59,7 @@ export async function getCoachTeam(): Promise<TeamMember[]> {
     .from('athletes')
     .select('assigned_coach_id')
     .eq('status', 'active')
+    .is('deleted_at', null)
 
   const countMap: Record<string, number> = {}
   for (const row of counts ?? []) {
@@ -67,7 +68,9 @@ export async function getCoachTeam(): Promise<TeamMember[]> {
     }
   }
 
-  return (data ?? []).map(u => ({ ...u, athlete_count: countMap[u.auth_user_id] ?? 0 }))
+  // countMap se indexa por assigned_coach_id, que es users.id (el id publico).
+  // Buscarlo con u.auth_user_id nunca acertaba y la columna mostraba siempre 0.
+  return (data ?? []).map(u => ({ ...u, athlete_count: countMap[u.id] ?? 0 }))
 }
 
 export async function deactivateTeamMember(userId: string) {
