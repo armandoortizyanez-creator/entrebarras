@@ -10,6 +10,7 @@ import { useUser } from '@/hooks/useUser'
 import { UserCog, Users, Shield, MoreHorizontal, UserCheck, UserX, Mail } from 'lucide-react'
 import { ROLE_LABELS, ROLE_COLORS } from '@entrebarras/types'
 import Link from 'next/link'
+import { CoachPanel } from '@/components/backoffice/CoachPanel'
 
 const ROLE_FILTER = ['all', 'super_admin', 'coach'] as const
 type RoleFilter = typeof ROLE_FILTER[number]
@@ -20,6 +21,7 @@ export function EquipoView() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all')
   const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+  const [revisando, setRevisando] = useState<TeamMember | null>(null)
 
   const { data: members = [], isLoading } = useQuery({
     queryKey: ['team'],
@@ -180,7 +182,13 @@ export function EquipoView() {
                   </td>
                 </tr>
               ) : filtered.map(member => (
-                <tr key={member.id}>
+                <tr
+                  key={member.id}
+                  onClick={() => setRevisando(member)}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-2)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
                   <td style={s.td}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={s.avatar}>
@@ -219,7 +227,7 @@ export function EquipoView() {
                   <td style={{ ...s.td, color: 'var(--color-text-3)', fontSize: 12.5 }}>
                     {new Date(member.created_at).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
-                  <td style={{ ...s.td, position: 'relative' }}>
+                  <td style={{ ...s.td, position: 'relative' }} onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => setMenuOpen(menuOpen === member.id ? null : member.id)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '4px' }}
@@ -251,6 +259,15 @@ export function EquipoView() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {revisando && (
+        <CoachPanel
+          coachId={revisando.id}
+          coachName={`${revisando.first_name} ${revisando.last_name}`}
+          coachRole={revisando.role}
+          onClose={() => setRevisando(null)}
+        />
       )}
     </div>
   )

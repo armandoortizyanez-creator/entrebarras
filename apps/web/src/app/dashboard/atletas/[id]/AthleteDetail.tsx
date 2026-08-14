@@ -9,6 +9,7 @@ import { getLatestPRs, getPRHistory } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
 import type { Athlete } from '@entrebarras/types'
 import { CommentsPanel } from '@/components/comments/CommentsPanel'
+import { AthleteAssignmentCard } from '@/components/backoffice/AthleteAssignmentCard'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Phone, Calendar, CheckCircle2, Trash2, Plus, Scale, Ruler, Activity, Percent, Trophy, Dumbbell, Play, ChevronRight } from 'lucide-react'
 
@@ -277,6 +278,8 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
   const selectStyle: React.CSSProperties = { ...inputStyle, appearance: 'none' as const }
 
   return (
+    <>
+    <AthleteAssignmentCard athleteId={athlete.id} coachActual={athlete.assigned_coach_id} />
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {groups.map(group => (
         <div key={group.group} style={{
@@ -388,11 +391,12 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
               transition: 'background 0.2s',
             }}
           >
-            {mutation.isPending ? 'Guardando...' : saved ? 'Â¡Guardado!' : 'Guardar cambios'}
+            {mutation.isPending ? 'Guardando...' : saved ? '¡Guardado!' : 'Guardar cambios'}
           </button>
         </div>
       )}
     </div>
+    </>
   )
 }
 
