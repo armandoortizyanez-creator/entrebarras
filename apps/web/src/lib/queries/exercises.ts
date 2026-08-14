@@ -27,10 +27,24 @@ export async function getExercises(filters?: {
 export async function createExercise(exercise: Partial<Exercise>) {
   const supabase = createClient()
   const { data: userRes } = await supabase.auth.getUser()
-  const tenantId = userRes.user?.app_metadata?.tenant_id ?? null
+  if (!userRes.user) throw new Error('No autenticado')
+
+  const tenantId = userRes.user.app_metadata?.tenant_id ?? null
+
+  // exercises.created_by referencia users.id (el id publico), no el de auth.
+  const { data: publicUser, error: uErr } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', userRes.user.id)
+    .maybeSingle()
+  if (uErr) throw uErr
+  if (!publicUser) {
+    throw new Error('Tu cuenta de acceso no está vinculada a un perfil de usuario.')
+  }
+
   const { data, error } = await supabase
     .from('exercises')
-    .insert({ ...exercise, tenant_id: tenantId, created_by: userRes.user?.id })
+    .insert({ ...exercise, tenant_id: tenantId, created_by: publicUser.id })
     .select()
     .single()
   if (error) throw error

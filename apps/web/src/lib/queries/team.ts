@@ -91,11 +91,16 @@ export async function reactivateTeamMember(userId: string) {
   if (error) throw error
 }
 
-export async function assignAthleteToCoach(athleteId: string, coachAuthId: string | null) {
+/**
+ * `coachId` debe ser users.id (el id publico), que es lo que referencia
+ * athletes.assigned_coach_id. El parametro se llamaba coachAuthId y recibia el
+ * id de auth, con lo que la asignacion apuntaba a un usuario inexistente.
+ */
+export async function assignAthleteToCoach(athleteId: string, coachId: string | null) {
   const supabase = createClient()
   const { error } = await supabase
     .from('athletes')
-    .update({ assigned_coach_id: coachAuthId, updated_at: new Date().toISOString() })
+    .update({ assigned_coach_id: coachId, updated_at: new Date().toISOString() })
     .eq('id', athleteId)
   if (error) throw error
 }
@@ -212,15 +217,17 @@ export async function createGroup(payload: {
 
   const { data: me } = await supabase
     .from('users')
-    .select('id, tenant_id, auth_user_id')
+    .select('id, tenant_id')
     .eq('auth_user_id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!me) throw new Error('Usuario no encontrado')
+  if (!me) throw new Error('Tu cuenta de acceso no está vinculada a un perfil de usuario.')
 
   const { error } = await supabase.from('groups').insert({
     tenant_id: me.tenant_id,
-    coach_id: payload.is_global ? null : me.auth_user_id,
+    // groups.coach_id referencia users.id. Antes se guardaba me.auth_user_id,
+    // que dejaba el grupo apuntando a un usuario inexistente.
+    coach_id: payload.is_global ? null : me.id,
     name: payload.name,
     description: payload.description ?? null,
     type: payload.type,
