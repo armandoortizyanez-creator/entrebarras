@@ -8,6 +8,7 @@ import {
 } from '@/lib/queries/comments'
 import { useUser } from '@/hooks/useUser'
 import { MessageSquare, Lock, Eye, Trash2, Send } from 'lucide-react'
+import { mensajeDeError } from '@/lib/errors'
 
 function tiempoRelativo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -47,7 +48,7 @@ export function CommentsPanel({ entityType, entityId, subjectLabel }: {
       setBody('')
       setError('')
     },
-    onError: (e: unknown) => setError(e instanceof Error ? e.message : 'No se pudo guardar el comentario'),
+    onError: (e: unknown) => setError(mensajeDeError(e, 'No se pudo guardar el comentario')),
   })
 
   const remove = useMutation({

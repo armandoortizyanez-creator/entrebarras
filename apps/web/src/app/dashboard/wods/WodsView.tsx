@@ -7,6 +7,7 @@ import { getWods, createWod, deleteWod, WOD_TYPES } from '@/lib/queries/wods'
 import Link from 'next/link'
 import { Plus, Timer, RotateCcw, Zap, Clock, ChevronRight, Trash2 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
+import { mensajeDeError } from '@/lib/errors'
 
 function formatSeconds(seconds: number) {
   if (seconds < 60) return `${seconds}s`
@@ -357,7 +358,7 @@ function NewWodModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       })
       onSuccess(wod.id)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al crear WOD')
+      setError(mensajeDeError(err, 'No se pudo crear el WOD'))
     } finally {
       setLoading(false)
     }

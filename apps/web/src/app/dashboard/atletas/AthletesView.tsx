@@ -10,6 +10,7 @@ import { useUser } from '@/hooks/useUser'
 import type { Athlete } from '@entrebarras/types'
 import Link from 'next/link'
 import { Plus, X, ChevronLeft, ChevronRight, UserRound, Search } from 'lucide-react'
+import { mensajeDeError } from '@/lib/errors'
 
 const ACCENT = '#6366F1'
 const VIOLET = '#7C3AED'
@@ -534,7 +535,7 @@ function NewAthleteModal({ onClose, onSuccess }: { onClose: () => void; onSucces
       })
       onSuccess()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al guardar')
+      setError(mensajeDeError(err, 'No se pudo guardar el atleta'))
     } finally {
       setLoading(false)
     }

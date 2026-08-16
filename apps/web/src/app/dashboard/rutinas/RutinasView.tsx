@@ -7,6 +7,7 @@ import { getRoutines, createRoutine, deleteRoutine, getMyAssignedRoutines } from
 import { useUser } from '@/hooks/useUser'
 import Link from 'next/link'
 import { Plus, X, ClipboardList, Layers } from 'lucide-react'
+import { mensajeDeError } from '@/lib/errors'
 
 const ROUTINE_TYPES = [
   { value: 'strength', label: 'Fuerza' },
@@ -247,7 +248,7 @@ function NewRoutineModal({ onClose, onSuccess }: { onClose: () => void; onSucces
       })
       onSuccess(routine.id)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al crear rutina')
+      setError(mensajeDeError(err, 'No se pudo crear la rutina'))
     } finally {
       setLoading(false)
     }

@@ -11,6 +11,7 @@ import { getAthletesWithGroups } from '@/lib/queries/athletes'
 import { CommentsPanel } from '@/components/comments/CommentsPanel'
 import Link from 'next/link'
 import { UsersRound, Clock, Plus, Trash2, Globe, Lock, X } from 'lucide-react'
+import { mensajeDeError } from '@/lib/errors'
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const GROUP_TYPES = [
@@ -70,7 +71,7 @@ export function GruposView() {
       setForm(DEFAULT_FORM)
       setFormError('')
     },
-    onError: (err: Error) => setFormError(err.message),
+    onError: (err: unknown) => setFormError(mensajeDeError(err)),
   })
 
   const remove = useMutation({

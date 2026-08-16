@@ -8,6 +8,7 @@ import {
 import { getGroups } from '@/lib/queries/team'
 import { useUser } from '@/hooks/useUser'
 import { UserCog, UsersRound, Check, Loader2 } from 'lucide-react'
+import { mensajeDeError } from '@/lib/errors'
 
 export function AthleteAssignmentCard({ athleteId, coachActual }: {
   athleteId: string
@@ -41,7 +42,7 @@ export function AthleteAssignmentCard({ athleteId, coachActual }: {
     onSuccess: () => { setEstado('guardado'); invalidar() },
     onError: (e: unknown) => {
       setEstado('error')
-      setError(e instanceof Error ? e.message : 'No se pudo cambiar el coach')
+      setError(mensajeDeError(e, 'No se pudo cambiar el coach'))
     },
   })
 

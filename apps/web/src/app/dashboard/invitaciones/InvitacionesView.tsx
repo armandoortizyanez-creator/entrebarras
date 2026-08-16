@@ -9,6 +9,7 @@ import {
 import { useUser } from '@/hooks/useUser'
 import { Mail, Clock, CheckCircle, XCircle, Plus, Trash2, Shield } from 'lucide-react'
 import { ROLE_LABELS } from '@entrebarras/types'
+import { mensajeDeError } from '@/lib/errors'
 
 type InvStatus = 'all' | 'pending' | 'accepted' | 'expired'
 
@@ -41,7 +42,7 @@ export function InvitacionesView() {
       setEmail('')
       setFormError('')
     },
-    onError: (err: Error) => setFormError(err.message),
+    onError: (err: unknown) => setFormError(mensajeDeError(err)),
   })
 
   const remove = useMutation({

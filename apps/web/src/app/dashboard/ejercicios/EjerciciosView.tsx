@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { createExercise } from '@/lib/queries/exercises'
 import { X, Dumbbell, Search, ChevronDown, SlidersHorizontal } from 'lucide-react'
+import { mensajeDeError } from '@/lib/errors'
 
 // ── Wger types ────────────────────────────────────────────────────────────────
 type WgerTranslation = { language: number; name: string; description: string }
@@ -473,7 +474,7 @@ function NewExerciseModal({ onClose, onSuccess }: { onClose: () => void; onSucce
     try {
       await createExercise({ name: form.name, description: form.description || undefined, muscle_group: form.muscle_group || undefined, equipment: form.equipment || undefined, source: 'custom', is_public: false })
       onSuccess()
-    } catch (err: unknown) { setError(err instanceof Error ? err.message : 'Error al guardar') }
+    } catch (err: unknown) { setError(mensajeDeError(err, 'No se pudo guardar el ejercicio')) }
     finally { setLoading(false) }
   }
 
