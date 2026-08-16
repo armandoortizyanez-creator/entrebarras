@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { UsuariosPlataforma } from '@/components/backoffice/UsuariosPlataforma'
 import { getAllTenants, getTenantStats } from '@/lib/queries/team'
 import { useUser } from '@/hooks/useUser'
 import { Building2, Users, Dumbbell, CheckCircle, Shield, Search, Activity } from 'lucide-react'
@@ -26,6 +27,7 @@ interface TenantWithStats {
 }
 
 export function PlataformaView() {
+  const [pestana, setPestana] = useState<'gimnasios' | 'usuarios'>('gimnasios')
   const { isPlatformAdmin } = useUser()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
@@ -110,8 +112,29 @@ export function PlataformaView() {
           <Shield size={20} style={{ color: '#6c63ff' }} />
           <h1 style={s.title}>Panel de Plataforma</h1>
         </div>
-        <p style={s.sub}>Visión global de todos los gimnasios y tenants activos</p>
+        <p style={s.sub}>Visión global de todos los gimnasios y usuarios de THRYRA</p>
       </div>
+
+      {/* Pestañas */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'var(--color-bg)', borderRadius: 10, padding: 3, width: 'fit-content' }}>
+        {([['gimnasios', 'Gimnasios'], ['usuarios', 'Usuarios']] as const).map(([id, etiqueta]) => (
+          <button
+            key={id}
+            onClick={() => setPestana(id)}
+            style={{
+              padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              fontSize: 13, fontWeight: pestana === id ? 700 : 500,
+              background: pestana === id ? '#6366F1' : 'transparent',
+              color: pestana === id ? '#fff' : 'var(--color-text-2)',
+            }}
+          >
+            {etiqueta}
+          </button>
+        ))}
+      </div>
+
+      {pestana === 'usuarios' ? <UsuariosPlataforma /> : (
+      <>
 
       {/* Stats */}
       <div style={s.statRow}>
@@ -225,6 +248,8 @@ export function PlataformaView() {
             )
           })}
         </div>
+      )}
+      </>
       )}
     </div>
   )
