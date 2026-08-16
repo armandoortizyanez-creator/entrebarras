@@ -273,6 +273,26 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
   // Si desmonta con cambios pendientes (navegar, eliminar otro bloque), guarda igual
   useEffect(() => () => { if (dirty.current) flush() }, [flush])
 
+  /**
+   * Recargar o cerrar la pestaña no dispara la limpieza de React, así que un
+   * cambio dentro de la ventana de rebote se perdía: se vio en una prueba que
+   * el bloque quedaba con nombre pero sin contenido.
+   *
+   * `pagehide` cubre recarga, cierre y navegación hacia atrás; `visibilitychange`
+   * cubre el caso de móvil donde se cambia de app sin cerrar nada.
+   */
+  useEffect(() => {
+    const guardarSiHayPendiente = () => { if (dirty.current) flush() }
+    const alOcultarse = () => { if (document.visibilityState === 'hidden') guardarSiHayPendiente() }
+
+    window.addEventListener('pagehide', guardarSiHayPendiente)
+    document.addEventListener('visibilitychange', alOcultarse)
+    return () => {
+      window.removeEventListener('pagehide', guardarSiHayPendiente)
+      document.removeEventListener('visibilitychange', alOcultarse)
+    }
+  }, [flush])
+
   function persistLinks(next: BlockLink[]) {
     setLinks(next)
     setStatus('saving')

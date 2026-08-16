@@ -1,20 +1,40 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Montserrat } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { Providers } from './providers'
 
-const inter = Inter({
-  subsets: ['latin'],
+/**
+ * Fuentes alojadas en el proyecto, no descargadas de Google en cada build.
+ *
+ * `next/font/google` va a buscar los .woff2 a fonts.gstatic.com durante la
+ * compilación. Google rota esas URLs con hash, así que una caché vieja termina
+ * pidiendo archivos que ya devuelven 404 y el build entero falla. Además obliga
+ * a tener internet para levantar el proyecto.
+ *
+ * Con next/font/local los archivos viven en src/app/fonts: el build es
+ * reproducible, funciona sin conexión y no depende de que Google no mueva nada.
+ * Son solo los pesos y el subconjunto latino que la app realmente usa.
+ */
+const inter = localFont({
   variable: '--font-inter',
   display: 'swap',
-  weight: ['400', '500', '600', '700'],
+  src: [
+    { path: './fonts/Inter-400.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/Inter-500.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/Inter-600.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/Inter-700.woff2', weight: '700', style: 'normal' },
+  ],
 })
 
-const montserrat = Montserrat({
-  subsets: ['latin'],
+const montserrat = localFont({
   variable: '--font-montserrat',
   display: 'swap',
-  weight: ['600', '700', '800', '900'],
+  src: [
+    { path: './fonts/Montserrat-600.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/Montserrat-700.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/Montserrat-800.woff2', weight: '800', style: 'normal' },
+    { path: './fonts/Montserrat-900.woff2', weight: '900', style: 'normal' },
+  ],
 })
 
 export const metadata: Metadata = {
