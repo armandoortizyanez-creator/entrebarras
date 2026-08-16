@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { refrescarSesionConMetadatos } from '@/lib/auth/refrescarSesion'
 
 export function RegistroForm() {
   const router = useRouter()
@@ -42,6 +43,16 @@ export function RegistroForm() {
     if (error) {
       const msg = error.message || (error as any).error_description || (error as any).code || 'Error al crear cuenta. Intenta de nuevo.'
       setError(msg)
+      setLoading(false)
+      return
+    }
+
+    // El token recién emitido no trae tenant_id: lo asigna el trigger durante
+    // el mismo insert, y las claims van firmadas. Sin este refresco la persona
+    // entra con una sesión que falla en toda escritura por RLS.
+    const listo = await refrescarSesionConMetadatos(supabase)
+    if (!listo) {
+      setError('Tu cuenta se creó, pero no pudimos activar la sesión. Inicia sesión para continuar.')
       setLoading(false)
       return
     }
