@@ -7,8 +7,9 @@ import type { WodMovementFull } from '@/lib/queries/wods'
 import { getWodResults, deleteWodResult, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
 import type { WodResult } from '@/lib/queries/wod-results'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Trash2, GripVertical, Clock, RotateCcw, Zap, Timer, Play, Trophy, X as XIcon } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, GripVertical, Clock, RotateCcw, Zap, Timer, Play, Trophy, Users, X as XIcon } from 'lucide-react'
 import { WodTimer } from './WodTimer'
+import { AssignWodModal } from '@/components/routines/AssignWodModal'
 
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   amrap:     { bg: 'rgba(129,140,248,0.12)', text: '#818CF8', border: 'rgba(129,140,248,0.25)' },
@@ -38,6 +39,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
   const [addingMovement, setAddingMovement] = useState(false)
   const [newMovement, setNewMovement] = useState({ name: '', reps: '', weight_kg: '', distance_m: '', calories: '' })
   const [timerOpen, setTimerOpen] = useState(false)
+  const [asignando, setAsignando] = useState(false)
   const [activeTab, setActiveTab] = useState<'movimientos' | 'resultados'>('movimientos')
 
   const { data: wod, isLoading } = useQuery({
@@ -126,6 +128,20 @@ export function WodBuilder({ wodId }: { wodId: string }) {
             )}
           </div>
 
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={() => setAsignando(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: '#6366F1', color: '#fff', border: 'none',
+              borderRadius: 10, padding: '9px 16px',
+              fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            <Users size={14} />
+            Asignar atletas
+          </button>
+
           {/* Timer button */}
           <button
             onClick={() => setTimerOpen(true)}
@@ -142,6 +158,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
             <Play size={14} fill="#0D1117" />
             Iniciar Timer
           </button>
+          </div>
         </div>
 
         {metaItems.length > 0 && (
@@ -337,6 +354,19 @@ export function WodBuilder({ wodId }: { wodId: string }) {
           onResultSaved={() => {
             qc.invalidateQueries({ queryKey: ['wod-results', wodId] })
             setActiveTab('resultados')
+          }}
+        />
+      )}
+
+      {asignando && (
+        <AssignWodModal
+          wodId={wodId}
+          wodName={wod.name}
+          onClose={() => setAsignando(false)}
+          onSaved={() => {
+            qc.invalidateQueries({ queryKey: ['wod-schedule', wodId] })
+            qc.invalidateQueries({ queryKey: ['sessions'] })
+            setAsignando(false)
           }}
         />
       )}
