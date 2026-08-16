@@ -191,10 +191,28 @@ textarea:focus {
   50% { opacity: 0.6; }
 }
 
-/* Standalone Timer page — full screen minus sidebar on desktop */
+/* ============================================
+   TIMER A PANTALLA COMPLETA
+   ============================================
+
+   El comentario original decia "full screen minus sidebar on desktop", pero la
+   regla de escritorio no existia: solo estaba la de movil. El contenedor traia
+   `inset: 0` en linea, asi que en escritorio se dibujaba desde x=0, por debajo
+   del sidebar (z-index 40 contra 35). Los botones de modo quedaban tapados y
+   no se podian pulsar. */
+
+.eb-timer-fullscreen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--sidebar-width);
+}
+
 @media (max-width: 767px) {
   .eb-timer-fullscreen {
-    left: 0 !important;
+    /* En movil el sidebar se oculta, asi que el timer ocupa todo el ancho */
+    left: 0;
     padding-bottom: 60px;
   }
 }

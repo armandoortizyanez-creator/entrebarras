@@ -37,8 +37,13 @@ test.describe('Vista de ejercicios', () => {
     await page.waitForTimeout(600) // debounce
 
     // Resultados filtrados o mensaje de vacío
+    // Con varios resultados el texto coincide muchas veces: .first() en cada
+    // rama evita la violacion de modo estricto.
     await expect(
-      page.getByText(/squat/i).or(page.getByText(/sin resultados/i)).or(page.getByText(/no se encontraron/i))
+      page.getByText(/squat/i).first()
+        .or(page.getByText(/sin resultados/i).first())
+        .or(page.getByText(/no se encontraron/i).first())
+        .first()
     ).toBeVisible({ timeout: 5_000 })
 
     await search.clear()

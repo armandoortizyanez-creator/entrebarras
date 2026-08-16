@@ -247,9 +247,10 @@ export function TimerView() {
   const showConfig = timerState === 'idle'
 
   return (
+    // La posición vive en .eb-timer-fullscreen y no aquí: en escritorio debe
+    // dejar libre el ancho del sidebar, y un `inset: 0` en línea le ganaba a la
+    // clase, dejando el timer dibujado debajo del menú.
     <div style={{
-      position: 'fixed',
-      inset: 0,
       zIndex: 35,
       background: timerBg,
       display: 'flex',

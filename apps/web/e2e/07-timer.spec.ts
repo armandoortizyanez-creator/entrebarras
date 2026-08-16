@@ -35,21 +35,21 @@ test.describe('Timer de entrenamiento', () => {
   })
 
   test('se puede cambiar entre modos sin error', async ({ page }) => {
-    await page.getByRole('button', { name: 'CRONÓMETRO' }).click()
-    await expect(page.getByRole('button', { name: 'CRONÓMETRO' })).toBeVisible()
+    await page.getByRole('button', { name: /Cronómetro/i }).click()
+    await expect(page.getByRole('button', { name: /Cronómetro/i })).toBeVisible()
 
-    await page.getByRole('button', { name: 'INTERVALOS' }).click()
-    await expect(page.getByRole('button', { name: 'INTERVALOS' })).toBeVisible()
+    await page.getByRole('button', { name: /Intervalos/i }).click()
+    await expect(page.getByRole('button', { name: /Intervalos/i })).toBeVisible()
 
-    await page.getByRole('button', { name: 'REGRESIVA' }).click()
-    await expect(page.getByRole('button', { name: 'REGRESIVA' })).toBeVisible()
+    await page.getByRole('button', { name: /Regresiva/i }).click()
+    await expect(page.getByRole('button', { name: /Regresiva/i })).toBeVisible()
 
     // Sin error después de cambiar modos
     await expect(page.locator('.eb-timer-fullscreen')).toBeVisible()
   })
 
   test('modo CRONÓMETRO: se puede iniciar', async ({ page }) => {
-    await page.getByRole('button', { name: 'CRONÓMETRO' }).click()
+    await page.getByRole('button', { name: /Cronómetro/i }).click()
 
     // Buscar el botón de play (el más grande visible, no los de modo)
     const modeBtns = page.getByRole('button', { name: /regresiva|cronómetro|intervalos/i })

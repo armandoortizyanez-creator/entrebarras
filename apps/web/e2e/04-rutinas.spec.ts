@@ -13,9 +13,12 @@ test.describe('Vista de rutinas', () => {
   })
 
   test('muestra el listado de rutinas o estado vacío', async ({ page }) => {
-    const count    = page.locator('p').filter({ hasText: /rutina.*registrada/i }).first()
-    const emptyMsg = page.getByText(/sin rutinas/i)
-    await expect(count.or(emptyMsg)).toBeVisible({ timeout: 8_000 })
+    // Sirve con y sin datos: el subtitulo cuenta las rutinas, o aparece el
+    // estado vacio. Se usa .first() en ambos lados porque con varias rutinas
+    // el texto puede coincidir mas de una vez y saltaba el modo estricto.
+    const count    = page.locator('p').filter({ hasText: /rutinas? registradas?/i }).first()
+    const emptyMsg = page.getByText(/sin rutinas/i).first()
+    await expect(count.or(emptyMsg).first()).toBeVisible({ timeout: 8_000 })
   })
 
   test('abre el modal de nueva rutina', async ({ page }) => {

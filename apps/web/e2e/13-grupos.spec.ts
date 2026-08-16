@@ -22,12 +22,12 @@ test.describe('Vista de grupos', () => {
   })
 
   test('muestra listado de grupos o estado vacío', async ({ page }) => {
-    // Evitar strict mode buscando por p o h3 más específico
-    await expect(
-      page.locator('p').filter({ hasText: /grupos? creado/i })
-        .or(page.locator('h3').filter({ hasText: /sin grupos|no hay grupos/i }))
-        .or(page.getByText(/sin grupos|no hay grupos/i).first())
-    ).toBeVisible({ timeout: 8_000 })
+    // Antes buscaba "grupos creados", un texto que la vista nunca tuvo: solo
+    // pasaba por el estado vacio. Ahora acepta las dos situaciones reales:
+    // hay tarjetas de grupo, o se muestra el mensaje de vacio.
+    const tarjetas = page.locator('button[aria-label^="Eliminar grupo"]').first()
+    const vacio    = page.getByText(/no hay grupos/i).first()
+    await expect(tarjetas.or(vacio).first()).toBeVisible({ timeout: 8_000 })
   })
 
   test('botón para crear grupo existe', async ({ page }) => {

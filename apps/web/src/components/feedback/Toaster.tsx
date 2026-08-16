@@ -61,6 +61,10 @@ export function Toaster() {
         <div
           key={a.id}
           role="alert"
+          /* Next.js monta su propio role="alert" para anunciar la ruta a los
+             lectores de pantalla, así que hace falta un selector propio para
+             distinguir este aviso en las pruebas. */
+          data-eb-toast="error"
           style={{
             pointerEvents: 'auto',
             display: 'flex',
