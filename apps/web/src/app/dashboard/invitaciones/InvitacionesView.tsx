@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getInvitations, createInvitation, deleteInvitation,
@@ -25,7 +25,12 @@ export function InvitacionesView() {
   const [filter, setFilter] = useState<InvStatus>('all')
   const [showForm, setShowForm] = useState(false)
   const [email, setEmail] = useState('')
-  const [invRole, setInvRole] = useState<'super_admin' | 'coach' | 'athlete'>('coach')
+  // Arranca en 'athlete', el único rol que todos pueden invitar. Antes empezaba
+  // en 'coach' y un coach nunca podía enviar nada: su lista solo trae "Atleta",
+  // así que el desplegable mostraba "Atleta" mientras el estado seguía en
+  // 'coach'. Un <select> con un value que no existe entre sus opciones pinta la
+  // primera, pero no dispara onChange ni corrige el estado.
+  const [invRole, setInvRole] = useState<'super_admin' | 'coach' | 'athlete'>('athlete')
   const [formError, setFormError] = useState('')
 
   const { data: invitations = [], isLoading } = useQuery({
@@ -63,6 +68,18 @@ export function InvitacionesView() {
   const availableRoles = isPlatformAdmin || isSuperAdmin
     ? (['super_admin', 'coach', 'athlete'] as const)
     : (['athlete'] as const)
+
+  /**
+   * El rol del usuario llega de forma asíncrona, así que `availableRoles` puede
+   * cambiar después del primer render. Si el rol elegido deja de estar en la
+   * lista, el desplegable mostraría una opción y el formulario enviaría otra,
+   * y el guardado moriría por RLS sin que se vea el motivo.
+   */
+  useEffect(() => {
+    if (!(availableRoles as readonly string[]).includes(invRole)) {
+      setInvRole(availableRoles[0])
+    }
+  }, [availableRoles, invRole])
 
   const filtered = invitations.filter(inv => {
     const st = getInvStatus(inv)
