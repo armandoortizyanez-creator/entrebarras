@@ -55,17 +55,9 @@ export function InvitacionesView() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['invitations'] }),
   })
 
-  if (!canInvite) {
-    return (
-      <div style={{ padding: '64px 40px', textAlign: 'center' }}>
-        <Shield size={40} style={{ color: 'var(--color-text-3)', marginBottom: 16 }} />
-        <p style={{ color: 'var(--color-text-2)', fontSize: 15 }}>No tienes permisos para invitar usuarios.</p>
-      </div>
-    )
-  }
-
   // Roles that this user can invite
-  const availableRoles = isPlatformAdmin || isSuperAdmin
+  const puedeElegirRol = isPlatformAdmin || isSuperAdmin
+  const availableRoles = puedeElegirRol
     ? (['super_admin', 'coach', 'athlete'] as const)
     : (['athlete'] as const)
 
@@ -74,12 +66,24 @@ export function InvitacionesView() {
    * cambiar después del primer render. Si el rol elegido deja de estar en la
    * lista, el desplegable mostraría una opción y el formulario enviaría otra,
    * y el guardado moriría por RLS sin que se vea el motivo.
+   *
+   * Va antes del return de `canInvite` a propósito: ese permiso también llega
+   * asíncrono, así que un hook debajo se saltaría en el primer render y se
+   * ejecutaría en el segundo. React cuenta los hooks por posición y aborta el
+   * árbol entero cuando el número cambia.
    */
   useEffect(() => {
-    if (!(availableRoles as readonly string[]).includes(invRole)) {
-      setInvRole(availableRoles[0])
-    }
-  }, [availableRoles, invRole])
+    setInvRole(prev => (puedeElegirRol || prev === 'athlete' ? prev : 'athlete'))
+  }, [puedeElegirRol])
+
+  if (!canInvite) {
+    return (
+      <div style={{ padding: '64px 40px', textAlign: 'center' }}>
+        <Shield size={40} style={{ color: 'var(--color-text-3)', marginBottom: 16 }} />
+        <p style={{ color: 'var(--color-text-2)', fontSize: 15 }}>No tienes permisos para invitar usuarios.</p>
+      </div>
+    )
+  }
 
   const filtered = invitations.filter(inv => {
     const st = getInvStatus(inv)
