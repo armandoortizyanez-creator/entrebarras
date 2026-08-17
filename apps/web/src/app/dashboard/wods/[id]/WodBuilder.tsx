@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { ArrowLeft, Plus, Trash2, GripVertical, Clock, RotateCcw, Zap, Timer, Play, Trophy, Users, X as XIcon } from 'lucide-react'
 import { WodTimer } from './WodTimer'
 import { AssignWodModal } from '@/components/routines/AssignWodModal'
+import { useUser } from '@/hooks/useUser'
 
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   amrap:     { bg: 'rgba(129,140,248,0.12)', text: '#818CF8', border: 'rgba(129,140,248,0.25)' },
@@ -41,6 +42,11 @@ export function WodBuilder({ wodId }: { wodId: string }) {
   const [timerOpen, setTimerOpen] = useState(false)
   const [asignando, setAsignando] = useState(false)
   const [activeTab, setActiveTab] = useState<'movimientos' | 'resultados'>('movimientos')
+
+  // El atleta abre un WOD para verlo, cronometrarlo y registrar su resultado.
+  // Editar movimientos o asignarlo a otros no es algo que le corresponda.
+  const { isAthlete } = useUser()
+  const puedeEditar = !isAthlete
 
   const { data: wod, isLoading } = useQuery({
     queryKey: ['wod', wodId],
@@ -129,6 +135,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          {puedeEditar && (
           <button
             onClick={() => setAsignando(true)}
             style={{
@@ -141,6 +148,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
             <Users size={14} />
             Asignar atletas
           </button>
+          )}
 
           {/* Timer button */}
           <button
@@ -224,7 +232,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
               {wod.movements.length}
             </span>
           </div>
-          {!addingMovement && (
+          {puedeEditar && !addingMovement && (
             <button
               onClick={() => setAddingMovement(true)}
               style={{
@@ -263,6 +271,7 @@ export function WodBuilder({ wodId }: { wodId: string }) {
             movement={m}
             number={i + 1}
             isLast={i === wod.movements.length - 1}
+            puedeEditar={puedeEditar}
             onRemove={() => removeMutation.mutate(m.id)}
             onUpdate={(updates) => {
               updateMovement(m.id, updates).then(() =>
@@ -476,7 +485,8 @@ function WodLeaderboard({ wodId }: { wodId: string }) {
   )
 }
 
-function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
+function MovementRow({ movement, number, isLast, puedeEditar, onRemove, onUpdate }: {
+  puedeEditar: boolean
   movement: WodMovementFull; number: number; isLast: boolean
   onRemove: () => void; onUpdate: (u: Partial<WodMovementFull>) => void
 }) {
@@ -525,6 +535,7 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
           <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{movement.name}</p>
           {specs && <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 1 }}>{specs}</p>}
         </div>
+        {puedeEditar && (
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
           <button
             onClick={() => setEditing(e => !e)}
@@ -549,6 +560,7 @@ function MovementRow({ movement, number, isLast, onRemove, onUpdate }: {
             <Trash2 size={13} />
           </button>
         </div>
+        )}
       </div>
 
       {editing && (

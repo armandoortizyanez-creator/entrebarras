@@ -4,7 +4,7 @@ export const metadata = { title: 'Mis Rutinas' }
 
 export default function MisRutinasPage() {
   return (
-    <div style={{ padding: '0 0 48px' }}>
+    <div className="eb-page">
       <div style={{ marginBottom: 28 }}>
         <h1 style={{
           fontSize: 26, fontWeight: 900, letterSpacing: '-0.04em',

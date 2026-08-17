@@ -7,6 +7,7 @@ import { getWods, createWod, deleteWod, WOD_TYPES } from '@/lib/queries/wods'
 import Link from 'next/link'
 import { Plus, Timer, RotateCcw, Zap, Clock, ChevronRight, Trash2 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
+import { useUser } from '@/hooks/useUser'
 import { mensajeDeError } from '@/lib/errors'
 
 function formatSeconds(seconds: number) {
@@ -44,6 +45,11 @@ export function WodsView() {
   }, [])
   const qc = useQueryClient()
 
+  // El atleta entra a ver y registrar su resultado, no a crear ni asignar
+  // nada. Sin esto veía la interfaz completa de coach.
+  const { isAthlete } = useUser()
+  const puedeEditar = !isAthlete
+
   const { data: wods = [], isLoading } = useQuery({
     queryKey: ['wods'],
     queryFn: getWods,
@@ -64,9 +70,14 @@ export function WodsView() {
             WODs
           </h1>
           <p style={{ fontSize: 13.5, color: 'var(--color-text-3)' }}>
-            {isLoading ? '...' : `${wods.length} workout${wods.length !== 1 ? 's' : ''} creados`}
+            {isLoading
+              ? '...'
+              : puedeEditar
+                ? `${wods.length} workout${wods.length !== 1 ? 's' : ''} creados`
+                : `${wods.length} workout${wods.length !== 1 ? 's' : ''} asignado${wods.length !== 1 ? 's' : ''}`}
           </p>
         </div>
+        {puedeEditar && (
         <button
           onClick={() => setShowModal(true)}
           style={{
@@ -92,19 +103,21 @@ export function WodsView() {
           <Plus size={15} strokeWidth={2.5} />
           Nuevo WOD
         </button>
+        )}
       </div>
 
       {/* Contenido */}
       {isLoading ? (
         <WodsSkeleton />
       ) : wods.length === 0 ? (
-        <EmptyWods onAdd={() => setShowModal(true)} />
+        <EmptyWods onAdd={() => setShowModal(true)} puedeEditar={puedeEditar} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
           {wods.map((w: any) => (
             <WodCard
               key={w.id}
               wod={w}
+              puedeEditar={puedeEditar}
               onDelete={() => {
                 if (confirm('¿Eliminar este WOD?')) deleteMutation.mutate(w.id)
               }}
@@ -127,7 +140,7 @@ export function WodsView() {
   )
 }
 
-function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
+function WodCard({ wod, onDelete, puedeEditar }: { wod: any; onDelete: () => void; puedeEditar: boolean }) {
   const { theme } = useTheme()
   const isLight = theme === 'light'
   const typeStyles = getTypeStyles(isLight)
@@ -169,18 +182,20 @@ function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
           }}>
             {typeInfo?.label ?? wod.type}
           </span>
-          <button className="eb-tap"
-            onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-text-4)', padding: 4, borderRadius: 6,
-              transition: 'color 0.12s',
-            }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--color-error)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--color-text-4)'}
-          >
-            <Trash2 size={13} strokeWidth={2} />
-          </button>
+          {puedeEditar && (
+            <button className="eb-tap"
+              onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--color-text-4)', padding: 4, borderRadius: 6,
+                transition: 'color 0.12s',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--color-error)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--color-text-4)'}
+            >
+              <Trash2 size={13} strokeWidth={2} />
+            </button>
+          )}
         </div>
 
         {/* Nombre */}
@@ -275,7 +290,7 @@ function WodCard({ wod, onDelete }: { wod: any; onDelete: () => void }) {
   )
 }
 
-function EmptyWods({ onAdd }: { onAdd: () => void }) {
+function EmptyWods({ onAdd, puedeEditar }: { onAdd: () => void; puedeEditar: boolean }) {
   return (
     <div style={{
       background: 'var(--color-surface)',
@@ -293,24 +308,28 @@ function EmptyWods({ onAdd }: { onAdd: () => void }) {
         <Zap size={22} color="#818CF8" strokeWidth={2} />
       </div>
       <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: 8 }}>
-        Sin WODs todavía
+        {puedeEditar ? 'Sin WODs todavía' : 'Sin WODs asignados'}
       </h3>
       <p style={{ fontSize: 13.5, color: 'var(--color-text-3)', marginBottom: 24, lineHeight: 1.6, maxWidth: 320, margin: '0 auto 24px' }}>
-        Crea workouts del día: AMRAP, EMOM, For Time, Tabata y más.
+        {puedeEditar
+          ? 'Crea workouts del día: AMRAP, EMOM, For Time, Tabata y más.'
+          : 'Tu coach aún no te ha asignado ningún WOD.'}
       </p>
-      <button
-        onClick={onAdd}
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 7,
-          background: '#C6FF00', color: '#0D1117',
-          border: 'none', borderRadius: 10,
-          padding: '10px 22px', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={15} strokeWidth={2.5} />
-        Crear primer WOD
-      </button>
+      {puedeEditar && (
+        <button
+          onClick={onAdd}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            background: '#C6FF00', color: '#0D1117',
+            border: 'none', borderRadius: 10,
+            padding: '10px 22px', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          <Plus size={15} strokeWidth={2.5} />
+          Crear primer WOD
+        </button>
+      )}
     </div>
   )
 }

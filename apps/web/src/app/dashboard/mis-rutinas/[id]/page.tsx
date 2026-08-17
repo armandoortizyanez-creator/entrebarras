@@ -8,7 +8,7 @@ export default async function MiRutinaPage({ params }: { params: Promise<{ id: s
   const { id } = await params
 
   return (
-    <div style={{ padding: '0 0 48px' }}>
+    <div className="eb-page">
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/dashboard/mis-rutinas"
