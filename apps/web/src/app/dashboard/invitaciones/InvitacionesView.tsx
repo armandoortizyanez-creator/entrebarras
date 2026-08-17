@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getInvitations, createInvitation, deleteInvitation,
+  getInvitations, createInvitation, deleteInvitation, getGroups,
   type InvitationRow,
 } from '@/lib/queries/team'
 import { useUser } from '@/hooks/useUser'
@@ -31,6 +31,8 @@ export function InvitacionesView() {
   // 'coach'. Un <select> con un value que no existe entre sus opciones pinta la
   // primera, pero no dispara onChange ni corrige el estado.
   const [invRole, setInvRole] = useState<'super_admin' | 'coach' | 'athlete'>('athlete')
+  /** Grupo al que entra el atleta apenas acepta. Vacío = sin grupo. */
+  const [invGrupo, setInvGrupo] = useState('')
   const [formError, setFormError] = useState('')
 
   const { data: invitations = [], isLoading } = useQuery({
@@ -38,13 +40,20 @@ export function InvitacionesView() {
     queryFn: getInvitations,
   })
 
+  const { data: grupos = [] } = useQuery({
+    queryKey: ['groups'],
+    queryFn: getGroups,
+  })
+
   const create = useMutation({
-    mutationFn: ({ email, role }: { email: string; role: 'super_admin' | 'coach' | 'athlete' }) =>
-      createInvitation(email, role),
+    mutationFn: ({ email, role, groupId }: {
+      email: string; role: 'super_admin' | 'coach' | 'athlete'; groupId: string | null
+    }) => createInvitation(email, role, groupId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['invitations'] })
       setShowForm(false)
       setEmail('')
+      setInvGrupo('')
       setFormError('')
     },
     onError: (err: unknown) => setFormError(mensajeDeError(err)),
@@ -107,7 +116,11 @@ export function InvitacionesView() {
     e.preventDefault()
     if (!email.trim()) { setFormError('El email es requerido'); return }
     setFormError('')
-    create.mutate({ email: email.trim().toLowerCase(), role: invRole })
+    create.mutate({
+      email: email.trim().toLowerCase(),
+      role: invRole,
+      groupId: invRole === 'athlete' ? (invGrupo || null) : null,
+    })
   }
 
   const s = {
@@ -161,7 +174,11 @@ export function InvitacionesView() {
             Nueva invitación
           </h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px', gap: 12, marginBottom: 16 }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: invRole === 'athlete' ? '1fr 160px 180px' : '1fr 200px',
+              gap: 12, marginBottom: 16,
+            }} className="eb-form-invitacion">
               <div>
                 <label style={s.label}>Email *</label>
                 <input
@@ -184,6 +201,26 @@ export function InvitacionesView() {
                   ))}
                 </select>
               </div>
+
+              {/* Un coach no pertenece a un grupo, asi que solo aplica al atleta. */}
+              {invRole === 'athlete' && (
+                <div>
+                  <label style={s.label}>Grupo</label>
+                  <select
+                    style={s.select}
+                    value={invGrupo}
+                    onChange={e => setInvGrupo(e.target.value)}
+                    disabled={grupos.length === 0}
+                  >
+                    <option value="">
+                      {grupos.length === 0 ? 'No tienes grupos' : 'Sin grupo'}
+                    </option>
+                    {grupos.map(g => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             {formError && (
               <p style={{ color: 'var(--color-danger, #e53935)', fontSize: 13, marginBottom: 12 }}>{formError}</p>

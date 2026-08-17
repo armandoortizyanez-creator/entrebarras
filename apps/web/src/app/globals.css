@@ -543,6 +543,12 @@ textarea:focus {
   .eb-page h1 {
     font-size: 18px !important;
   }
+
+  /* Correo, rol y grupo en una sola columna: en un teléfono, tres campos
+     lado a lado dejan los desplegables demasiado angostos para leerlos. */
+  .eb-form-invitacion {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ============================================

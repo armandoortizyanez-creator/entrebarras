@@ -126,7 +126,16 @@ export async function getInvitations(): Promise<InvitationRow[]> {
   })
 }
 
-export async function createInvitation(email: string, role: 'super_admin' | 'coach' | 'athlete') {
+/**
+ * @param groupId  Grupo al que entra el atleta apenas acepta. Ahorra el paso de
+ *                 buscarlo en la lista despues, que es justo el que se olvida.
+ *                 Solo aplica a invitaciones de atleta.
+ */
+export async function createInvitation(
+  email: string,
+  role: 'super_admin' | 'coach' | 'athlete',
+  groupId?: string | null,
+) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('No autenticado')
@@ -146,6 +155,8 @@ export async function createInvitation(email: string, role: 'super_admin' | 'coa
       invited_by: inviter.id,
       email,
       role,
+      // Solo tiene sentido para atletas: un coach no pertenece a un grupo.
+      group_id: role === 'athlete' ? (groupId || null) : null,
     })
     .select('id')
     .single()
