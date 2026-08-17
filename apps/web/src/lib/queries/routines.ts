@@ -299,12 +299,15 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
     .maybeSingle()
   if (!athlete) return []
 
+  // La columna de fecha en esta tabla se llama assigned_at, no created_at.
+  // Pedir una columna que no existe hace que PostgREST rechace la consulta
+  // entera, así que el atleta veía "Sin rutinas asignadas" aunque las tuviera.
   const { data, error } = await supabase
     .from('athlete_routines')
-    .select('created_at, routine:routines(id, name, description, type, tags, deleted_at)')
+    .select('assigned_at, routine:routines(id, name, description, type, tags, deleted_at)')
     .eq('athlete_id', athlete.id)
     .eq('is_active', true)
-    .order('created_at', { ascending: false })
+    .order('assigned_at', { ascending: false })
   if (error) throw error
 
   type RoutineRow = { id: string; name: string; description: string | null; type: string | null; tags: string[]; deleted_at: string | null }
@@ -335,7 +338,7 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
       type: rt.type,
       tags: rt.tags ?? [],
       blocks_count: blockCounts[rt.id] ?? 0,
-      assigned_at: r.created_at,
+      assigned_at: r.assigned_at,
     }
   })
 }
