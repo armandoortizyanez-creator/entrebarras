@@ -116,19 +116,43 @@ export async function createAthlete(athlete: Partial<Athlete>) {
    */
   const correo = athlete.email?.trim().toLowerCase()
   if (correo) {
-    const { data: yaExiste } = await supabase
+    const { data: coincidencias } = await supabase
       .from('athletes')
-      .select('id, first_name, last_name')
+      .select('id, first_name, last_name, deleted_at')
       .eq('tenant_id', tenantId)
       .ilike('email', correo)
-      .maybeSingle()
 
-    if (yaExiste) {
-      const nombre = `${yaExiste.first_name ?? ''} ${yaExiste.last_name ?? ''}`.trim()
+    const activa = (coincidencias ?? []).find(a => !a.deleted_at)
+    if (activa) {
+      const nombre = `${activa.first_name ?? ''} ${activa.last_name ?? ''}`.trim()
       throw new Error(
         `Ya existe un atleta con ese correo${nombre ? `: ${nombre}` : ''}. ` +
         'Búscalo en la lista en vez de crearlo otra vez, o usa otro correo.'
       )
+    }
+
+    /**
+     * Si la ficha existe pero está eliminada, se reactiva en vez de crear una
+     * nueva. Crear una paralela deja el historial y la cuenta de la persona
+     * colgando de la vieja, y el coach termina asignando rutinas que el atleta
+     * nunca ve. Ya pasó una vez.
+     */
+    const borrada = (coincidencias ?? [])[0]
+    if (borrada) {
+      const { data: revivida, error: errRev } = await supabase
+        .from('athletes')
+        .update({
+          ...athlete,
+          deleted_at: null,
+          status: 'active',
+          updated_at: new Date().toISOString(),
+          ...(assignedCoachId ? { assigned_coach_id: assignedCoachId } : {}),
+        })
+        .eq('id', borrada.id)
+        .select()
+        .single()
+      if (errRev) throw errRev
+      return revivida
     }
   }
 

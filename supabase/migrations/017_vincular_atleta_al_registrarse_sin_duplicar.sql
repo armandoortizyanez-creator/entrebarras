@@ -127,17 +127,27 @@ $function$;
 -- Mueve todo lo que cuelga de la ficha suelta a la que sí tiene cuenta, para
 -- los grupos donde el correo lo resuelve sin ambigüedad.
 
+-- OJO con el destino: se elige la ficha con cuenta, pero PREFIRIENDO una que no
+-- esté eliminada. La primera versión no lo comprobaba y movió datos vivos hacia
+-- una ficha borrada, con lo que el atleta desapareció de la lista de su coach.
+-- Si la única con cuenta está eliminada, se reactiva: es la que tiene el
+-- vínculo real con la persona.
+
 DO $$
 DECLARE g RECORD; o RECORD;
 BEGIN
   FOR g IN
     SELECT lower(trim(a.email)) AS correo, a.tenant_id,
-           (array_agg(a.id) FILTER (WHERE a.user_id IS NOT NULL))[1] AS destino
+           (array_agg(a.id ORDER BY (a.deleted_at IS NOT NULL), a.created_at)
+              FILTER (WHERE a.user_id IS NOT NULL))[1] AS destino
     FROM athletes a
     WHERE a.email IS NOT NULL AND trim(a.email) <> ''
     GROUP BY lower(trim(a.email)), a.tenant_id
     HAVING count(*) > 1 AND count(*) FILTER (WHERE a.user_id IS NOT NULL) = 1
   LOOP
+    UPDATE athletes SET deleted_at = NULL, status = 'active'
+    WHERE id = g.destino AND deleted_at IS NOT NULL;
+
     FOR o IN
       SELECT id FROM athletes
       WHERE lower(trim(email)) = g.correo AND tenant_id = g.tenant_id AND user_id IS NULL

@@ -18,10 +18,16 @@
 --
 -- Las fichas sin correo quedan fuera del índice a propósito: un coach puede
 -- tener varios atletas sin correo cargado y eso es legítimo.
+--
+-- Las eliminadas también quedan fuera. La primera versión de este índice no las
+-- excluía, y el efecto fue peor que el problema: un coach que eliminaba a un
+-- atleta no podía volver a crearlo con el mismo correo nunca más, porque la
+-- base lo rechazaba contra un registro que ya no existe para nadie. Eso mismo
+-- llevó a crear una ficha paralela y a perder las asignaciones.
 
 CREATE UNIQUE INDEX IF NOT EXISTS athletes_correo_unico_por_box
   ON athletes (tenant_id, lower(trim(email)))
-  WHERE email IS NOT NULL AND trim(email) <> '';
+  WHERE email IS NOT NULL AND trim(email) <> '' AND deleted_at IS NULL;
 
 -- ─── Fusión de los duplicados que quedaban ──────────────────────────────────
 -- Se dejó constancia acá de la reparación manual: la ficha "Felipe  Muñoz",
