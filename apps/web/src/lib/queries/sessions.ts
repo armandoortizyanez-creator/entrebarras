@@ -19,6 +19,61 @@ export interface TrainingSession {
   wod?: { id: string; name: string } | null
 }
 
+/** Una entrada de la agenda del atleta: una rutina o un WOD en un día. */
+export interface EntradaAgenda {
+  id: string
+  scheduled_date: string
+  scheduled_time: string | null
+  status: TrainingSession['status']
+  routine_id: string | null
+  wod_id: string | null
+  routine: { id: string; name: string; description: string | null; deleted_at?: string | null } | null
+  wod: { id: string; name: string; type: string | null; deleted_at?: string | null } | null
+}
+
+/**
+ * Lo que el atleta tiene programado entre dos fechas, rutinas y WODs juntos.
+ *
+ * No hay límite por día: si el coach programó tres cosas para el martes, las
+ * tres vienen. Antes el panel del atleta leía la programación general del box
+ * (getBoxScheduleRange), que es otra cosa: lo que el box publica para todos, no
+ * lo que a esta persona le asignaron. Por eso decía "sin WOD" aunque tuviera
+ * entrenamientos suyos.
+ */
+export async function getMiAgenda(desde: string, hasta: string): Promise<EntradaAgenda[]> {
+  const supabase = createClient()
+
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) return []
+
+  const { data: pub } = await supabase
+    .from('users').select('id').eq('auth_user_id', userRes.user.id).maybeSingle()
+  if (!pub) return []
+
+  const { data: atleta } = await supabase
+    .from('athletes').select('id').eq('user_id', pub.id).maybeSingle()
+  if (!atleta) return []
+
+  const { data, error } = await supabase
+    .from('training_sessions')
+    .select('id, scheduled_date, scheduled_time, status, routine_id, wod_id, routine:routines(id, name, description, deleted_at), wod:wods(id, name, type, deleted_at)')
+    .eq('athlete_id', atleta.id)
+    .gte('scheduled_date', desde)
+    .lte('scheduled_date', hasta)
+    .order('scheduled_date')
+    .order('scheduled_time', { nullsFirst: true })
+  if (error) throw error
+
+  // Si el coach borró la rutina o el WOD, la sesión queda apuntando a algo que
+  // ya no existe para nadie. Mostrarla solo confunde: el atleta abriría una
+  // ficha vacía.
+  const borrado = (x: { deleted_at?: string | null } | null) => !!x?.deleted_at
+
+  return ((data ?? []) as unknown as EntradaAgenda[]).filter(
+    e => !borrado(e.routine) && !borrado(e.wod)
+  )
+}
+
 export async function getSessionsByMonth(year: number, month: number) {
   const supabase = createClient()
   const start = `${year}-${String(month).padStart(2, '0')}-01`

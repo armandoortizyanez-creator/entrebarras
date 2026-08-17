@@ -281,7 +281,7 @@ function WodCard({ wod, onDelete, puedeEditar }: { wod: any; onDelete: () => voi
           }}
         >
           <span style={{ fontSize: 13, fontWeight: 700, color: '#818CF8' }}>
-            Ver y editar
+            {puedeEditar ? 'Ver y editar' : 'Ver WOD'}
           </span>
           <ChevronRight size={14} color="#818CF8" strokeWidth={2.5} />
         </Link>

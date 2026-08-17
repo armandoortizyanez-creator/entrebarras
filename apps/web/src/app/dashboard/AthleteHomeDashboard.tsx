@@ -2,10 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { getMyAthlete } from '@/lib/queries/athletes'
-import { getSessionsByAthlete } from '@/lib/queries/sessions'
+import { getSessionsByAthlete, getMiAgenda } from '@/lib/queries/sessions'
+import { aFechaLocal, hoyLocal, etiquetaDeDia } from '@/lib/fechas'
 import { getLatestPRs } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
-import { getBoxScheduleRange } from '@/lib/queries/box-schedule'
 import { getMyAssignedRoutines } from '@/lib/queries/routines'
 import Link from 'next/link'
 import { Zap, Dumbbell, Trophy, ArrowRight, CheckCircle2, Target, Flame, Layers } from 'lucide-react'
@@ -44,14 +44,20 @@ const LEVEL_COLORS: Record<string, { color: string; bg: string }> = {
 export function AthleteHomeDashboard() {
   const { theme } = useTheme()
   const isLight = theme === 'light'
-  const todayStr = new Date().toISOString().split('T')[0]
-  const thirtyAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  // aFechaLocal en vez de toISOString: este ultimo pasa por UTC y en Chile
+  // devolvia el dia siguiente a partir de las 20:00, justo a la hora en que la
+  // gente entrena.
+  const todayStr = hoyLocal()
+  const thirtyAgo = aFechaLocal(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
 
   const { data: me } = useQuery({ queryKey: ['my-athlete'], queryFn: getMyAthlete })
 
+  // Lo asignado a esta persona, no la programacion general del box. Antes leia
+  // getBoxScheduleRange, que es lo que el box publica para todos, asi que el
+  // atleta veia "sin WOD" aunque tuviera entrenamientos propios.
   const { data: todaySchedule = [] } = useQuery({
-    queryKey: ['box-schedule-today', todayStr],
-    queryFn: () => getBoxScheduleRange(todayStr, todayStr),
+    queryKey: ['mi-agenda', todayStr, todayStr],
+    queryFn: () => getMiAgenda(todayStr, todayStr),
   })
 
   const { data: sessions = [] } = useQuery({
@@ -219,8 +225,10 @@ export function AthleteHomeDashboard() {
             <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(99,102,241,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
               <Zap size={22} color={ACCENT} />
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-2)' }}>Sin WOD programado hoy</p>
-            <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 4 }}>Consulta con tu coach.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-2)' }}>Sin entrenamientos programados para hoy</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 4 }}>
+              Revisa tu <Link href="/dashboard/programacion" style={{ color: ACCENT, fontWeight: 600 }}>programación</Link> para ver la semana.
+            </p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -265,15 +273,22 @@ export function AthleteHomeDashboard() {
                     {isWod ? <Zap size={22} color={accent} /> : <Dumbbell size={22} color={accent} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                      <p style={{ fontSize: 17, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em' }}>{name}</p>
+                    {/* Rutina y WOD se distinguen a simple vista, con la fecha al lado. */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 4 }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 20, background: bg, color: accent, border: `1px solid ${accent}33` }}>
+                        {isWod ? 'WOD' : 'Rutina'}
+                      </span>
                       {type && (
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 20, background: bg, color: accent, border: `1px solid ${accent}33` }}>
+                        <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-4)' }}>
                           {type.replace('_', ' ')}
                         </span>
                       )}
+                      <span style={{ fontSize: 11.5, color: 'var(--color-text-4)', textTransform: 'capitalize' }}>
+                        {etiquetaDeDia(entry.scheduled_date)}
+                        {entry.scheduled_time ? ` · ${entry.scheduled_time.slice(0, 5)}` : ''}
+                      </span>
                     </div>
-                    {entry.notes && <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>{entry.notes}</p>}
+                    <p style={{ fontSize: 17, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em' }}>{name}</p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: accent, fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
                     {isWod ? 'Ver WOD' : 'Ver rutina'} <ArrowRight size={15} />
