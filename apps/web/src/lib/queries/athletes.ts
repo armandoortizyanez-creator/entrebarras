@@ -106,6 +106,32 @@ export async function createAthlete(athlete: Partial<Athlete>) {
     assignedCoachId = publicUser.id
   }
 
+  /**
+   * Una ficha duplicada es el peor error silencioso de la plataforma: el coach
+   * asigna rutinas a una ficha y la persona entra con la otra, así que no ve
+   * nada y nadie entiende por qué. Ya pasó con tres atletas.
+   *
+   * Se corta acá, al crear. La comparación ignora mayúsculas y espacios porque
+   * así es como se colaron los duplicados: "Shey.almedo@" contra "shey.almedo@".
+   */
+  const correo = athlete.email?.trim().toLowerCase()
+  if (correo) {
+    const { data: yaExiste } = await supabase
+      .from('athletes')
+      .select('id, first_name, last_name')
+      .eq('tenant_id', tenantId)
+      .ilike('email', correo)
+      .maybeSingle()
+
+    if (yaExiste) {
+      const nombre = `${yaExiste.first_name ?? ''} ${yaExiste.last_name ?? ''}`.trim()
+      throw new Error(
+        `Ya existe un atleta con ese correo${nombre ? `: ${nombre}` : ''}. ` +
+        'Búscalo en la lista en vez de crearlo otra vez, o usa otro correo.'
+      )
+    }
+  }
+
   const { data, error } = await supabase
     .from('athletes')
     .insert({
