@@ -65,6 +65,33 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box', outline: 'none',
 }
 
+/** Lo editable de un bloque mientras el coach escribe, antes de guardar. */
+interface Borrador {
+  name: string
+  content: string
+  links: BlockLink[]
+  type: string
+}
+
+function borradorDesde(b: RoutineBlockFull): Borrador {
+  return {
+    name: b.name ?? '',
+    content: b.content ?? '',
+    links: normalizeLinks(b.links),
+    type: b.type,
+  }
+}
+
+/** Compara el borrador con lo guardado para saber si hay algo que enviar. */
+function hayDiferencia(d: Borrador, b: RoutineBlockFull): boolean {
+  return (
+    d.name !== (b.name ?? '') ||
+    d.content !== (b.content ?? '') ||
+    d.type !== b.type ||
+    JSON.stringify(d.links) !== JSON.stringify(normalizeLinks(b.links))
+  )
+}
+
 export function RoutineBuilder({ routineId }: { routineId: string }) {
   const qc = useQueryClient()
   const [showAssign, setShowAssign] = useState(false)
@@ -79,6 +106,68 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
     queryFn: () => getRoutineAssignments(routineId),
   })
 
+  /**
+   * Lo que el coach está escribiendo, por bloque, antes de guardar.
+   *
+   * Antes cada bloque guardaba solo con un rebote de 800 ms. El problema es que
+   * `onSave` se recreaba en cada render del padre, así que el temporizador se
+   * reiniciaba una y otra vez, y cualquier refresco de la consulta —agregar un
+   * bloque, volver a la pestaña— podía llegar antes de que alcanzara a escribir.
+   * El resultado era una rutina con el primer bloque guardado y el resto vacío.
+   *
+   * Con el estado acá arriba, un solo botón guarda todos los bloques a la vez y
+   * no hay ninguna carrera que perder.
+   */
+  const [borradores, setBorradores] = useState<Record<string, Borrador>>({})
+
+  /**
+   * Incorpora los bloques que llegan del servidor SIN pisar lo que se está
+   * editando: solo crea el borrador que falta y descarta los eliminados.
+   */
+  useEffect(() => {
+    if (!routine) return
+    setBorradores(prev => {
+      const siguiente: Record<string, Borrador> = {}
+      let cambio = false
+      for (const b of routine.blocks) {
+        siguiente[b.id] = prev[b.id] ?? borradorDesde(b)
+        if (!prev[b.id]) cambio = true
+      }
+      if (Object.keys(prev).length !== Object.keys(siguiente).length) cambio = true
+      return cambio ? siguiente : prev
+    })
+  }, [routine])
+
+  const actualizarBorrador = useCallback((blockId: string, cambios: Partial<Borrador>) => {
+    setBorradores(prev => ({ ...prev, [blockId]: { ...prev[blockId], ...cambios } }))
+  }, [])
+
+  /** Bloques cuyo borrador ya no coincide con lo guardado. */
+  const bloquesSucios = useMemo(() => {
+    if (!routine) return [] as RoutineBlockFull[]
+    return routine.blocks.filter(b => {
+      const d = borradores[b.id]
+      return d ? hayDiferencia(d, b) : false
+    })
+  }, [routine, borradores])
+
+  const sinGuardar = bloquesSucios.length > 0
+
+  const guardarMutation = useMutation({
+    mutationFn: async () => {
+      await Promise.all(bloquesSucios.map(b => {
+        const d = borradores[b.id]
+        return updateBlock(b.id, {
+          name: d.name.trim() || null,
+          content: d.content,
+          links: d.links,
+          type: d.type,
+        })
+      }))
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['routine', routineId] }),
+  })
+
   const addBlockMutation = useMutation({
     mutationFn: () => addBlock(routineId, routine?.blocks.length ?? 0, 'standard'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['routine', routineId] }),
@@ -89,20 +178,17 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['routine', routineId] }),
   })
 
-  /** Guardado silencioso: no invalida la query, para no interrumpir la escritura. */
-  const saveBlock = useCallback(
-    (blockId: string, data: Parameters<typeof updateBlock>[1]) => updateBlock(blockId, data),
-    []
-  )
-
-  /** Cambios estructurales sí refrescan (el color y la etiqueta dependen del tipo). */
-  const saveBlockAndRefresh = useCallback(
-    (blockId: string, data: Parameters<typeof updateBlock>[1]) =>
-      updateBlock(blockId, data).then(() =>
-        qc.invalidateQueries({ queryKey: ['routine', routineId] })
-      ),
-    [qc, routineId]
-  )
+  /**
+   * Red de seguridad: recargar o cerrar la pestaña con cambios sin guardar
+   * pediría confirmación al navegador. Es lo único que queda del guardado
+   * automático, y solo para no perder trabajo por accidente.
+   */
+  useEffect(() => {
+    if (!sinGuardar) return
+    const avisar = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', avisar)
+    return () => window.removeEventListener('beforeunload', avisar)
+  }, [sinGuardar])
 
   if (isLoading) return <SkeletonLoader />
   if (!routine) return <div style={{ padding: 48, color: '#EF4444', fontSize: 14 }}>Rutina no encontrada</div>
@@ -140,18 +226,46 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowAssign(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '9px 18px', background: '#6366F1', color: '#fff',
-            border: 'none', borderRadius: 10, fontSize: 13.5,
-            fontWeight: 700, cursor: 'pointer', flexShrink: 0,
-          }}
-        >
-          <Users size={14} />
-          Asignar atletas
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+          <EstadoGuardado
+            sinGuardar={sinGuardar}
+            cantidad={bloquesSucios.length}
+            guardando={guardarMutation.isPending}
+            error={guardarMutation.isError ? mensajeDeError(guardarMutation.error) : null}
+          />
+
+          <button
+            onClick={() => guardarMutation.mutate()}
+            disabled={!sinGuardar || guardarMutation.isPending}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '9px 18px',
+              background: sinGuardar ? '#C6FF00' : 'var(--color-surface-2)',
+              color: sinGuardar ? '#0D1117' : 'var(--color-text-4)',
+              border: sinGuardar ? 'none' : '1px solid var(--color-border)',
+              borderRadius: 10, fontSize: 13.5, fontWeight: 700,
+              cursor: sinGuardar && !guardarMutation.isPending ? 'pointer' : 'default',
+            }}
+          >
+            {guardarMutation.isPending
+              ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+              : <Check size={14} />}
+            {guardarMutation.isPending ? 'Guardando...' : 'Guardar rutina'}
+          </button>
+
+          <button
+            onClick={() => setShowAssign(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '9px 18px', background: '#6366F1', color: '#fff',
+              border: 'none', borderRadius: 10, fontSize: 13.5,
+              fontWeight: 700, cursor: 'pointer',
+            }}
+          >
+            <Users size={14} />
+            Asignar atletas
+          </button>
+        </div>
       </div>
 
       {/* Blocks */}
@@ -161,8 +275,9 @@ export function RoutineBuilder({ routineId }: { routineId: string }) {
             key={block.id}
             block={block}
             blockNumber={i + 1}
-            onSave={data => saveBlock(block.id, data)}
-            onSaveAndRefresh={data => saveBlockAndRefresh(block.id, data)}
+            valor={borradores[block.id] ?? borradorDesde(block)}
+            sinGuardar={bloquesSucios.some(b => b.id === block.id)}
+            onCambio={cambios => actualizarBorrador(block.id, cambios)}
             onDelete={() => {
               if (confirm(`¿Eliminar el bloque ${block.name || i + 1}?`)) {
                 deleteBlockMutation.mutate(block.id)
@@ -222,28 +337,25 @@ function MetaChip({ label, icon }: { label: string; icon?: React.ReactNode }) {
 
 /* ══════════════════ BLOCK CARD ══════════════════ */
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
-function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
+/**
+ * Tarjeta de bloque. Es controlada a propósito: no guarda nada por su cuenta,
+ * solo informa lo que el coach escribe. Todo lo que se persiste pasa por el
+ * botón "Guardar rutina" del encabezado.
+ */
+function BlockCard({ block, blockNumber, valor, sinGuardar, onCambio, onDelete }: {
   block: RoutineBlockFull
   blockNumber: number
-  onSave: (data: Parameters<typeof updateBlock>[1]) => Promise<void>
-  onSaveAndRefresh: (data: Parameters<typeof updateBlock>[1]) => Promise<unknown>
+  valor: Borrador
+  sinGuardar: boolean
+  onCambio: (cambios: Partial<Borrador>) => void
   onDelete: () => void
 }) {
-  const [name, setName] = useState(block.name ?? '')
-  const [content, setContent] = useState(block.content ?? '')
-  const [links, setLinks] = useState<BlockLink[]>(() => normalizeLinks(block.links))
-  const [status, setStatus] = useState<SaveStatus>('idle')
   const [showLinkForm, setShowLinkForm] = useState(false)
 
-  const accent = BLOCK_COLORS[block.type] ?? BLOCK_COLORS.standard
+  const { name, content, links } = valor
+  const accent = BLOCK_COLORS[valor.type] ?? BLOCK_COLORS.standard
   const taRef = useRef<HTMLTextAreaElement>(null)
-  const dirty = useRef(false)
-  // Espejo de los valores actuales para poder guardar desde blur/unmount
-  // sin re-crear el efecto en cada tecla.
-  const latest = useRef({ name, content })
-  latest.current = { name, content }
 
   // Auto-alto del textarea
   useEffect(() => {
@@ -252,54 +364,6 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
     ta.style.height = 'auto'
     ta.style.height = `${Math.max(ta.scrollHeight, 120)}px`
   }, [content])
-
-  const flush = useCallback(() => {
-    if (!dirty.current) return
-    dirty.current = false
-    setStatus('saving')
-    onSave({ name: latest.current.name.trim() || null, content: latest.current.content })
-      .then(() => setStatus('saved'))
-      .catch(() => setStatus('error'))
-  }, [onSave])
-
-  // Auto-guardado con debounce mientras escribe
-  useEffect(() => {
-    if (!dirty.current) return
-    setStatus('saving')
-    const t = setTimeout(flush, 800)
-    return () => clearTimeout(t)
-  }, [name, content, flush])
-
-  // Si desmonta con cambios pendientes (navegar, eliminar otro bloque), guarda igual
-  useEffect(() => () => { if (dirty.current) flush() }, [flush])
-
-  /**
-   * Recargar o cerrar la pestaña no dispara la limpieza de React, así que un
-   * cambio dentro de la ventana de rebote se perdía: se vio en una prueba que
-   * el bloque quedaba con nombre pero sin contenido.
-   *
-   * `pagehide` cubre recarga, cierre y navegación hacia atrás; `visibilitychange`
-   * cubre el caso de móvil donde se cambia de app sin cerrar nada.
-   */
-  useEffect(() => {
-    const guardarSiHayPendiente = () => { if (dirty.current) flush() }
-    const alOcultarse = () => { if (document.visibilityState === 'hidden') guardarSiHayPendiente() }
-
-    window.addEventListener('pagehide', guardarSiHayPendiente)
-    document.addEventListener('visibilitychange', alOcultarse)
-    return () => {
-      window.removeEventListener('pagehide', guardarSiHayPendiente)
-      document.removeEventListener('visibilitychange', alOcultarse)
-    }
-  }, [flush])
-
-  function persistLinks(next: BlockLink[]) {
-    setLinks(next)
-    setStatus('saving')
-    onSave({ links: next })
-      .then(() => setStatus('saved'))
-      .catch(() => setStatus('error'))
-  }
 
   return (
     <div style={{
@@ -323,7 +387,7 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
 
         <input
           value={name}
-          onChange={e => { dirty.current = true; setName(e.target.value) }}
+          onChange={e => onCambio({ name: e.target.value })}
           placeholder="Nombre del bloque (ej. CONDITION, WOD, FUERZA)"
           style={{
             flex: 1, minWidth: 140, padding: '6px 9px',
@@ -336,15 +400,22 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
           onBlur={e => {
             e.currentTarget.style.borderColor = 'transparent'
             e.currentTarget.style.background = 'transparent'
-            flush()
           }}
         />
 
-        <SaveIndicator status={status} />
+        {sinGuardar && (
+          <span
+            title="Sin guardar"
+            style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#C6FF00', flexShrink: 0,
+            }}
+          />
+        )}
 
         <select
-          value={block.type}
-          onChange={e => { setStatus('saving'); onSaveAndRefresh({ type: e.target.value }).then(() => setStatus('saved')) }}
+          value={valor.type}
+          onChange={e => onCambio({ type: e.target.value })}
           style={{
             padding: '5px 8px', border: `1px solid ${accent}44`, borderRadius: 7,
             fontSize: 11.5, fontWeight: 700, color: accent, background: `${accent}14`,
@@ -373,8 +444,7 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
       <textarea
         ref={taRef}
         value={content}
-        onChange={e => { dirty.current = true; setContent(e.target.value) }}
-        onBlur={flush}
+        onChange={e => onCambio({ content: e.target.value })}
         placeholder={PLACEHOLDER}
         spellCheck={false}
         style={{
@@ -411,7 +481,7 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
                   {l.label}
                 </a>
                 <button className="eb-tap"
-                  onClick={() => persistLinks(links.filter((_, j) => j !== i))}
+                  onClick={() => onCambio({ links: links.filter((_, j) => j !== i) })}
                   aria-label={`Quitar ${l.label}`}
                   style={{
                     background: 'transparent', border: 'none', cursor: 'pointer',
@@ -428,7 +498,7 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
         {showLinkForm ? (
           <LinkForm
             onCancel={() => setShowLinkForm(false)}
-            onAdd={l => { persistLinks([...links, l]); setShowLinkForm(false) }}
+            onAdd={l => { onCambio({ links: [...links, l] }); setShowLinkForm(false) }}
           />
         ) : (
           <button
@@ -449,21 +519,36 @@ function BlockCard({ block, blockNumber, onSave, onSaveAndRefresh, onDelete }: {
   )
 }
 
-function SaveIndicator({ status }: { status: SaveStatus }) {
-  if (status === 'idle') return null
-  const map = {
-    saving: { icon: <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} />, text: 'Guardando', color: 'var(--color-text-3)' },
-    saved:  { icon: <Check size={11} />,  text: 'Guardado', color: '#22C55E' },
-    error:  { icon: <X size={11} />,      text: 'Error al guardar', color: '#EF4444' },
-  }[status]
-
+/**
+ * Estado del guardado, junto al botón. Dice cuántos bloques quedan pendientes
+ * para que el coach no tenga que adivinar si su trabajo ya está a salvo.
+ */
+function EstadoGuardado({ sinGuardar, cantidad, guardando, error }: {
+  sinGuardar: boolean
+  cantidad: number
+  guardando: boolean
+  error: string | null
+}) {
+  if (error) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#EF4444', maxWidth: 260 }}>
+        <X size={12} style={{ flexShrink: 0 }} />
+        {error}
+      </span>
+    )
+  }
+  if (guardando) return null
+  if (sinGuardar) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#F59E0B' }}>
+        {cantidad} bloque{cantidad !== 1 ? 's' : ''} sin guardar
+      </span>
+    )
+  }
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 11, fontWeight: 600, color: map.color, flexShrink: 0,
-    }}>
-      {map.icon}
-      {map.text}
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: '#22C55E' }}>
+      <Check size={12} />
+      Todo guardado
     </span>
   )
 }
