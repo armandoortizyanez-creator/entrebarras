@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { mensajeDeError } from '@/lib/errors'
 import { ROLE_LABELS } from '@entrebarras/types'
 
 interface InvitationInfo {
@@ -89,7 +90,9 @@ export function InviteView({ token }: { token: string }) {
     })
 
     if (signUpError) {
-      setFormError(signUpError.message)
+      // Los errores que vienen de un trigger de la base llegan como objetos sin
+      // .message, y el formulario mostraba un "{}" que no le sirve a nadie.
+      setFormError(mensajeDeError(signUpError, 'No pudimos crear tu cuenta. Intenta de nuevo.'))
       setSubmitting(false)
       return
     }
