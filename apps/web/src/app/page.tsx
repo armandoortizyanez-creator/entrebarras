@@ -197,8 +197,8 @@ export default function HomePage() {
                 {isDark ? <Sun size={15}/> : <Moon size={15}/>}
               </button>
               {!isMobile && <Link href="/login" style={{ padding:'7px 15px', borderRadius:9, fontSize:13.5, fontWeight:500, color:C.txt2, background:'transparent', border:`1px solid ${C.bdr}`, transition:'all .15s' }}>Iniciar sesión</Link>}
-              <Link href="/registro" className="pill-cta" style={{ padding:'9px 20px', borderRadius:10, fontSize:13.5, fontWeight:600, background:`linear-gradient(135deg,${ACCENT},${VIOLET})`, color:'#fff', boxShadow:'0 4px 14px rgba(99,102,241,.35)' }}>
-                {isMobile ? 'Empezar' : 'Empezar gratis'} <ArrowRight size={13}/>
+              <Link href={isMobile ? '/login' : '/registro'} className="pill-cta" style={{ padding:'9px 20px', borderRadius:10, fontSize:13.5, fontWeight:600, background:`linear-gradient(135deg,${ACCENT},${VIOLET})`, color:'#fff', boxShadow:'0 4px 14px rgba(99,102,241,.35)' }}>
+                {isMobile ? 'Acceder' : 'Empezar gratis'} <ArrowRight size={13}/>
               </Link>
               {isMobile && (
                 <button onClick={() => setMenuOpen(o => !o)} style={{ width:36, height:36, borderRadius:8, border:`1px solid ${C.bdr}`, background:'none', cursor:'pointer', color:C.txt2, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -209,9 +209,13 @@ export default function HomePage() {
           </div>
           {isMobile && menuOpen && (
             <div style={{ borderTop:`1px solid ${C.bdr}`, padding:'8px 0 14px' }}>
-              {[...NAV_LINKS,'Iniciar sesión'].map(l => (
-                <a key={l} href="#" onClick={() => setMenuOpen(false)} style={{ display:'block', padding:'11px 4px', fontSize:15, color:C.txt2, fontWeight:500, borderBottom:`1px solid ${C.surf2}` }}>{l}</a>
+              {/* Antes TODO este menu apuntaba a href="#": ni las secciones ni
+                  "Iniciar sesion" llevaban a ninguna parte. */}
+              {NAV_LINKS.map(l => (
+                <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setMenuOpen(false)} style={{ display:'block', padding:'11px 4px', fontSize:15, color:C.txt2, fontWeight:500, borderBottom:`1px solid ${C.surf2}` }}>{l}</a>
               ))}
+              <Link href="/login" onClick={() => setMenuOpen(false)} style={{ display:'block', padding:'11px 4px', fontSize:15, color:C.txt2, fontWeight:500, borderBottom:`1px solid ${C.surf2}` }}>Iniciar sesión</Link>
+              <Link href="/registro" onClick={() => setMenuOpen(false)} style={{ display:'block', padding:'11px 4px', fontSize:15, color:ACCENT, fontWeight:600 }}>Crear cuenta gratis</Link>
             </div>
           )}
         </div>
