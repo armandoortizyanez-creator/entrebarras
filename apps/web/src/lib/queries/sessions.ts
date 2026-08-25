@@ -258,6 +258,34 @@ export async function guardarSensacion(
   if (error) throw error
 }
 
+/**
+ * Cómo se sintió el atleta en cada una de esas sesiones.
+ *
+ * Devuelve un mapa por id de sesión para poder pintarlo junto a cada fila del
+ * historial sin una consulta por fila.
+ */
+export async function getSensacionesDeSesiones(
+  sessionIds: string[],
+): Promise<Record<string, { feeling: Sensacion | null; notes: string | null }>> {
+  if (sessionIds.length === 0) return {}
+
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('session_logs')
+    .select('session_id, feeling, notes')
+    .in('session_id', sessionIds)
+  if (error) throw error
+
+  const mapa: Record<string, { feeling: Sensacion | null; notes: string | null }> = {}
+  for (const fila of data ?? []) {
+    mapa[fila.session_id as string] = {
+      feeling: fila.feeling as Sensacion | null,
+      notes: fila.notes as string | null,
+    }
+  }
+  return mapa
+}
+
 export async function getSessionsByMonth(year: number, month: number) {
   const supabase = createClient()
   const start = `${year}-${String(month).padStart(2, '0')}-01`

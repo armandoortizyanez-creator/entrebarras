@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAthlete, updateAthlete } from '@/lib/queries/athletes'
-import { getSessionsByAthlete } from '@/lib/queries/sessions'
+import { getSessionsByAthlete, getSensacionesDeSesiones } from '@/lib/queries/sessions'
 import { getMeasurements, addMeasurement, deleteMeasurement } from '@/lib/queries/measurements'
 import { getLatestPRs, getPRHistory } from '@/lib/queries/prs'
 import { getAthleteWodResults, SCALE_LABELS, SCALE_COLORS, buildResultText } from '@/lib/queries/wod-results'
@@ -30,6 +30,15 @@ const LEVEL_COLORS: Record<string, { bg: string; text: string }> = {
 }
 const STATUS_DOT: Record<string, string> = {
   scheduled: '#3B82F6', started: '#F59E0B', completed: '#16A34A', skipped: '#CBD5E1',
+}
+
+/** Misma escala que ve el atleta al marcar: 1 muy mal, 5 excelente. */
+const CARA_SENSACION: Record<number, { cara: string; texto: string }> = {
+  1: { cara: '😵', texto: 'Muy mal' },
+  2: { cara: '😕', texto: 'Mal' },
+  3: { cara: '😐', texto: 'Normal' },
+  4: { cara: '🙂', texto: 'Bien' },
+  5: { cara: '🔥', texto: 'Excelente' },
 }
 const STATUS_LABELS: Record<string, string> = {
   scheduled: 'Programado', started: 'En curso', completed: 'Completado', skipped: 'Saltado',
@@ -407,12 +416,19 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
     queryFn: () => getSessionsByAthlete(athleteId, thirtyDaysAgo),
   })
 
+  /** Cómo se sintió en cada sesión, para pintarlo junto a cada fila. */
+  const { data: sensaciones = {} } = useQuery({
+    queryKey: ['athlete-sensaciones', athleteId, sessions.map(s => s.id).join(',')],
+    queryFn: () => getSensacionesDeSesiones(sessions.map(s => s.id)),
+    enabled: sessions.length > 0,
+  })
+
   const completed = sessions.filter(s => s.status === 'completed').length
   const total = sessions.length
   const rate = total > 0 ? Math.round((completed / total) * 100) : null
 
   const kpis = [
-    { period: 'ÍšLTIMOS 30 DÍAS', value: total, label: 'Sesiones totales', color: 'var(--color-text)' },
+    { period: 'ÚLTIMOS 30 DÍAS', value: total, label: 'Sesiones totales', color: 'var(--color-text)' },
     { period: 'COMPLETADAS', value: completed, label: 'Con éxito', color: '#16A34A' },
     { period: 'CUMPLIMIENTO', value: rate !== null ? `${rate}%` : '"”', label: 'Tasa de asistencia', color: rate === null ? '#94A3B8' : rate >= 75 ? '#16A34A' : rate >= 50 ? '#F59E0B' : '#EF4444' },
   ]
@@ -446,7 +462,7 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
       }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)' }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Íšltimas 30 días
+            Últimas 30 días
           </span>
         </div>
 
@@ -474,9 +490,28 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{content}</p>
                   <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 1 }}>
                     {new Date(s.scheduled_date + 'T12:00:00').toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    {s.scheduled_time ? ` Â· ${s.scheduled_time.substring(0, 5)}` : ''}
+                    {s.scheduled_time ? ` · ${s.scheduled_time.substring(0, 5)}` : ''}
                   </p>
                 </div>
+                {/* Cómo se sintió, si lo anotó. Al coach le dice mucho más
+                    que el "completada" a secas. */}
+                {(() => {
+                  const sen = sensaciones[s.id]
+                  const cara = sen?.feeling ? CARA_SENSACION[sen.feeling] : null
+                  if (!cara) return null
+                  return (
+                    <span
+                      title={sen?.notes ? `${cara.texto} — ${sen.notes}` : cara.texto}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0,
+                        fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-3)',
+                      }}
+                    >
+                      <span style={{ fontSize: 15, lineHeight: 1 }}>{cara.cara}</span>
+                      {cara.texto}
+                    </span>
+                  )
+                })()}
                 <span style={{
                   fontSize: 11.5, fontWeight: 600, padding: '4px 10px',
                   borderRadius: 20,
@@ -750,7 +785,7 @@ function PRsTab({ athleteId }: { athleteId: string }) {
         {[
           { label: 'Movimientos', value: prs.length, color: 'var(--color-text)' },
           { label: 'Mejor 1RM', value: `${Math.max(...prs.map(p => p.estimated_1rm ?? p.weight_kg))} kg`, color: '#6366F1' },
-          { label: 'Íšltimo registro', value: new Date(prs[0]?.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }), color: 'var(--color-text)' },
+          { label: 'Último registro', value: new Date(prs[0]?.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }), color: 'var(--color-text)' },
         ].map(k => (
           <div key={k.label} style={{
             background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12,
@@ -806,7 +841,7 @@ function PRsTab({ athleteId }: { athleteId: string }) {
                   <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>{pr.movement_name}</p>
                   <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>
                     {pr.reps > 1 ? `${pr.weight_kg} kg Í— ${pr.reps} reps` : `${pr.weight_kg} kg`}
-                    {' Â· '}{new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {' · '}{new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
 
