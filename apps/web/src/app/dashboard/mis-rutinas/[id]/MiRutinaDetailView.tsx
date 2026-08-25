@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, Dumbbell, Tag, Layers, ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 import { AutoLinkedText, BlockLinkList, normalizeLinks } from '@/components/routines/BlockContent'
+import { MarcarRealizado } from '@/components/athlete/MarcarRealizado'
 
 const ACCENT = '#6366F1'
 const VIOLET = '#7C3AED'
@@ -226,6 +227,9 @@ export function MiRutinaDetailView({ id }: { id: string }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Lo primero de la pantalla: dejar constancia de que entrenaste. */}
+      <MarcarRealizado routineId={id} />
 
       {/* Header card */}
       <div style={{

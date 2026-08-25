@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { hoyLocal } from '@/lib/fechas'
 
 export interface TrainingSession {
   id: string
@@ -72,6 +73,128 @@ export async function getMiAgenda(desde: string, hasta: string): Promise<Entrada
   return ((data ?? []) as unknown as EntradaAgenda[]).filter(
     e => !borrado(e.routine) && !borrado(e.wod)
   )
+}
+
+/** La ficha de atleta de quien esta usando la app, o null si no es atleta. */
+async function miFichaDeAtleta() {
+  const supabase = createClient()
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user) return null
+
+  const { data: pub } = await supabase
+    .from('users').select('id').eq('auth_user_id', userRes.user.id).maybeSingle()
+  if (!pub) return null
+
+  const { data: atleta } = await supabase
+    .from('athletes').select('id, tenant_id, assigned_coach_id').eq('user_id', pub.id).maybeSingle()
+  return atleta ?? null
+}
+
+/**
+ * La sesion de HOY para una rutina o WOD, si existe.
+ *
+ * Sirve para saber si el boton debe decir "Marcar como realizado" o
+ * "Realizado hoy", sin adivinar desde el cliente.
+ */
+export async function getSesionDeHoy(params: { routineId?: string; wodId?: string }) {
+  const supabase = createClient()
+  const atleta = await miFichaDeAtleta()
+  if (!atleta) return null
+
+  let q = supabase
+    .from('training_sessions')
+    .select('id, status, completed_at, scheduled_date')
+    .eq('athlete_id', atleta.id)
+    .eq('scheduled_date', hoyLocal())
+
+  q = params.routineId ? q.eq('routine_id', params.routineId) : q.eq('wod_id', params.wodId!)
+
+  const { data, error } = await q.order('status').limit(1)
+  if (error) throw error
+  return (data?.[0] ?? null) as { id: string; status: TrainingSession['status']; completed_at: string | null; scheduled_date: string } | null
+}
+
+/**
+ * Marca un entrenamiento como realizado HOY.
+ *
+ * Si el coach lo programo para hoy, se marca esa sesion. Si la rutina estaba
+ * asignada sin fecha, se crea el registro con la fecha de hoy: asi el atleta
+ * siempre puede dejar constancia de lo que entreno, y queda en el calendario,
+ * en su programacion y en el cumplimiento que ve el coach.
+ *
+ * La fecha se toma en hora local. Con toISOString, en Chile a partir de las
+ * 20:00 se habria guardado el dia siguiente, justo a la hora de entrenar.
+ */
+export async function marcarRealizado(params: { routineId?: string; wodId?: string }) {
+  const supabase = createClient()
+  const atleta = await miFichaDeAtleta()
+  if (!atleta) throw new Error('Tu cuenta no tiene una ficha de atleta asociada.')
+
+  const hoy = hoyLocal()
+  const ahora = new Date().toISOString()
+
+  const existente = await getSesionDeHoy(params)
+  if (existente) {
+    const { error } = await supabase
+      .from('training_sessions')
+      .update({ status: 'completed', completed_at: ahora })
+      .eq('id', existente.id)
+    if (error) throw error
+    return { id: existente.id, creada: false }
+  }
+
+  const { data, error } = await supabase
+    .from('training_sessions')
+    .insert({
+      tenant_id: atleta.tenant_id,
+      athlete_id: atleta.id,
+      // Sin coach_id a proposito: nadie la programo, la registro el atleta.
+      // Ese vacio es lo que permite deshacer sin borrar lo que mando el coach.
+      coach_id: null,
+      routine_id: params.routineId ?? null,
+      wod_id: params.wodId ?? null,
+      type: params.wodId ? 'wod' : 'routine',
+      scheduled_date: hoy,
+      status: 'completed',
+      completed_at: ahora,
+    })
+    .select('id')
+    .single()
+  if (error) throw error
+  return { id: data.id as string, creada: true }
+}
+
+/**
+ * Deshace un "realizado" marcado por error.
+ *
+ * Si la sesion la programo el coach, vuelve a 'scheduled' y sigue en la
+ * agenda. Si la registro el propio atleta al marcar, se elimina: dejarla como
+ * programada inventaria un entrenamiento que nadie mando.
+ *
+ * La diferencia se lee de coach_id, que solo tienen las que programo un coach.
+ */
+export async function desmarcarRealizado(sessionId: string) {
+  const supabase = createClient()
+
+  const { data: sesion, error: errLeer } = await supabase
+    .from('training_sessions')
+    .select('id, coach_id')
+    .eq('id', sessionId)
+    .maybeSingle()
+  if (errLeer) throw errLeer
+  if (!sesion) return
+
+  if (!sesion.coach_id) {
+    const { error } = await supabase.from('training_sessions').delete().eq('id', sessionId)
+    if (error) throw error
+    return
+  }
+
+  const { error } = await supabase
+    .from('training_sessions')
+    .update({ status: 'scheduled', completed_at: null })
+    .eq('id', sessionId)
+  if (error) throw error
 }
 
 export async function getSessionsByMonth(year: number, month: number) {
