@@ -283,7 +283,7 @@ export function CalculadoraView() {
           <p style={{ fontSize: 14, color: 'var(--color-text-3)' }}>Elige un atleta para ver y gestionar sus récords personales</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20, alignItems: 'start' }}>
+        <div className="eb-prs-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20, alignItems: 'start' }}>
 
           {/* LEFT "” PRs list */}
           <div>
@@ -516,7 +516,7 @@ export function CalculadoraView() {
                 </div>
 
                 {/* Estimate from weight + reps */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+                <div className="eb-prs-par" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
                       Peso (kg)
@@ -656,7 +656,7 @@ export function CalculadoraView() {
                 </datalist>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="eb-prs-par" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>Peso (kg) *</label>
                   <input

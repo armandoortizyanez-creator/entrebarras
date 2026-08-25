@@ -268,6 +268,14 @@ export async function deleteRoutine(id: string) {
   if (error) throw error
 }
 
+/** Respaldo para la tarjeta cuando el coach no le puso nombre al bloque. */
+const ETIQUETA_DE_BLOQUE: Record<string, string> = {
+  warmup: 'Calentamiento', strength: 'Fuerza', wod: 'WOD', emom: 'EMOM',
+  superset: 'Superserie', circuit: 'Circuito', accessory: 'Accesorio',
+  cooldown: 'Vuelta a la calma', standard: 'General',
+  amrap: 'AMRAP', for_time: 'For Time',
+}
+
 export interface AssignedRoutineSummary {
   id: string
   name: string
@@ -276,6 +284,13 @@ export interface AssignedRoutineSummary {
   tags: string[]
   blocks_count: number
   assigned_at: string
+  /**
+   * Nombre del PRIMER bloque, para que la tarjeta diga de que va el
+   * entrenamiento sin tener que abrirlo. Si el coach no le puso nombre, se
+   * usa su tipo. Los demas bloques no se muestran: la tarjeta es un vistazo,
+   * no un resumen.
+   */
+  primer_bloque: string | null
 }
 
 export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]> {
@@ -319,13 +334,20 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
 
   const routineIds = rows.map(r => (r.routine as unknown as RoutineRow).id)
   const blockCounts: Record<string, number> = {}
+  const primerBloque: Record<string, string | null> = {}
   if (routineIds.length > 0) {
     const { data: blocks } = await supabase
       .from('routine_blocks')
-      .select('routine_id')
+      .select('routine_id, name, type, order_index')
       .in('routine_id', routineIds)
+      .order('order_index')
     ;(blocks ?? []).forEach(b => {
       blockCounts[b.routine_id] = (blockCounts[b.routine_id] ?? 0) + 1
+      // Vienen ordenados, asi que el primero que se ve de cada rutina es el suyo.
+      if (!(b.routine_id in primerBloque)) {
+        const nombre = (b.name as string | null)?.trim()
+        primerBloque[b.routine_id] = nombre || ETIQUETA_DE_BLOQUE[b.type as string] || null
+      }
     })
   }
 
@@ -339,6 +361,7 @@ export async function getMyAssignedRoutines(): Promise<AssignedRoutineSummary[]>
       tags: rt.tags ?? [],
       blocks_count: blockCounts[rt.id] ?? 0,
       assigned_at: r.assigned_at,
+      primer_bloque: primerBloque[rt.id] ?? null,
     }
   })
 }

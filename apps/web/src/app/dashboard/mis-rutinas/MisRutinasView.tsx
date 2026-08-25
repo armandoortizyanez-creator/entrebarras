@@ -118,6 +118,28 @@ export function MisRutinasView() {
             }}>
               {r.name}
             </p>
+
+            {/* De que va el entrenamiento, sin tener que abrirlo. Solo el
+                primer bloque: si hay mas, se ven al entrar. */}
+            {r.primer_bloque && (
+              <p style={{
+                fontSize: 13.5, fontWeight: 800, color: VIOLET,
+                letterSpacing: '0.04em', textTransform: 'uppercase',
+                marginBottom: 6,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {r.primer_bloque}
+                {r.blocks_count > 1 && (
+                  <span style={{
+                    marginLeft: 7, fontSize: 11.5, fontWeight: 600,
+                    color: 'var(--color-text-4)', letterSpacing: 0, textTransform: 'none',
+                  }}>
+                    +{r.blocks_count - 1} más
+                  </span>
+                )}
+              </p>
+            )}
+
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               {r.type && (
                 <span style={{

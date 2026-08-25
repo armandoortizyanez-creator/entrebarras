@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Play, Pause, RotateCcw, Volume2, VolumeX, ChevronUp, ChevronDown } from 'lucide-react'
+import { Play, Pause, RotateCcw, Volume2, VolumeX, ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 
 type Mode = 'countdown' | 'stopwatch' | 'interval'
 type Phase = 'work' | 'rest'
-type TimerState = 'idle' | 'running' | 'paused' | 'finished'
+type TimerState = 'idle' | 'prep' | 'running' | 'paused' | 'finished'
+
+/** Segundos de preparacion antes de que arranque el tiempo real. */
+const SEGUNDOS_DE_PREPARACION = 10
 
 function beep(frequency = 880, duration = 0.08, volume = 0.4) {
   try {
@@ -130,6 +133,13 @@ export function TimerView() {
   const [phase, setPhase] = useState<Phase>('work')
   const [currentRound, setCurrentRound] = useState(1)
 
+  /** Cuenta atras de preparacion, para ponerse en posicion antes de empezar. */
+  const [prepRestante, setPrepRestante] = useState(SEGUNDOS_DE_PREPARACION)
+  /** Solo el tiempo en pantalla, sin controles ni ajustes. */
+  const [pantallaCompleta, setPantallaCompleta] = useState(false)
+  /** En pantalla completa los controles se muestran al tocar y luego se ocultan. */
+  const [controlesVisibles, setControlesVisibles] = useState(true)
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const soundRef = useRef(muted)
   soundRef.current = muted
@@ -206,6 +216,30 @@ export function TimerView() {
     }
   }, [mode, countdownTotal, phase, workSecs, restSecs, totalRounds])
 
+  /**
+   * Cuenta atras de preparacion. Va en su propio efecto y no dentro de tick():
+   * mezclar las dos cuentas en un solo intervalo obligaba a preguntar en cada
+   * segundo cual de las dos estaba corriendo.
+   */
+  useEffect(() => {
+    if (timerState !== 'prep') return
+
+    const id = setInterval(() => {
+      setPrepRestante(n => {
+        if (n <= 1) {
+          if (!soundRef.current) beep(880, 0.15, 0.5)
+          setTimerState('running')
+          return 0
+        }
+        // Los ultimos tres segundos suenan, como en cualquier cuenta atras.
+        if (n <= 4 && !soundRef.current) beep(660, 0.07, 0.3)
+        return n - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(id)
+  }, [timerState])
+
   useEffect(() => {
     if (timerState === 'running') {
       intervalRef.current = setInterval(tick, 1000)
@@ -222,6 +256,7 @@ export function TimerView() {
       if (e.code === 'Space') {
         e.preventDefault()
         if (timerState === 'running') setTimerState('paused')
+        else if (timerState === 'prep') saltarPreparacion()
         else if (!isFinished) start()
       }
       if (e.code === 'KeyR') { e.preventDefault(); reset() }
@@ -232,8 +267,28 @@ export function TimerView() {
 
   function start() {
     if (mode === 'countdown' && countdownTotal === 0) return
-    if (timerState === 'idle' && !muted) beep(880, 0.15, 0.5)
+
+    // Desde cero se pasa por la preparacion; al reanudar una pausa, no: ahi la
+    // persona ya esta en posicion y esperar diez segundos solo estorba.
+    if (timerState === 'idle') {
+      setPrepRestante(SEGUNDOS_DE_PREPARACION)
+      setTimerState('prep')
+      setPantallaCompleta(true)
+      setControlesVisibles(false)
+      return
+    }
     setTimerState('running')
+  }
+
+  /** Arranca el tiempo real sin esperar el resto de la preparacion. */
+  function saltarPreparacion() {
+    if (!muted) beep(880, 0.15, 0.5)
+    setTimerState('running')
+  }
+
+  function alternarPantallaCompleta() {
+    setPantallaCompleta(v => !v)
+    setControlesVisibles(true)
   }
 
   function reset() {
@@ -242,9 +297,13 @@ export function TimerView() {
     setPhaseTime(0)
     setPhase('work')
     setCurrentRound(1)
+    setPrepRestante(SEGUNDOS_DE_PREPARACION)
+    setPantallaCompleta(false)
+    setControlesVisibles(true)
   }
 
-  const showConfig = timerState === 'idle'
+  const enPreparacion = timerState === 'prep'
+  const showConfig = timerState === 'idle' && !pantallaCompleta
 
   return (
     // La posición vive en .eb-timer-fullscreen y no aquí: en escritorio debe
@@ -259,9 +318,10 @@ export function TimerView() {
     }}
       className="eb-timer-fullscreen"
     >
-      {/* Top bar */}
+      {/* Top bar — se esconde en pantalla completa, salvo que se toque */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: pantallaCompleta && !controlesVisibles ? 'none' : 'flex',
+        alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 28px', flexShrink: 0,
         borderBottom: `1px solid ${topBorder}`,
       }}>
@@ -292,11 +352,30 @@ export function TimerView() {
           style={{ background: muteBtnBg, border: muteBtnBorder, borderRadius: 8, padding: '8px', cursor: 'pointer', color: muteBtnColor, display: 'flex', alignItems: 'center' }}
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        <button
+          onClick={alternarPantallaCompleta}
+          aria-label={pantallaCompleta ? 'Salir de pantalla completa' : 'Pantalla completa'}
+          style={{ background: muteBtnBg, border: muteBtnBorder, borderRadius: 8, padding: '8px', cursor: 'pointer', color: muteBtnColor, display: 'flex', alignItems: 'center', marginLeft: 8 }}
+        >
+          {pantallaCompleta ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        </button>
         </button>
       </div>
 
       {/* Main area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+      <div
+        onClick={() => { if (pantallaCompleta) setControlesVisibles(v => !v) }}
+        style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 0,
+          // Sin esto, en horizontal el contenido no cabe y no habia forma de
+          // desplazarse: el contenedor es fixed y no crece con su contenido.
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch' as any,
+          minHeight: 0,
+          padding: '16px 0',
+        }}
+      >
 
         {/* Config panel — only on idle */}
         {showConfig && (
@@ -360,6 +439,41 @@ export function TimerView() {
           </div>
         )}
 
+        {/* Preparacion: reemplaza al tiempo hasta que arranca de verdad */}
+        {enPreparacion ? (
+          <div style={{ textAlign: 'center', padding: '0 20px' }}>
+            <p style={{
+              fontSize: 'clamp(13px, 3.5vw, 17px)', fontWeight: 800,
+              letterSpacing: '0.16em', textTransform: 'uppercase',
+              color: isLight ? '#6366F1' : '#C6FF00', marginBottom: 8,
+            }}>
+              Prepárate
+            </p>
+            <div style={{
+              fontSize: 'clamp(90px, 26vw, 200px)', fontWeight: 800,
+              color: isLight ? '#6366F1' : '#C6FF00',
+              letterSpacing: '-0.06em', lineHeight: 1,
+              fontVariantNumeric: 'tabular-nums',
+              fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", monospace',
+              animation: prepRestante <= 3 ? 'timer-pulse 1s ease-in-out infinite' : 'none',
+            }}>
+              {prepRestante}
+            </div>
+            <button
+              onClick={e => { e.stopPropagation(); saltarPreparacion() }}
+              style={{
+                marginTop: 26, padding: '11px 26px', borderRadius: 11,
+                border: `1px solid ${isLight ? 'rgba(0,0,0,.15)' : 'rgba(255,255,255,.22)'}`,
+                background: 'transparent', cursor: 'pointer',
+                fontSize: 14, fontWeight: 700,
+                color: isLight ? '#334155' : 'rgba(255,255,255,.85)',
+              }}
+            >
+              Saltar
+            </button>
+          </div>
+        ) : (
+        <>
         {/* Big timer */}
         <div style={{
           fontSize: 'clamp(80px, 18vw, 160px)',
@@ -393,6 +507,9 @@ export function TimerView() {
           <div style={{ marginTop: 16, fontSize: 13, color: elapsedColor, letterSpacing: '0.06em' }}>
             TOTAL {formatTime(elapsed)}
           </div>
+        )}
+
+        </>
         )}
 
         {/* Controls */}

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRoutine } from '@/lib/queries/routines'
 import { useTheme } from '@/hooks/useTheme'
 import Link from 'next/link'
-import { ArrowLeft, Dumbbell, Tag, Layers, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Dumbbell, Tag, Layers, ChevronDown, ChevronUp, Percent, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { AutoLinkedText, BlockLinkList, normalizeLinks } from '@/components/routines/BlockContent'
 import { MarcarRealizado } from '@/components/athlete/MarcarRealizado'
@@ -228,9 +228,6 @@ export function MiRutinaDetailView({ id }: { id: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      {/* Lo primero de la pantalla: dejar constancia de que entrenaste. */}
-      <MarcarRealizado routineId={id} />
-
       {/* Header card */}
       <div style={{
         background: `linear-gradient(135deg, ${ACCENT}18, ${VIOLET}18)`,
@@ -301,6 +298,39 @@ export function MiRutinaDetailView({ id }: { id: string }) {
           ))}
         </div>
       )}
+
+      {/* Atajo a las marcas personales: al leer un bloque con porcentajes
+          ("4 SET 55-65%") hay que saber sobre que peso calcular, y hasta ahora
+          eso obligaba a salir de la rutina y buscarlo en el menu. */}
+      <Link
+        href="/dashboard/calculadora"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none',
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 14, padding: '14px 18px',
+        }}
+      >
+        <span style={{
+          width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+          background: `${ACCENT}1E`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Percent size={18} color={ACCENT} />
+        </span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)' }}>
+            Mis PRs
+          </span>
+          <span style={{ display: 'block', fontSize: 12.5, color: 'var(--color-text-3)' }}>
+            Consulta tus pesos y calcula porcentajes
+          </span>
+        </span>
+        <ChevronRight size={18} color="var(--color-text-3)" style={{ flexShrink: 0 }} />
+      </Link>
+
+      {/* Al final: se marca cuando ya se leyo -y se hizo- el entrenamiento. */}
+      <MarcarRealizado routineId={id} />
     </div>
   )
 }

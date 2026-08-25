@@ -616,3 +616,24 @@ a.eb-card-link:hover,
     --sidebar-width: 200px;
   }
 }
+
+/* ============================================
+   MIS PRs — RESPONSIVE
+   ============================================
+
+   Esta pantalla se construyó solo para escritorio: la rejilla principal usa
+   una columna fija de 380px junto a otra flexible, y en un teléfono de 375px
+   eso desborda por el lado, sin forma de leer la mitad del contenido. */
+
+@media (max-width: 900px) {
+  .eb-prs-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Las parejas de campos también quedan demasiado angostas para escribir. */
+  .eb-prs-par {
+    grid-template-columns: 1fr !important;
+  }
+}
