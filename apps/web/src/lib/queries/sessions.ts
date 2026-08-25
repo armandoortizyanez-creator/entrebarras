@@ -197,6 +197,67 @@ export async function desmarcarRealizado(sessionId: string) {
   if (error) throw error
 }
 
+/** Cómo se sintió el atleta después de entrenar. 1 = muy mal, 5 = excelente. */
+export type Sensacion = 1 | 2 | 3 | 4 | 5
+
+export interface RegistroDeSesion {
+  id: string
+  feeling: Sensacion | null
+  notes: string | null
+}
+
+/** Lo que el atleta dejó anotado de esa sesión, si dejó algo. */
+export async function getRegistroDeSesion(sessionId: string): Promise<RegistroDeSesion | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('session_logs')
+    .select('id, feeling, notes')
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (error) throw error
+  return (data?.[0] ?? null) as RegistroDeSesion | null
+}
+
+/**
+ * Guarda cómo se sintió, sobre una sesión ya marcada como realizada.
+ *
+ * Se actualiza el registro existente en vez de crear otro: la pregunta es una
+ * sola por entrenamiento, y cambiar de opinión no deberia dejar dos respuestas
+ * contradictorias en el historial del coach.
+ */
+export async function guardarSensacion(
+  sessionId: string,
+  feeling: Sensacion,
+  notes?: string,
+) {
+  const supabase = createClient()
+  const atleta = await miFichaDeAtleta()
+  if (!atleta) throw new Error('Tu cuenta no tiene una ficha de atleta asociada.')
+
+  const existente = await getRegistroDeSesion(sessionId)
+
+  if (existente) {
+    const { error } = await supabase
+      .from('session_logs')
+      .update({ feeling, notes: notes?.trim() || null })
+      .eq('id', existente.id)
+    if (error) throw error
+    return
+  }
+
+  const { error } = await supabase
+    .from('session_logs')
+    .insert({
+      session_id: sessionId,
+      athlete_id: atleta.id,
+      feeling,
+      notes: notes?.trim() || null,
+      completed_at: new Date().toISOString(),
+    })
+  if (error) throw error
+}
+
 export async function getSessionsByMonth(year: number, month: number) {
   const supabase = createClient()
   const start = `${year}-${String(month).padStart(2, '0')}-01`

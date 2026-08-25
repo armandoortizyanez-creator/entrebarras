@@ -1,7 +1,10 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getSesionDeHoy, marcarRealizado, desmarcarRealizado } from '@/lib/queries/sessions'
+import {
+  getSesionDeHoy, marcarRealizado, desmarcarRealizado,
+  getRegistroDeSesion, guardarSensacion, type Sensacion,
+} from '@/lib/queries/sessions'
 import { mensajeDeError } from '@/lib/errors'
 import { etiquetaDeDia } from '@/lib/fechas'
 import { Check, Loader2, RotateCcw } from 'lucide-react'
@@ -9,6 +12,19 @@ import { useState } from 'react'
 
 const LIMA = '#C6FF00'
 const VERDE = '#22C55E'
+
+/**
+ * Escala de 1 a 5, la que ya acepta la columna feeling de session_logs.
+ * Las caras evitan tener que leer: se responde de un vistazo, que es lo unico
+ * que alguien hace justo despues de entrenar.
+ */
+const SENSACIONES: { valor: Sensacion; cara: string; texto: string }[] = [
+  { valor: 1, cara: '😵', texto: 'Muy mal' },
+  { valor: 2, cara: '😕', texto: 'Mal' },
+  { valor: 3, cara: '😐', texto: 'Normal' },
+  { valor: 4, cara: '🙂', texto: 'Bien' },
+  { valor: 5, cara: '🔥', texto: 'Excelente' },
+]
 
 /**
  * Botón con el que el atleta deja constancia de que entrenó.
@@ -38,7 +54,24 @@ export function MarcarRealizado({ routineId, wodId }: { routineId?: string; wodI
     qc.invalidateQueries({ queryKey: ['mi-agenda'] })
     qc.invalidateQueries({ queryKey: ['my-sessions'] })
     qc.invalidateQueries({ queryKey: ['sessions'] })
+    qc.invalidateQueries({ queryKey: ['registro-sesion'] })
   }
+
+  /** Lo que ya haya anotado de esta sesion, para no volver a preguntarlo. */
+  const { data: registro } = useQuery({
+    queryKey: ['registro-sesion', sesion?.id],
+    queryFn: () => getRegistroDeSesion(sesion!.id),
+    enabled: !!sesion?.id && sesion?.status === 'completed',
+  })
+
+  const anotarSensacion = useMutation({
+    mutationFn: (valor: Sensacion) => guardarSensacion(sesion!.id, valor),
+    onSuccess: () => {
+      setError('')
+      qc.invalidateQueries({ queryKey: ['registro-sesion', sesion?.id] })
+    },
+    onError: (e: unknown) => setError(mensajeDeError(e, 'No pudimos guardar cómo te sentiste.')),
+  })
 
   const marcar = useMutation({
     mutationFn: () => marcarRealizado({ routineId, wodId }),
@@ -62,6 +95,7 @@ export function MarcarRealizado({ routineId, wodId }: { routineId?: string; wodI
   return (
     <div>
       {hecho ? (
+        <>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
           background: 'rgba(34,197,94,0.10)', border: `1px solid rgba(34,197,94,0.35)`,
@@ -98,6 +132,53 @@ export function MarcarRealizado({ routineId, wodId }: { routineId?: string; wodI
             Deshacer
           </button>
         </div>
+
+        {/* Cómo te sentiste. Va después de marcar, no antes: preguntarlo
+            mientras aún no entrena no tiene respuesta posible. */}
+        <div style={{
+          marginTop: 12, padding: '14px 18px',
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)', borderRadius: 14,
+        }}>
+          <p style={{
+            fontSize: 13, fontWeight: 700, color: 'var(--color-text-2)',
+            marginBottom: 10,
+          }}>
+            {registro?.feeling ? '¿Cómo te sentiste?' : '¿Cómo te sentiste? (opcional)'}
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {SENSACIONES.map(s => {
+              const elegida = registro?.feeling === s.valor
+              return (
+                <button
+                  key={s.valor}
+                  onClick={() => anotarSensacion.mutate(s.valor)}
+                  disabled={anotarSensacion.isPending}
+                  aria-label={s.texto}
+                  aria-pressed={elegida}
+                  className="eb-tap"
+                  style={{
+                    flex: '1 1 60px', minWidth: 58,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                    padding: '9px 6px', borderRadius: 11, cursor: 'pointer',
+                    background: elegida ? `${VERDE}1E` : 'transparent',
+                    border: `1px solid ${elegida ? VERDE : 'var(--color-border)'}`,
+                    transition: 'background .12s, border-color .12s',
+                  }}
+                >
+                  <span style={{ fontSize: 21, lineHeight: 1 }}>{s.cara}</span>
+                  <span style={{
+                    fontSize: 10.5, fontWeight: 700,
+                    color: elegida ? VERDE : 'var(--color-text-3)',
+                  }}>
+                    {s.texto}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        </>
       ) : (
         <button
           onClick={() => marcar.mutate()}
