@@ -165,7 +165,7 @@ export function ProgramacionView() {
         </div>
       </div>
 
-      {/* Week grid "” desktop: 7 columns; mobile: vertical list */}
+      {/* Week grid — desktop: 7 columns; mobile: vertical list */}
       <div style={isMobile
         ? { display: 'flex', flexDirection: 'column', gap: 8 }
         : { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }

@@ -226,7 +226,7 @@ export function GruposView() {
                 <label style={s.label}>Deporte</label>
                 <select style={s.select} value={form.sport}
                   onChange={e => setForm(f => ({ ...f, sport: e.target.value }))}>
-                  <option value="">"” Sin especificar "”</option>
+                  <option value="">— Sin especificar —</option>
                   {SPORTS.map(sp => <option key={sp} value={sp}>{sp}</option>)}
                 </select>
               </div>
@@ -312,7 +312,7 @@ export function GruposView() {
                   </div>
                   <div style={s.type}>
                     {GROUP_TYPES.find(t => t.value === g.type)?.label ?? g.type}
-                    {g.sport && ` Â· ${g.sport}`}
+                    {g.sport && ` · ${g.sport}`}
                   </div>
                 </div>
                 <button className="eb-tap"

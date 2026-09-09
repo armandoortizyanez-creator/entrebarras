@@ -337,10 +337,10 @@ function PerfilTab({ athlete }: { athlete: Athlete }) {
                   )
                 ) : (
                   <p style={{ fontSize: 14, fontWeight: 500, color: (form as any)[field.key] ? 'var(--color-text)' : 'var(--color-text-4)' }}>
-                    {field.key === 'gender' ? (GENDER_LABELS[(form as any)[field.key]] || '"”')
-                     : field.key === 'sport_level' ? (LEVEL_LABELS[(form as any)[field.key]] || '"”')
-                     : field.key === 'status' ? (STATUS_ATHLETE_LABELS[(form as any)[field.key]] || '"”')
-                     : ((form as any)[field.key] || '"”')}
+                    {field.key === 'gender' ? (GENDER_LABELS[(form as any)[field.key]] || '—')
+                     : field.key === 'sport_level' ? (LEVEL_LABELS[(form as any)[field.key]] || '—')
+                     : field.key === 'status' ? (STATUS_ATHLETE_LABELS[(form as any)[field.key]] || '—')
+                     : ((form as any)[field.key] || '—')}
                   </p>
                 )}
               </div>
@@ -430,7 +430,7 @@ function SesionesTab({ athleteId }: { athleteId: string }) {
   const kpis = [
     { period: 'ÚLTIMOS 30 DÍAS', value: total, label: 'Sesiones totales', color: 'var(--color-text)' },
     { period: 'COMPLETADAS', value: completed, label: 'Con éxito', color: '#16A34A' },
-    { period: 'CUMPLIMIENTO', value: rate !== null ? `${rate}%` : '"”', label: 'Tasa de asistencia', color: rate === null ? '#94A3B8' : rate >= 75 ? '#16A34A' : rate >= 50 ? '#F59E0B' : '#EF4444' },
+    { period: 'CUMPLIMIENTO', value: rate !== null ? `${rate}%` : '—', label: 'Tasa de asistencia', color: rate === null ? '#94A3B8' : rate >= 75 ? '#16A34A' : rate >= 50 ? '#F59E0B' : '#EF4444' },
   ]
 
   return (
@@ -840,7 +840,7 @@ function PRsTab({ athleteId }: { athleteId: string }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>{pr.movement_name}</p>
                   <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>
-                    {pr.reps > 1 ? `${pr.weight_kg} kg Í— ${pr.reps} reps` : `${pr.weight_kg} kg`}
+                    {pr.reps > 1 ? `${pr.weight_kg} kg × ${pr.reps} reps` : `${pr.weight_kg} kg`}
                     {' · '}{new Date(pr.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
@@ -858,7 +858,7 @@ function PRsTab({ athleteId }: { athleteId: string }) {
                   {histLoading ? (
                     <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Cargando historial...</p>
                   ) : history.length <= 1 ? (
-                    <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Solo un registro "” agrega más PRs para ver la progresión.</p>
+                    <p style={{ fontSize: 13, color: 'var(--color-text-3)' }}>Solo un registro — agrega más PRs para ver la progresión.</p>
                   ) : (
                     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                       {/* Sparkline */}
@@ -894,7 +894,7 @@ function PRsTab({ athleteId }: { athleteId: string }) {
                                   {new Date(h.recorded_at + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
                                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>{val} kg</span>
-                                {h.reps > 1 && <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>Í— {h.reps} reps</span>}
+                                {h.reps > 1 && <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>× {h.reps} reps</span>}
                                 {isBest && idx === 0 && (
                                   <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(198,255,0,0.12)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.25)', borderRadius: 8, padding: '1px 6px' }}>PR</span>
                                 )}

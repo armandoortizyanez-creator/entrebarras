@@ -8,6 +8,7 @@ import type { PersonalRecord } from '@/lib/queries/prs'
 import { useUser } from '@/hooks/useUser'
 import { Plus, Trash2, ChevronDown, ChevronUp, Calculator, Trophy, X } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
+import { zonasDePorcentaje } from '@/lib/prs-zonas'
 
 const COMMON_MOVEMENTS = [
   'Back Squat', 'Front Squat', 'Overhead Squat',
@@ -18,35 +19,6 @@ const COMMON_MOVEMENTS = [
   'Bench Press', 'Thruster',
 ]
 
-const PCT_ZONE_LIGHT: Record<number, { bg: string; text: string; label: string }> = {
-  50:  { bg: '#F0FDF4', text: '#15803D', label: 'Calentamiento' },
-  55:  { bg: '#F0FDF4', text: '#15803D', label: '' },
-  60:  { bg: '#F0FDF4', text: '#15803D', label: '' },
-  65:  { bg: '#FFFBEB', text: '#B45309', label: 'Técnica' },
-  70:  { bg: '#FFFBEB', text: '#B45309', label: '' },
-  75:  { bg: '#FFFBEB', text: '#B45309', label: '' },
-  80:  { bg: '#FFF7ED', text: '#C2410C', label: 'Fuerza' },
-  85:  { bg: '#FFF7ED', text: '#C2410C', label: '' },
-  90:  { bg: '#FEF2F2', text: '#B91C1C', label: 'Intensidad' },
-  95:  { bg: '#FEF2F2', text: '#B91C1C', label: '' },
-  100: { bg: 'rgba(99,102,241,0.08)', text: '#6366F1', label: '1RM' },
-  105: { bg: '#F5F3FF', text: '#6D28D9', label: 'Objetivo' },
-}
-const PCT_ZONE_DARK: Record<number, { bg: string; text: string; label: string }> = {
-  50:  { bg: 'rgba(74,222,128,0.08)',  text: '#4ADE80', label: 'Calentamiento' },
-  55:  { bg: 'rgba(74,222,128,0.08)',  text: '#4ADE80', label: '' },
-  60:  { bg: 'rgba(74,222,128,0.08)',  text: '#4ADE80', label: '' },
-  65:  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', label: 'Técnica' },
-  70:  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', label: '' },
-  75:  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', label: '' },
-  80:  { bg: 'rgba(251,146,60,0.08)',  text: '#FB923C', label: 'Fuerza' },
-  85:  { bg: 'rgba(251,146,60,0.08)',  text: '#FB923C', label: '' },
-  90:  { bg: 'rgba(239,68,68,0.08)',   text: '#F87171', label: 'Intensidad' },
-  95:  { bg: 'rgba(239,68,68,0.08)',   text: '#F87171', label: '' },
-  100: { bg: 'rgba(99,102,241,0.12)',  text: '#818CF8', label: '1RM' },
-  105: { bg: 'rgba(167,139,250,0.10)', text: '#A78BFA', label: 'Objetivo' },
-}
-
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 11px',
   border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13.5,
@@ -56,7 +28,7 @@ const inputStyle: React.CSSProperties = {
 export function CalculadoraView() {
   const { theme } = useTheme()
   const isLight = theme === 'light'
-  const PCT_ZONE = isLight ? PCT_ZONE_LIGHT : PCT_ZONE_DARK
+  const PCT_ZONE = zonasDePorcentaje(isLight)
   const { role, isAthlete, loading } = useUser()
   const qc = useQueryClient()
 
@@ -85,7 +57,7 @@ export function CalculadoraView() {
 
   const movementName = customMovement.trim() || selectedMovement
 
-  // Load athletes (coaches/admins only) "” wait for auth to resolve first
+  // Load athletes (coaches/admins only) — wait for auth to resolve first
   const { data: athletes = [] } = useQuery({
     queryKey: ['athletes'],
     queryFn: () => getAthletes(),
@@ -208,7 +180,7 @@ export function CalculadoraView() {
         )}
       </div>
 
-      {/* Athlete selector (coaches only) "” athletes see their own name */}
+      {/* Athlete selector (coaches only) — athletes see their own name */}
       {isAthlete && myAthlete && (
         <div style={{
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -285,7 +257,7 @@ export function CalculadoraView() {
       ) : (
         <div className="eb-prs-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20, alignItems: 'start' }}>
 
-          {/* LEFT "” PRs list */}
+          {/* LEFT — PRs list */}
           <div>
             <div style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -297,7 +269,7 @@ export function CalculadoraView() {
                   <Trophy size={16} color="#C6FF00" />
                   <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>
                     Récords personales
-                    {selectedAthlete && <span style={{ color: 'var(--color-text-2)', fontWeight: 400 }}> "” {selectedAthlete.first_name} {selectedAthlete.last_name}</span>}
+                    {selectedAthlete && <span style={{ color: 'var(--color-text-2)', fontWeight: 400 }}> — {selectedAthlete.first_name} {selectedAthlete.last_name}</span>}
                   </span>
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 600, background: 'var(--color-surface-2)', color: 'var(--color-text-2)', borderRadius: 20, padding: '2px 8px' }}>
@@ -363,9 +335,9 @@ export function CalculadoraView() {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{pr.movement_name}</div>
                             <div style={{ fontSize: 12, color: 'var(--color-text-2)', marginTop: 2 }}>
-                              {pr.reps > 1 ? `${pr.weight_kg} kg Í— ${pr.reps} reps` : `${pr.weight_kg} kg`}
+                              {pr.reps > 1 ? `${pr.weight_kg} kg × ${pr.reps} reps` : `${pr.weight_kg} kg`}
                               {pr.reps > 1 && pr.estimated_1rm && (
-                                <span style={{ color: 'var(--color-text-3)' }}> Â· 1RM estimado: {pr.estimated_1rm} kg</span>
+                                <span style={{ color: 'var(--color-text-3)' }}> · 1RM estimado: {pr.estimated_1rm} kg</span>
                               )}
                             </div>
                           </div>
@@ -403,7 +375,7 @@ export function CalculadoraView() {
                         {isHistoryOpen && (
                           <div style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)', padding: '12px 20px 12px 66px' }}>
                             <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
-                              Historial "” {pr.movement_name}
+                              Historial — {pr.movement_name}
                             </p>
                             {history.length === 0 ? (
                               <p style={{ fontSize: 12, color: 'var(--color-text-3)' }}>Sin registros anteriores</p>
@@ -415,14 +387,14 @@ export function CalculadoraView() {
                                       {new Date(h.recorded_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </span>
                                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
-                                      {h.weight_kg} kg {h.reps > 1 && `Í— ${h.reps}`}
+                                      {h.weight_kg} kg {h.reps > 1 && `× ${h.reps}`}
                                     </span>
                                     {h.estimated_1rm && h.reps > 1 && (
                                       <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>â†’ 1RM est. {h.estimated_1rm} kg</span>
                                     )}
                                     {h.notes && (
                                       <span style={{ fontSize: 11, color: 'var(--color-text-3)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        Â· {h.notes}
+                                        · {h.notes}
                                       </span>
                                     )}
                                     <button className="eb-tap"
@@ -447,7 +419,7 @@ export function CalculadoraView() {
             </div>
           </div>
 
-          {/* RIGHT "” Calculator (sticky) */}
+          {/* RIGHT — Calculator (sticky) */}
           <div style={{ position: 'sticky', top: 24 }}>
             <div style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -558,7 +530,7 @@ export function CalculadoraView() {
               {table ? (
                 <div style={{ borderTop: '1px solid var(--color-border)' }}>
                   <div style={{ padding: '12px 20px 6px', fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    Tabla de porcentajes "” {oneRM} kg
+                    Tabla de porcentajes — {oneRM} kg
                   </div>
                   <div style={{ padding: '0 12px 12px' }}>
                     {table.map(row => {
@@ -611,7 +583,7 @@ export function CalculadoraView() {
                   )}
 
                   <div style={{ padding: '0 12px 12px', fontSize: 10.5, color: 'var(--color-text-3)', textAlign: 'center' }}>
-                    Fórmula Epley Â· Redondeado a 2.5 kg
+                    Fórmula Epley · Redondeado a 2.5 kg
                   </div>
                 </div>
               ) : (

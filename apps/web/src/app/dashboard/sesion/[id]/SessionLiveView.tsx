@@ -151,7 +151,7 @@ function ExerciseCard({
     ex.prescribed.sets ? `${ex.prescribed.sets} series` : null,
     ex.prescribed.reps ? `${ex.prescribed.reps} reps` : null,
     ex.prescribed.weight_kg ? `${ex.prescribed.weight_kg} kg` : null,
-  ].filter(Boolean).join(' Í— ')
+  ].filter(Boolean).join(' × ')
 
   return (
     <div style={{
@@ -446,7 +446,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               {new Date(session.scheduled_date + 'T12:00:00').toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
-              {athleteName && ` Â· ${athleteName}`}
+              {athleteName && ` · ${athleteName}`}
             </p>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '-0.03em' }}>
               {sessionName}
@@ -482,7 +482,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           <div style={{ marginTop: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
-                {doneSets} de {exercises.length} ejercicios completados Â· {totalSets} series registradas
+                {doneSets} de {exercises.length} ejercicios completados · {totalSets} series registradas
               </span>
               <span style={{ fontSize: 12, fontWeight: 700, color: progress === 100 ? '#16A34A' : 'var(--color-red)' }}>
                 {progress}%
@@ -518,7 +518,7 @@ export function SessionLiveView({ sessionId }: { sessionId: string }) {
           </h2>
           <p style={{ fontSize: 13.5, color: 'var(--color-text-3)', marginBottom: 28, lineHeight: 1.5 }}>
             {exercises.length > 0
-              ? `${exercises.length} ejercicios Â· ${exercises.reduce((s, e) => s + (e.prescribed.sets ?? 0), 0)} series totales`
+              ? `${exercises.length} ejercicios · ${exercises.reduce((s, e) => s + (e.prescribed.sets ?? 0), 0)} series totales`
               : 'Sesión de ' + (session.type === 'wod' ? 'WOD' : session.type)
             }
           </p>
