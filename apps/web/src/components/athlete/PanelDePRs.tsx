@@ -8,6 +8,8 @@ import { getMyAthlete } from '@/lib/queries/athletes'
 import { getLatestPRs, percentageTable } from '@/lib/queries/prs'
 import { zonasDePorcentaje } from '@/lib/prs-zonas'
 import { useTheme } from '@/hooks/useTheme'
+import { BARRAS, calcularCarga } from '@/lib/discos'
+import { ListaDeDiscos } from './CalculadoraDeDiscos'
 
 const ACCENT = '#6366F1'
 
@@ -40,6 +42,11 @@ export function PanelDePRs() {
 
   const [abierto, setAbierto] = useState(false)
   const [movimiento, setMovimiento] = useState('')
+
+  // Tocar una fila muestra qué discos cargar para ese peso. Uno a la vez: en
+  // el celular, doce filas abiertas serían una pared de texto.
+  const [pctAbierto, setPctAbierto] = useState<number | null>(null)
+  const [barraKg, setBarraKg] = useState(20)
 
   const { data: atleta } = useQuery({
     queryKey: ['my-athlete'],
@@ -170,40 +177,101 @@ export function PanelDePRs() {
 
               {tabla && (
                 <div style={{ marginTop: 12 }}>
-                  {tabla.map(fila => {
-                    const zona = zonas[fila.pct]
-                    return (
-                      <div
-                        key={fila.pct}
+
+                  {/* La barra cambia los discos, así que se elige antes. */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 9 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Barra
+                    </span>
+                    {BARRAS.map(b => (
+                      <button
+                        key={b.kg}
+                        onClick={() => setBarraKg(b.kg)}
+                        aria-pressed={barraKg === b.kg}
                         style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          padding: '7px 10px', borderRadius: 8, marginBottom: 3,
-                          background: zona?.bg ?? 'var(--color-bg)',
+                          padding: '3px 11px', borderRadius: 999, cursor: 'pointer',
+                          fontSize: 12, fontWeight: 700,
+                          border: '1px solid ' + (barraKg === b.kg ? ACCENT + '60' : 'var(--color-border)'),
+                          background: barraKg === b.kg ? ACCENT + '1E' : 'transparent',
+                          color: barraKg === b.kg ? ACCENT : 'var(--color-text-3)',
                         }}
                       >
-                        <span style={{ fontSize: 13, fontWeight: 700, color: zona?.text ?? 'var(--color-text-2)', width: 42, flexShrink: 0 }}>
-                          {fila.pct}%
-                        </span>
-                        <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)' }}>
-                          {fila.kg_rounded} kg
-                        </span>
-                        <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', flexShrink: 0 }}>
-                          {fila.kg} kg
-                        </span>
-                        {zona?.label && (
-                          <span style={{
-                            fontSize: 10, fontWeight: 600, color: zona.text, flexShrink: 0,
-                            background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.10)',
-                            padding: '1px 6px', borderRadius: 10,
-                          }}>
-                            {zona.label}
+                        {b.etiqueta}
+                      </button>
+                    ))}
+                  </div>
+
+                  {tabla.map(fila => {
+                    const zona = zonas[fila.pct]
+                    const estaAbierta = pctAbierto === fila.pct
+                    // Sobre el peso redondeado, no el exacto: es el que se puede
+                    // armar de verdad con los discos que hay.
+                    const carga = estaAbierta ? calcularCarga(fila.kg_rounded, barraKg) : null
+
+                    return (
+                      <div key={fila.pct} style={{ marginBottom: 3 }}>
+                        <button
+                          onClick={() => setPctAbierto(p => (p === fila.pct ? null : fila.pct))}
+                          aria-expanded={estaAbierta}
+                          style={{
+                            width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none',
+                            display: 'flex', alignItems: 'center', gap: 8,
+                            padding: '7px 10px',
+                            borderRadius: estaAbierta ? '8px 8px 0 0' : 8,
+                            background: zona?.bg ?? 'var(--color-bg)',
+                          }}
+                        >
+                          <span style={{ fontSize: 13, fontWeight: 700, color: zona?.text ?? 'var(--color-text-2)', width: 42, flexShrink: 0 }}>
+                            {fila.pct}%
                           </span>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)' }}>
+                            {fila.kg_rounded} kg
+                          </span>
+                          <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', flexShrink: 0 }}>
+                            {fila.kg} kg
+                          </span>
+                          {zona?.label && (
+                            <span style={{
+                              fontSize: 10, fontWeight: 600, color: zona.text, flexShrink: 0,
+                              background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.10)',
+                              padding: '1px 6px', borderRadius: 10,
+                            }}>
+                              {zona.label}
+                            </span>
+                          )}
+                        </button>
+
+                        {estaAbierta && (
+                          <div style={{
+                            padding: '9px 10px 10px',
+                            borderRadius: '0 0 8px 8px',
+                            background: 'var(--color-bg)',
+                            border: '1px solid var(--color-border)', borderTop: 'none',
+                          }}>
+                            {carga ? (
+                              <>
+                                <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                                  Por lado{carga.kgPorLado > 0 ? ` · ${carga.kgPorLado} kg` : ''}
+                                </p>
+                                <ListaDeDiscos carga={carga} compacta />
+                                {!carga.exacta && (
+                                  <p style={{ fontSize: 11, color: '#F59E0B', marginTop: 6 }}>
+                                    Lo más cerca: {carga.totalKg} kg
+                                  </p>
+                                )}
+                              </>
+                            ) : (
+                              <p style={{ fontSize: 12, color: 'var(--color-text-3)' }}>
+                                Menos que la barra de {barraKg} kg.
+                              </p>
+                            )}
+                          </div>
                         )}
                       </div>
                     )
                   })}
                   <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', textAlign: 'center', marginTop: 8 }}>
-                    En negrita el peso redondeado a discos de 2.5 kg · Fórmula Epley
+                    Toca un porcentaje para ver qué discos cargar · Fórmula Epley
                   </p>
                 </div>
               )}

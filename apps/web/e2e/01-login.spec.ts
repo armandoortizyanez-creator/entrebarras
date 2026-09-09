@@ -7,8 +7,13 @@ import { test, expect } from '@playwright/test'
 // Estos tests NO usan storageState — prueban el flujo de auth desde cero
 test.use({ storageState: { cookies: [], origins: [] } })
 
-const VALID_EMAIL    = 'coach@entrebarras.cl'
-const VALID_PASSWORD = 'EB_Test2026!'
+// Las mismas credenciales del box de pruebas que usa auth.setup.ts, y por el
+// mismo motivo: acá estaba escrita coach@entrebarras.cl, una cuenta huérfana.
+// La prueba pasaba porque el login sí devolvía sesión, aunque esa cuenta no
+// tuviera perfil y la app no supiera quién era. Verificaba menos de lo que
+// parecía.
+const VALID_EMAIL    = process.env.E2E_EMAIL ?? ''
+const VALID_PASSWORD = process.env.E2E_PASSWORD ?? ''
 
 test.describe('Página de login', () => {
   test.beforeEach(async ({ page }) => {

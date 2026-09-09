@@ -9,6 +9,7 @@ import { useUser } from '@/hooks/useUser'
 import { Plus, Trash2, ChevronDown, ChevronUp, Calculator, Trophy, X } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { zonasDePorcentaje } from '@/lib/prs-zonas'
+import { CalculadoraDeDiscos } from '@/components/athlete/CalculadoraDeDiscos'
 
 const COMMON_MOVEMENTS = [
   'Back Squat', 'Front Squat', 'Overhead Squat',
@@ -595,6 +596,14 @@ export function CalculadoraView() {
           </div>
         </div>
       )}
+
+      {/* Fuera de la condición de arriba a propósito: qué discos poner en la
+          barra no depende de tener un atleta seleccionado. Adentro, un coach
+          que solo quiere saber cómo armar 80 kg no la veía. Si ya hay un 1RM
+          calculado arriba, arranca con ese peso puesto. */}
+      <div style={{ marginTop: 20, maxWidth: 520 }}>
+        <CalculadoraDeDiscos objetivoInicial={oneRM ?? undefined} />
+      </div>
 
       {/* Add PR Modal */}
       {showAddModal && (
