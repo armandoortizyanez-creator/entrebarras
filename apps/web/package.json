@@ -11,7 +11,8 @@
     "seed": "dotenv -e .env.local -- npx tsx scripts/seed-test-users.ts",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "test:reset": "node scripts/reset-box-de-pruebas.mjs"
   },
   "dependencies": {
     "@entrebarras/types": "*",

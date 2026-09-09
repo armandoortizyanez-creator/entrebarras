@@ -53,7 +53,7 @@ test.describe('Persistencia real de los guardados', () => {
     await expect(page.getByText(nombre)).toBeVisible({ timeout: 15_000 })
   })
 
-  test('el contenido de un bloque se guarda solo y sigue ahí tras recargar', async ({ page }) => {
+  test('el contenido de un bloque se guarda al apretar Guardar y sigue ahí tras recargar', async ({ page }) => {
     await irA(page, '/dashboard/rutinas')
 
     const nombre = nombreUnico('bloque')
@@ -69,8 +69,13 @@ test.describe('Persistencia real de los guardados', () => {
     await page.locator('input[placeholder^="Nombre del bloque"]').first().fill('LIFT')
     await page.locator('textarea').first().fill(textoBloque)
 
-    // El guardado es automático con rebote; el indicador confirma que terminó
-    await expect(page.getByText('Guardado')).toBeVisible({ timeout: 15_000 })
+    // El guardado dejó de ser automático: ahora es explícito. El rebote hacía
+    // que al escribir en un segundo bloque se reiniciara el temporizador del
+    // primero y solo se guardara uno. Primero avisa que hay cambios pendientes.
+    await expect(page.getByText(/bloques? sin guardar/i)).toBeVisible({ timeout: 10_000 })
+
+    await page.getByRole('button', { name: /^Guardar rutina$/ }).click()
+    await expect(page.getByText('Todo guardado')).toBeVisible({ timeout: 15_000 })
     await sinErrores(page)
 
     await page.goto(urlEditor)

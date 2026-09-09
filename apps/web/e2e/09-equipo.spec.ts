@@ -22,9 +22,11 @@ test.describe('Vista de equipo', () => {
     const tienePermisos = await page.getByText(/mi equipo/i).count() > 0
 
     if (tienePermisos) {
-      await expect(page.getByText('ADMINS')).toBeVisible()
-      await expect(page.getByText('COACHES')).toBeVisible()
-      await expect(page.getByText('ATLETAS')).toBeVisible()
+      // .first(): cada etiqueta aparece dos veces, en la tarjeta de resumen y
+      // como encabezado de la tabla. Acá interesa la tarjeta.
+      await expect(page.getByText('ADMINS', { exact: true }).first()).toBeVisible()
+      await expect(page.getByText('COACHES', { exact: true }).first()).toBeVisible()
+      await expect(page.getByText('ATLETAS', { exact: true }).first()).toBeVisible()
     } else {
       await expect(page.getByText(/no tienes permisos/i)).toBeVisible()
     }

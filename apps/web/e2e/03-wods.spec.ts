@@ -13,9 +13,13 @@ test.describe('Vista de WODs', () => {
   })
 
   test('muestra el conteo de WODs o estado vacío', async ({ page }) => {
-    // La app muestra "N workouts creados" o "Sin WODs todavía"
+    // La app muestra "N workouts creados" o "Sin WODs todavía".
+    // .first(): con el box vacío aparecen los DOS a la vez ("0 workouts
+    // creados" en el encabezado y "Sin WODs todavía" en el cuerpo), y sin esto
+    // la prueba solo pasaba de casualidad, cuando ya había WODs creados por
+    // una corrida anterior.
     await expect(
-      page.getByText(/workouts? creado/i).or(page.getByText(/sin wods/i))
+      page.getByText(/workouts? creado/i).or(page.getByText(/sin wods/i)).first()
     ).toBeVisible({ timeout: 8_000 })
   })
 

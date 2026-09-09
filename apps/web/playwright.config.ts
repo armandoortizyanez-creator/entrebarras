@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
+import dotenv from 'dotenv'
+
+// Las credenciales del box de pruebas viven en .env.local, no en el repo.
+dotenv.config({ path: '.env.local' })
 
 export default defineConfig({
   testDir: './e2e',
