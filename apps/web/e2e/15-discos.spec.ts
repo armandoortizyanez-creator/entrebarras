@@ -67,13 +67,34 @@ test.describe('Calculadora de discos', () => {
     await expect(page.getByText(/POR LADO/)).not.toBeVisible()
   })
 
-  test('83.5 kg se arma exacto con discos en libras', async ({ page }) => {
-    // El caso que justifica mezclar sistemas: con puros kilos no sale redondo,
-    // con dos discos de libras por lado sí.
+  test('en modo Mezclar, 83.5 kg sale exacto con dos discos de 35 lb', async ({ page }) => {
+    // El caso que justifica mezclar: con puros kilos 83.5 es imposible (sin
+    // disco de 1.25 ningún total termina en .5), con 2 × 35 lb por lado sí.
     await llenarObjetivo(page, '83.5')
+    await page.locator('[data-modo="mezcla"]').click()
 
     await expect(page.getByText('POR LADO · 31.75 KG')).toBeVisible({ timeout: 8_000 })
-    await expect(page.locator('[data-disco="1x45lb"]')).toBeVisible()
-    await expect(page.locator('[data-disco="1x25lb"]')).toBeVisible()
+    await expect(page.locator('[data-disco="2x35lb"]')).toBeVisible()
+  })
+
+  test('en modo Kg, un total terminado en .5 avisa que no sale exacto', async ({ page }) => {
+    await llenarObjetivo(page, '83.5')
+    await page.locator('[data-modo="kg"]').click()
+
+    await expect(page.getByText(/0\.5 de (más|menos)/)).toBeVisible({ timeout: 8_000 })
+    // Y ningún disco en libras: el atleta pidió solo kilos
+    await expect(page.locator('[data-disco$="lb"]')).toHaveCount(0)
+  })
+
+  test('en modo Lb usa solo libras, y la elección se recuerda al volver', async ({ page }) => {
+    await llenarObjetivo(page, '80')
+    await page.locator('[data-modo="lb"]').click()
+
+    await expect(page.locator('[data-disco]').first()).toBeVisible({ timeout: 8_000 })
+    const discos = await page.locator('[data-disco]').evaluateAll(els => els.map(e => e.getAttribute('data-disco')))
+    expect(discos.every(d => d?.endsWith('lb'))).toBe(true)
+
+    await page.reload()
+    await expect(page.locator('[data-modo="lb"]')).toHaveAttribute('aria-pressed', 'true', { timeout: 15_000 })
   })
 })

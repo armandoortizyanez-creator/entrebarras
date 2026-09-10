@@ -9,7 +9,8 @@ import { getLatestPRs, percentageTable } from '@/lib/queries/prs'
 import { zonasDePorcentaje } from '@/lib/prs-zonas'
 import { useTheme } from '@/hooks/useTheme'
 import { BARRAS, calcularCarga } from '@/lib/discos'
-import { ListaDeDiscos } from './CalculadoraDeDiscos'
+import { ListaDeDiscos, SelectorDeModo } from './CalculadoraDeDiscos'
+import { usePreferenciasDeDiscos } from '@/hooks/usePreferenciasDeDiscos'
 
 const ACCENT = '#6366F1'
 
@@ -46,7 +47,8 @@ export function PanelDePRs() {
   // Tocar una fila muestra qué discos cargar para ese peso. Uno a la vez: en
   // el celular, doce filas abiertas serían una pared de texto.
   const [pctAbierto, setPctAbierto] = useState<number | null>(null)
-  const [barraKg, setBarraKg] = useState(20)
+  // Recordados en el teléfono: si hoy entrena con libras, lo elige una vez.
+  const { modo, setModo, barraKg, setBarraKg } = usePreferenciasDeDiscos()
 
   const { data: atleta } = useQuery({
     queryKey: ['my-athlete'],
@@ -178,9 +180,10 @@ export function PanelDePRs() {
               {tabla && (
                 <div style={{ marginTop: 12 }}>
 
-                  {/* La barra cambia los discos, así que se elige antes. */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 9 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  {/* Barra y discos cambian el peso que se puede cargar, así que
+                      se eligen antes de leer la tabla. */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', minWidth: 44 }}>
                       Barra
                     </span>
                     {BARRAS.map(b => (
@@ -200,13 +203,19 @@ export function PanelDePRs() {
                       </button>
                     ))}
                   </div>
+                  <div style={{ marginBottom: 10 }}>
+                    <SelectorDeModo modo={modo} onCambiar={setModo} compacto />
+                  </div>
 
                   {tabla.map(fila => {
                     const zona = zonas[fila.pct]
                     const estaAbierta = pctAbierto === fila.pct
-                    // Sobre el peso redondeado, no el exacto: es el que se puede
-                    // armar de verdad con los discos que hay.
-                    const carga = estaAbierta ? calcularCarga(fila.kg_rounded, barraKg) : null
+                    // La negrita es lo que de verdad queda en la barra con estos
+                    // discos, no un redondeo teórico. Antes se redondeaba a 2.5 kg,
+                    // pero sin disco de 1.25 cualquier total terminado en .5 es
+                    // imposible de armar: la mitad de las filas mostraba un peso
+                    // que nadie podía cargar.
+                    const carga = calcularCarga(fila.kg, barraKg, modo)
 
                     return (
                       <div key={fila.pct} style={{ marginBottom: 3 }}>
@@ -225,7 +234,7 @@ export function PanelDePRs() {
                             {fila.pct}%
                           </span>
                           <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700, color: 'var(--color-text)' }}>
-                            {fila.kg_rounded} kg
+                            {carga ? carga.totalKg : fila.kg} kg
                           </span>
                           <span style={{ fontSize: 11.5, color: 'var(--color-text-3)', flexShrink: 0 }}>
                             {fila.kg} kg
@@ -256,7 +265,7 @@ export function PanelDePRs() {
                                 <ListaDeDiscos carga={carga} compacta />
                                 {!carga.exacta && (
                                   <p style={{ fontSize: 11, color: '#F59E0B', marginTop: 6 }}>
-                                    Lo más cerca: {carga.totalKg} kg
+                                    El {fila.pct}% exacto es {fila.kg} kg; con tus discos cargas {carga.totalKg} kg.
                                   </p>
                                 )}
                               </>
@@ -271,7 +280,7 @@ export function PanelDePRs() {
                     )
                   })}
                   <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', textAlign: 'center', marginTop: 8 }}>
-                    Toca un porcentaje para ver qué discos cargar · Fórmula Epley
+                    En negrita, lo que queda en la barra con tus discos · Toca un % para ver cuáles
                   </p>
                 </div>
               )}

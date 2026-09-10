@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { Weight, Check, AlertTriangle } from 'lucide-react'
-import { BARRAS, calcularCarga, calcularFaltante, kgALb } from '@/lib/discos'
-import type { Carga } from '@/lib/discos'
+import { BARRAS, MODOS_DE_DISCOS, calcularCarga, calcularFaltante, kgALb } from '@/lib/discos'
+import type { Carga, ModoDiscos } from '@/lib/discos'
+import { usePreferenciasDeDiscos } from '@/hooks/usePreferenciasDeDiscos'
 
 const ACCENT = '#6366F1'
 
@@ -67,6 +68,49 @@ export function ListaDeDiscos({ carga, compacta = false }: { carga: Carga; compa
   )
 }
 
+/**
+ * Kg / Lb / Mezclar. Lo elige el atleta porque depende de qué discos estén
+ * libres en el box ese día, y eso la app no lo puede saber.
+ */
+export function SelectorDeModo({ modo, onCambiar, compacto = false }: {
+  modo: ModoDiscos
+  onCambiar: (m: ModoDiscos) => void
+  compacto?: boolean
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <span style={{
+        fontSize: 11, fontWeight: 700, color: 'var(--color-text-3)',
+        textTransform: 'uppercase', letterSpacing: '0.06em',
+        minWidth: compacto ? 44 : undefined,
+      }}>
+        Discos
+      </span>
+      {MODOS_DE_DISCOS.map(m => {
+        const activo = modo === m.valor
+        return (
+          <button
+            key={m.valor}
+            type="button"
+            onClick={() => onCambiar(m.valor)}
+            aria-pressed={activo}
+            data-modo={m.valor}
+            style={{
+              padding: compacto ? '3px 11px' : '5px 13px', borderRadius: 999, cursor: 'pointer',
+              fontSize: compacto ? 12 : 13, fontWeight: 700,
+              border: '1px solid ' + (activo ? ACCENT + '60' : 'var(--color-border)'),
+              background: activo ? ACCENT + '1E' : 'transparent',
+              color: activo ? ACCENT : 'var(--color-text-3)',
+            }}
+          >
+            {m.etiqueta}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 /** "= 90 kg ✓" o "= 89.9 kg, 0.1 menos" */
 function Resultado({ carga, compacta = false }: { carga: Carga; compacta?: boolean }) {
   const exacta = carga.exacta
@@ -112,18 +156,19 @@ export function CalculadoraDeDiscos({ objetivoInicial }: { objetivoInicial?: num
   // varios cientos de milisegundos después de que el componente ya se montó,
   // y el campo se quedaba vacío para siempre.
   const [escrito, setEscrito] = useState<string | null>(null)
-  const [barraKg, setBarraKg] = useState(20)
   const [cargado, setCargado] = useState('')
+  // Compartidos con el panel de la rutina y recordados en el teléfono.
+  const { modo, setModo, barraKg, setBarraKg } = usePreferenciasDeDiscos()
 
   const objetivo = escrito ?? (objetivoInicial ? String(objetivoInicial) : '')
   const setObjetivo = (v: string) => setEscrito(v)
 
   const objetivoKg = parseFloat(objetivo)
-  const carga = Number.isFinite(objetivoKg) ? calcularCarga(objetivoKg, barraKg) : null
+  const carga = Number.isFinite(objetivoKg) ? calcularCarga(objetivoKg, barraKg, modo) : null
 
   const cargadoKg = parseFloat(cargado)
   const faltante = Number.isFinite(objetivoKg) && Number.isFinite(cargadoKg)
-    ? calcularFaltante(objetivoKg, barraKg, cargadoKg)
+    ? calcularFaltante(objetivoKg, barraKg, cargadoKg, modo)
     : null
 
   return (
@@ -180,6 +225,10 @@ export function CalculadoraDeDiscos({ objetivoInicial }: { objetivoInicial?: num
               ))}
             </select>
           </div>
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <SelectorDeModo modo={modo} onCambiar={setModo} />
         </div>
 
         {objetivo !== '' && carga === null && (

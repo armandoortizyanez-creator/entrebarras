@@ -1,19 +1,22 @@
 /**
  * Qué discos poner en la barra para llegar a un peso.
  *
- * El box tiene discos en kilos y en libras, y se mezclan en la misma barra.
- * Eso es lo que hace que la cuenta no sea trivial: 45 lb no son 20 kg sino
- * 20.41, así que apenas entra una libra al cálculo el total deja de ser
- * redondo. Por eso la búsqueda prefiere, en este orden:
+ * El box tiene discos en kilos y en libras. Qué se usa depende de qué esté
+ * libre ese día, y eso lo sabe el atleta, no la app. Por eso el modo lo elige
+ * él:
  *
- *   1. una combinación exacta usando SOLO kilos    (lo más limpio)
- *   2. una combinación exacta usando SOLO libras
- *   3. la más cercana mezclando los dos
+ *   kg       solo discos en kilos
+ *   lb       solo discos en libras
+ *   mezcla   los dos. Aun así prefiere, en este orden: exacto con puros
+ *            kilos, exacto con puras libras, y recién ahí combina. Si el peso
+ *            sale con un solo sistema, mezclar solo agrega desorden en el
+ *            suelo.
  *
- * Mezclar es el último recurso y no el primero: si se puede armar el peso con
- * puros discos de kilos, mezclar libras solo agrega desorden en el suelo.
+ * Las libras son las que hacen que la cuenta no sea trivial: 35 lb no son
+ * 15 kg sino 15.88, así que apenas entra una libra el total deja de ser
+ * redondo.
  *
- * Todo el cálculo interno va en gramos enteros. Con decimales, 45 lb + 35 lb
+ * Todo el cálculo interno va en gramos enteros. Con decimales, 35 lb + 25 lb
  * acumula error de coma flotante y "80 kg exactos" termina siendo 79.99999.
  */
 
@@ -21,9 +24,17 @@ export type Unidad = 'kg' | 'lb'
 
 export const LB_A_KG = 0.45359237
 
-/** Inventario del box. Si cambian los discos, se cambia acá. */
-export const DISCOS_KG = [25, 20, 15, 10, 5, 2.5, 1.25]
-export const DISCOS_LB = [45, 35, 25, 15, 10, 5, 2.5]
+/** Inventario del box, confirmado por el coach. Si cambian los discos, se cambia acá. */
+export const DISCOS_KG = [25, 20, 15, 10, 5, 2.5, 1]
+export const DISCOS_LB = [35, 25, 20, 15, 10]
+
+export type ModoDiscos = 'kg' | 'lb' | 'mezcla'
+
+export const MODOS_DE_DISCOS: { valor: ModoDiscos; etiqueta: string }[] = [
+  { valor: 'kg', etiqueta: 'Kg' },
+  { valor: 'lb', etiqueta: 'Lb' },
+  { valor: 'mezcla', etiqueta: 'Mezclar' },
+]
 
 export const BARRAS = [
   { kg: 20, etiqueta: '20 kg' },
@@ -33,12 +44,26 @@ export const BARRAS = [
 /** Cuánto se puede errar y seguir llamándolo "exacto": 10 gramos. */
 const TOLERANCIA_G = 10
 
+/**
+ * Lo que "cuesta" poner un disco más por lado, en gramos de error. 100 g por
+ * lado son 0.2 kg en la barra: un disco extra solo entra si acerca más que eso.
+ *
+ * Calibrado contra el inventario real. Con discos de 1 y 2.5 kg, la
+ * alternativa inexacta más cercana en kilos siempre queda a 0.5 kg por lado,
+ * así que un peso pedido que se puede armar exacto sale exacto (41 kg es
+ * 5 + 2.5 + 1 + 1 + 1 y no "40, uno de menos"). Donde sí actúa es con los
+ * porcentajes, que dan números como 72.6: ahí prefiere 25 + 1 (72 kg) antes
+ * que seis discos para 73. Con 150 g se perdía la exactitud en enteros; si
+ * prefieren cargas más simples todavía, se sube.
+ */
+const COSTO_POR_DISCO_G = 100
+
 /** Tope de discos por lado. Más que esto no cabe en la barra. */
 const MAX_DISCOS_POR_LADO = 8
 
 export interface Disco {
   unidad: Unidad
-  /** El número que está pintado en el disco: 20 si es de 20 kg, 45 si es de 45 lb. */
+  /** El número que está pintado en el disco: 20 si es de 20 kg, 35 si es de 35 lb. */
   valor: number
   gramos: number
 }
@@ -86,26 +111,33 @@ interface Resultado {
  * pasado: eso evita contar la misma combinación en distinto orden, que era lo
  * que hacía explotar la búsqueda.
  *
- * Gana el menor error; a igual error, el que use menos discos. Cargar
- * 1×25 es mejor que 2×10 + 1×5 aunque den lo mismo.
+ * Gana el menor puntaje = error + un costo por cada disco. El costo existe
+ * porque sin él la búsqueda sugería cosas absurdas para la sala: siete discos
+ * por lado, mezclando kilos y libras, para quedar a 0.01 kg en vez de a 0.5.
+ * Con el costo, un disco extra solo entra si acerca más de lo que cuesta.
+ * A igual puntaje, el que use menos discos.
  */
 function buscar(objetivoG: number, inventario: Disco[], maxDiscos: number): Resultado | null {
   const orden = [...inventario].sort((a, b) => b.gramos - a.gramos)
-  let mejor: Resultado | null = null
+  let mejor: (Resultado & { puntaje: number }) | null = null
 
   const cuenta = new Array(orden.length).fill(0)
 
   const considerar = (acumuladoG: number, usados: number) => {
     const errorG = Math.abs(acumuladoG - objetivoG)
-    if (mejor === null || errorG < mejor.errorG || (errorG === mejor.errorG && usados < mejor.discos)) {
-      mejor = { cuenta: [...cuenta], errorG, discos: usados }
+    // Exacto (dentro de la tolerancia) cuenta como error cero: no se castiga
+    // una combinación exacta por los gramos de redondeo de las libras.
+    const puntaje = (errorG <= TOLERANCIA_G ? 0 : errorG) + usados * COSTO_POR_DISCO_G
+    if (mejor === null || puntaje < mejor.puntaje || (puntaje === mejor.puntaje && usados < mejor.discos)) {
+      mejor = { cuenta: [...cuenta], errorG, discos: usados, puntaje }
     }
   }
 
   const paso = (i: number, acumuladoG: number, usados: number) => {
     considerar(acumuladoG, usados)
-    // Ya está exacto: agregar discos solo puede empeorarlo.
-    if (mejor && mejor.errorG <= TOLERANCIA_G && mejor.discos <= usados) return
+    // Cota: el error nunca baja de cero, así que cualquier combinación que
+    // siga desde acá cuesta al menos lo que ya cuestan sus discos.
+    if (mejor && (usados + 1) * COSTO_POR_DISCO_G >= mejor.puntaje) return
     if (usados >= maxDiscos || i >= orden.length) return
 
     for (let j = i; j < orden.length; j++) {
@@ -148,13 +180,18 @@ function armar(res: Resultado, inventario: Disco[], objetivoG: number, barraKg: 
 }
 
 /**
- * Qué cargar por lado para llegar a `objetivoKg` con una barra de `barraKg`.
+ * Qué cargar por lado para llegar a `objetivoKg` con una barra de `barraKg`,
+ * usando los discos que permite `modo`.
+ *
+ * Si no sale exacto devuelve la mejor carga razonable —no necesariamente la
+ * más cercana: ver COSTO_POR_DISCO_G— y la diferencia, para que el atleta
+ * decida si le sirve o si cambia de modo.
  *
  * Devuelve null si el objetivo no llega ni al peso de la barra vacía: ahí no
  * hay nada que calcular y avisar "no se puede" es más honesto que sugerir
  * discos imposibles.
  */
-export function calcularCarga(objetivoKg: number, barraKg: number): Carga | null {
+export function calcularCarga(objetivoKg: number, barraKg: number, modo: ModoDiscos = 'kg'): Carga | null {
   if (!Number.isFinite(objetivoKg) || !Number.isFinite(barraKg)) return null
   if (objetivoKg < barraKg) return null
 
@@ -163,7 +200,14 @@ export function calcularCarga(objetivoKg: number, barraKg: number): Carga | null
     return { porLado: [], kgPorLado: 0, totalKg: barraKg, exacta: true, diferenciaKg: 0, mezclada: false }
   }
 
-  // 1 y 2: exacto con un solo sistema.
+  if (modo === 'kg' || modo === 'lb') {
+    const inventario = modo === 'kg' ? SOLO_KG : SOLO_LB
+    const r = buscar(objetivoG, inventario, MAX_DISCOS_POR_LADO)
+    if (!r) return null
+    return armar(r, inventario, objetivoG, barraKg, objetivoKg)
+  }
+
+  // Mezcla: primero exacto con un solo sistema...
   for (const inventario of [SOLO_KG, SOLO_LB]) {
     const r = buscar(objetivoG, inventario, MAX_DISCOS_POR_LADO)
     if (r && r.errorG <= TOLERANCIA_G) {
@@ -171,7 +215,7 @@ export function calcularCarga(objetivoKg: number, barraKg: number): Carga | null
     }
   }
 
-  // 3: lo más cerca posible, mezclando.
+  // ...y si no, la mejor carga combinando los dos.
   const r = buscar(objetivoG, DISCOS, MAX_DISCOS_POR_LADO)
   if (!r) return null
   return armar(r, DISCOS, objetivoG, barraKg, objetivoKg)
@@ -188,7 +232,9 @@ export interface Faltante {
   sePaso: boolean
 }
 
-export function calcularFaltante(objetivoKg: number, barraKg: number, cargadoKgPorLado: number): Faltante | null {
+export function calcularFaltante(
+  objetivoKg: number, barraKg: number, cargadoKgPorLado: number, modo: ModoDiscos = 'kg',
+): Faltante | null {
   if (!Number.isFinite(objetivoKg) || !Number.isFinite(cargadoKgPorLado)) return null
 
   const actualKg = aKg(aGramos(barraKg) + aGramos(cargadoKgPorLado) * 2)
@@ -207,7 +253,7 @@ export function calcularFaltante(objetivoKg: number, barraKg: number, cargadoKgP
 
   // Qué discos agregar: el mismo cálculo, pero contra una "barra" que ya
   // incluye lo cargado.
-  const agregar = calcularCarga(objetivoKg, actualKg)
+  const agregar = calcularCarga(objetivoKg, actualKg, modo)
   return { ...base, agregar }
 }
 
